@@ -8,8 +8,17 @@ export default {
   theme: {
     extend: {
       colors: {
-        background: "var(--background)",
-        foreground: "var(--foreground)",
+        "custom-bg-gray": "#F1F5F9",
+        "custom-bg-gray-light": "#E3E3E3",
+        "custom-blue-light": "#6E9DD0",
+        "custom-placeholder-gray": "#CACACA",
+        "custom-blue": "#4766FF",
+        "custom-text-gray": "#858B97",
+        "custom-gray-md": "#EBEEFF",
+        "custom-gray-dark": "#64748B",
+        "custom-gray-filter": "#858585",
+        "custom-gray-filter-dark": "#626782",
+        "custom-gray-filter-light": "#94A3B8",
       },
     },
   },
