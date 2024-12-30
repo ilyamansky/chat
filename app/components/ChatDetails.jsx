@@ -5,7 +5,7 @@ import UserImage from "../../public/contactIcons/UserImage.png";
 import TgIcon from "../../public/contactIcons/TgIcon.png";
 import MailIcon from "../../public/contactIcons/MailIcon.png";
 import PhoneIcon from "../../public/contactIcons/PhoneIcon.png";
-import WhatsAppIcon from "../../public/contactIcons/WhatsAppIcon.png";
+import WhatsAppIcon from "../../public/contactIcons/WhatsappIcon.png";
 import CrossIcon from "../ui/icons/CrossIcon";
 import Select from "react-select";
 import TickIcon from "../ui/icons/TickIcon";
