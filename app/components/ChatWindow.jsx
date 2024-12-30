@@ -3,6 +3,10 @@
 import { useState, useEffect, useContext } from "react";
 import { mockMessages } from "../mockData/mockMessages";
 import { ChatContext } from "../chatState";
+import clsx from "clsx";
+import TgIcon from "../../public/contactIcons/TgIcon.png";
+import MailIcon from "../../public/contactIcons/MailIcon.png";
+import Image from "next/image";
 
 export default function ChatWindow() {
   const { state, dispatch } = useContext(ChatContext);
@@ -90,7 +94,7 @@ export default function ChatWindow() {
   }
 
   return (
-    <div className="flex-1 h-full p-6">
+    <div className="flex-1 h-full p-6 overflow-y-scroll overflow-x-hidden bg-white">
       <h2 className="text-xl font-bold mb-4">Chat with {chat.name}</h2>
 
       {/* Поле поиска */}
@@ -103,35 +107,66 @@ export default function ChatWindow() {
       />
 
       {/* Сообщения чата */}
-      <div className="space-y-4 overflow-auto flex-grow">
+      <div className="space-y-4">
         {filteredMessages.map((message) => (
           <div
-            key={message.timestamp}
-            className={`flex items-start mb-4 ${
-              message.sender !== "You" && "justify-end"
-            }`}
+            key={message.id}
+            className={clsx("flex flex-col", {
+              //"items-end": message.senderRole === "recruiter",
+            })}
           >
-            {message.sender !== "You" && (
-              <div
-                className={`w-10 h-10 mr-4 bg-${chat.avatarColor} text-white flex items-center justify-center rounded-full uppercase font-semibold`}
-              >
-                {chat.name.slice(0, 2)}
+            {/* Иконка и информация об отправителе */}
+            <div className="flex items-center mb-4">
+              <div>
+                {message.messanger === "telegram" ? (
+                  <Image src={TgIcon} alt="Telegram Icon" />
+                ) : (
+                  <Image src={MailIcon} alt="Mail Icon" />
+                )}
               </div>
-            )}
-            <div>
-              <p className="font-medium">{message.sender}:</p>
-              <p className="text-sm text-gray-600">{message.text}</p>
-              {message.isUnread && (
-                <span className="absolute top-0 right-0 -mt-3 mr-3 bg-blue-500 text-white px-2 py-1 rounded-full text-xs font-bold">
-                  New
-                </span>
-              )}
+              <div className="ml-4">
+                <div
+                  className={clsx("font-medium", {
+                    "text-blue-500": message.senderRole === "candidate",
+                    "text-orange-500": message.senderRole === "recruiter",
+                  })}
+                >
+                  {message.sender}{" "}
+                  {message.senderRole === "candidate"
+                    ? "Сообщение от кандидата"
+                    : "Сообщение от рекрутера"}{" "}
+                  {new Date(message.timestamp).toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
+                </div>
+              </div>
             </div>
-            {message.sender === "You" && (
-              <div className="w-10 h-10 ml-4 bg-blue-500 text-white flex items-center justify-center rounded-full uppercase font-semibold">
-                YO
-              </div>
-            )}
+
+            {/* Тело письма */}
+            <div
+              className={clsx("ml-4 p-4 border rounded-lg w-full relative", {
+                "bg-custom-gray-md border-blue-500":
+                  message.senderRole === "candidate",
+                "bg-custom-orange-bg border-custom-orange-border":
+                  message.senderRole === "recruiter",
+              })}
+            >
+              {message.messanger === "email" && (
+                <div className="mb-2 font-semibold">
+                  Тема: Предложение вакансии
+                </div>
+              )}
+              <div className=" p-2 rounded-md">{message.text}</div>
+            </div>
+
+            {/* Кнопка "Отправить" */}
+            <button
+              onClick={() => console.log("Отправляем сообщение")} // Замените на вашу логику отправки
+              className="mt-2 ml-4 text-center text-custom-gray-filter-light w-[88px] border py-2 px-2 rounded"
+            >
+              Ответить
+            </button>
           </div>
         ))}
       </div>
