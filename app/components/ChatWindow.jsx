@@ -7,6 +7,12 @@ import clsx from "clsx";
 import TgIcon from "../../public/contactIcons/TgIcon.png";
 import MailIcon from "../../public/contactIcons/MailIcon.png";
 import Image from "next/image";
+import MessagesFilter from "./MessagesFilter";
+import SearchIcon from "../ui/icons/SearchIcon";
+import FilterIcon from "../ui/icons/FilterIcon";
+import InfoIcon from "../ui/icons/InfoIcon";
+import CrossIconButton from "../ui/icons/CrossIconButton";
+import CrossIconFilter from "../ui/icons/CrossIconFilter";
 
 export default function ChatWindow() {
   const { state, dispatch } = useContext(ChatContext);
@@ -15,7 +21,12 @@ export default function ChatWindow() {
   console.log(messages);
   //const [messages, setMessages] = useState([]);
   const [message, setMessage] = useState("");
+  const [isSearching, setIsSearching] = useState(false);
   const [filter, setFilter] = useState("");
+  const handleSearchToggle = () => {
+    setIsSearching((prev) => !prev);
+    setFilter(""); // Сбросить фильтр при переключении
+  };
 
   // Логика для сброса счетчика непрочитанных сообщений
   useEffect(() => {
@@ -83,6 +94,18 @@ export default function ChatWindow() {
     message.text.toLowerCase().includes(filter.toLowerCase())
   );
 
+  // Состояние для управления видимостью выпадающего меню
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+
+  const handleFilterToggle = () => {
+    setIsDropdownOpen((prevState) => !prevState);
+  };
+
+  // Функция для закрытия выпадающего меню
+  const handleFilterClose = () => {
+    setIsDropdownOpen(false);
+  };
+
   if (!chat) {
     return (
       <div className="flex-1 h-full relative">
@@ -94,18 +117,56 @@ export default function ChatWindow() {
   }
 
   return (
-    <div className="flex-1 h-full p-6 overflow-y-scroll overflow-x-hidden bg-white">
-      <h2 className="text-xl font-bold mb-4">Chat with {chat.name}</h2>
+    <div className="flex-1 h-full p-6 overflow-y-scroll overflow-x-hidden relative bg-white">
+      <div className=" relative flex flex-row mb-4 p-2 bg-custom-bg-gray rounded border justify-between items-center">
+        <div className="flex flex-row gap-2 items-center">
+          <div className="rounded-full text-sm text-custom-gray-thin border-custom-gray-thin p-2 border">
+            {chat.name
+              .split(" ")
+              .map((word) => word.charAt(0))
+              .join("")
+              .toUpperCase()}
+          </div>
+          <div className="font-semibold text-sm text-custom-gray-dark">
+            {isSearching ? (
+              <input
+                type="text"
+                placeholder="Поиск по сообщениям..."
+                className="mb-4 w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                value={filter}
+                onChange={(e) => setFilter(e.target.value)}
+              />
+            ) : (
+              <span>{chat.name} / Общение</span>
+            )}
+          </div>
+        </div>
+        <div className="flex flex-row gap-2">
+          <div onClick={handleSearchToggle}>
+            {isSearching ? <CrossIconFilter /> : <SearchIcon />}
+          </div>
+          <button onClick={handleFilterToggle}>
+            <FilterIcon />
+          </button>
+          <div>
+            <InfoIcon />
+          </div>
+        </div>
+      </div>
 
       {/* Поле поиска */}
-      <input
+      {/*<input
         type="text"
         placeholder="Поиск по сообщениям..."
         className="mb-4 w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
         value={filter}
         onChange={(e) => setFilter(e.target.value)}
-      />
-
+      />*/}
+      {isDropdownOpen && (
+        <div className="absolute bg-custom-bg-gray z-30">
+          <MessagesFilter onClose={handleFilterClose} />
+        </div>
+      )}
       {/* Сообщения чата */}
       <div className="space-y-4">
         {filteredMessages.map((message) => (

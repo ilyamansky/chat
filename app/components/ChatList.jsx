@@ -2,37 +2,73 @@ import React, { useContext, useState } from "react";
 import { ChatContext } from "../chatState";
 import ChatsFilter from "./ChatsFilter";
 import FilterIcon from "../ui/icons/FilterIcon";
-import TooltipButton from "./TooltopButton";
+import {
+  Popover,
+  PopoverHandler,
+  PopoverContent,
+} from "@material-tailwind/react";
 
 export default function ChatList() {
   const { state, dispatch } = useContext(ChatContext);
-  const [isFilterOpen, setIsFilterOpen] = useState(false);
 
-  const handleFilterOpen = () => {
-    setIsFilterOpen(true);
+  // Состояние для управления видимостью выпадающего меню
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+
+  const handleFilterToggle = () => {
+    setIsDropdownOpen((prevState) => !prevState);
   };
 
+  // Функция для закрытия выпадающего меню
   const handleFilterClose = () => {
-    setIsFilterOpen(false);
+    setIsDropdownOpen(false);
   };
-  console.log(state);
+
+  {
+    /*const [openPopover, setOpenPopover] = useState(false);
+
+  const triggers = {
+    onMouseEnter: () => setOpenPopover(true),
+    onMouseLeave: () => setOpenPopover(false),
+  };*/
+  }
+  // Функционал
+  const [popovers, setPopovers] = useState({});
+
+  const handlePopoverToggle = (index) => {
+    setPopovers({
+      ...popovers,
+      [index]: !popovers[index],
+    });
+  };
+
+  const triggers = (index) => ({
+    onMouseEnter: () => handlePopoverToggle(index),
+    onMouseLeave: () => handlePopoverToggle(index),
+  });
 
   return (
-    <div className="w-[320px] h-full border-r border-gray-200 p-2 overflow-y-auto">
+    <div className="w-[320px] h-full border-r relative  border-gray-200 p-2 overflow-y-auto">
       <div className="mb-2 flex flex-col">
-        <div className="mb-1 flex flex-row justify-between items-center">
+        <div className="mb-1 flex flex-row justify-between items-center relative">
           <h2 className="text-[13px] font-bold inline-block mr-2">Чаты</h2>
-          <div className="flex flex-row items-center border rounded-lg">
-            <span className="text-custom-blue-light text-sm p-2">
+          <button
+            className="flex items-center border rounded-lg px-2 py-1"
+            onClick={handleFilterToggle}
+          >
+            <span className="text-custom-blue-light text-sm pr-2">
               Применено {state.appliedFilters} фильтра
             </span>
-            <button className="pr-2" onClick={handleFilterOpen}>
+            <div className="pr-2">
               <FilterIcon />
-            </button>
-          </div>
+            </div>
+          </button>
+          {/* Выпадающее меню для фильтров */}
+          {isDropdownOpen && (
+            <div className="absolute top-full mt-2 bg-custom-bg-gray shadow-xl border rounded-md p-4 w-[302px] z-30">
+              <ChatsFilter onClose={handleFilterClose} />
+            </div>
+          )}
         </div>
-        {/* Отображение формы фильтра, если она открыта */}
-        {isFilterOpen && <ChatsFilter onClose={handleFilterClose} />}
       </div>
 
       <input
@@ -73,7 +109,7 @@ export default function ChatList() {
           .filter(
             (user) => !state.showAwaitingResponse || user.awaitingResponse
           )
-          .map((user) => (
+          .map((user, index) => (
             <div
               key={user.id}
               className={`flex items-center text-sm text-custom-text-gray p-2 rounded-md hover:bg-gray-50 cursor-pointer ${
@@ -103,6 +139,37 @@ export default function ChatList() {
                   {user.name}
                 </p>
                 <p className="text-sm text-gray-600">Please help me find...</p>
+                {user.vacanciesInProcess && (
+                  <div className="flex flex-row gap-1">
+                    <div className="border p-1 rounded-lg">
+                      {user.vacanciesInProcess[0].role}
+                      <span>|</span>
+                      {user.vacanciesInProcess[0].company}
+                    </div>
+                    <Popover
+                      open={!!popovers[index]}
+                      handler={() => handlePopoverToggle(index)}
+                    >
+                      <PopoverHandler {...triggers(index)}>
+                        <div className="border p-1 rounded-lg">
+                          +{user.vacanciesInProcess.length - 1}
+                        </div>
+                      </PopoverHandler>
+                      <PopoverContent {...triggers(index)} className="z-50">
+                        <div className="flex flex-col">
+                          {user.vacanciesInProcess.slice(1).map((v, i) => (
+                            <p
+                              className="border rounded-lg"
+                              key={`${user.id}-${i}`}
+                            >
+                              {v.role} | {v.company}
+                            </p>
+                          ))}
+                        </div>
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+                )}
               </div>
               <div className="ml-auto">
                 {user.unreadMessagesCount > 0 && (

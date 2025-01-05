@@ -19,6 +19,13 @@ const initialState = {
       vacancies: ["designer", "intern", "manager", "juniorBackend"],
       recruiters: ["ivanov"],
       clients: ["tbank", "alfabank"],
+      vacanciesInProcess: [
+        { role: "Java developer", company: "Sberbank" },
+        { role: "Python developer", company: "Sberbank" },
+        { role: "Java developer", company: "Alfa bank" },
+        { role: "Java developer", company: "T-bank" },
+      ],
+      vacanciesInProcessId: 475,
     },
     {
       id: 2,
@@ -67,6 +74,13 @@ const initialState = {
       vacancies: ["manager, juniorBackender, designer"],
       recruiters: ["petrov"],
       clients: ["tbank", "sberbank", "vtb"],
+      vacanciesInProcess: [
+        { role: "C++ developer", company: "VTB" },
+        { role: "C# developer", company: "Sberbank" },
+        { role: "Python developer", company: "Alfa bank" },
+        { role: "Java developer", company: "T-bank" },
+      ],
+      vacanciesInProcessId: 678,
     },
     {
       id: 5,

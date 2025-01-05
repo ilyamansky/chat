@@ -1,6 +1,8 @@
+"use client";
 import React, { useContext, useState } from "react";
 import Select from "react-select";
 import { ChatContext } from "../chatState";
+import CrossIconFilter from "../ui/icons/CrossIconFilter";
 
 // Опции для селекторов
 const clientOptions = [
@@ -60,11 +62,11 @@ const ChatsFilter = ({ onClose }) => {
   return (
     <form className="space-y-4">
       <div className="flex flex-row justify-between mt-2">
-        <div className="text-custom-gray-dark text-[15px] font-medium">
+        <div className="text-custom-gray-dark text-[15px] align-top font-medium">
           Фильтры
         </div>
-        <button className="text-custom-gray-dark" onClick={onClose}>
-          X
+        <button className="text-custom-gray-dark m-0 p-0" onClick={onClose}>
+          <CrossIconFilter />
         </button>
       </div>
       <div>
@@ -233,7 +235,7 @@ const ChatsFilter = ({ onClose }) => {
         />
       </div>
 
-      <div className="">
+      <div className="flex flex-col">
         <button
           onClick={applyFiltersHandler}
           //type="submit"

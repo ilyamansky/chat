@@ -23,6 +23,7 @@ export default {
         "custom-orange": "#B67E34",
         "custom-orange-bg": "#FCF8EC",
         "custom-orange-border": "#9E6D2D",
+        "custom-gray-thin": "#8B9CBE",
       },
     },
   },
