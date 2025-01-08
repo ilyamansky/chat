@@ -2,6 +2,7 @@ import React, { useContext, useState } from "react";
 import { ChatContext } from "../chatState";
 import ChatsFilter from "./ChatsFilter";
 import FilterIcon from "../ui/icons/FilterIcon";
+
 import {
   Popover,
   PopoverHandler,
@@ -141,10 +142,15 @@ export default function ChatList() {
                 <p className="text-sm text-gray-600">Please help me find...</p>
                 {user.vacanciesInProcess && (
                   <div className="flex flex-row gap-1">
-                    <div className="border p-1 rounded-lg">
-                      {user.vacanciesInProcess[0].role}
-                      <span>|</span>
-                      {user.vacanciesInProcess[0].company}
+                    <div className="flex flex-row m-0 border p-1 rounded-lg">
+                      <div className="pr-1">
+                        {" "}
+                        {user.vacanciesInProcess[0].role}
+                      </div>
+
+                      <div className="border-l-2 pl-1">
+                        {user.vacanciesInProcess[0].company}
+                      </div>
                     </div>
                     <Popover
                       open={!!popovers[index]}
@@ -157,13 +163,25 @@ export default function ChatList() {
                       </PopoverHandler>
                       <PopoverContent {...triggers(index)} className="z-50">
                         <div className="flex flex-col">
+                          <div className="text-custom-gray-filter">
+                            В работе по {user.vacanciesInProcess.length}{" "}
+                            вакансиям:
+                            <hr className="my-1" />
+                          </div>
                           {user.vacanciesInProcess.slice(1).map((v, i) => (
-                            <p
-                              className="border rounded-lg"
+                            <div
+                              className="border rounded-lg my-1"
                               key={`${user.id}-${i}`}
                             >
-                              {v.role} | {v.company}
-                            </p>
+                              <div className="flex flex-row">
+                                <div className="p-1 text-custom-gray-dark">
+                                  {v.role}
+                                </div>
+                                <div className="border-l-2 p-1 text-custom-gray-filter">
+                                  {v.company}
+                                </div>
+                              </div>
+                            </div>
                           ))}
                         </div>
                       </PopoverContent>

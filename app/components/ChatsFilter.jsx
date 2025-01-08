@@ -3,14 +3,38 @@ import React, { useContext, useState } from "react";
 import Select from "react-select";
 import { ChatContext } from "../chatState";
 import CrossIconFilter from "../ui/icons/CrossIconFilter";
+import CrossIconSelect from "../ui/icons/CrossIconSelect";
+import { customSelectStyles } from "../ui/selectStyles";
+import TickIconFilter from "../ui/icons/TickIconFilter";
+import clsx from "clsx";
 
 // Опции для селекторов
 const clientOptions = [
-  { value: "sberbank", label: "Сбер" },
-  { value: "alfabank", label: "Альфа Банк" },
-  { value: "tbank", label: "Т-банк" },
-  { value: "vtb", label: "ВТБ Банк" },
-  { value: "rosbank", label: "Росбанк" },
+  {
+    value: "sberbank",
+    label: "Сбер",
+    description: "Крупнейший банк России, отделения по всей стране",
+  },
+  {
+    value: "alfabank",
+    label: "Альфа Банк",
+    description: "Топ 6 банков Росии по собственному капиталу",
+  },
+  {
+    value: "tbank",
+    label: "Т-банк",
+    description: "Мы - инновационная финтех компания Росиии",
+  },
+  {
+    value: "vtb",
+    label: "ВТБ Банк",
+    description: "Крупнейший банк России, отделения по всей стране",
+  },
+  {
+    value: "rosbank",
+    label: "Росбанк",
+    description: "Крупнейший банк России, отделения по всей стране",
+  },
 ];
 
 const vacancyOptions = [
@@ -28,6 +52,39 @@ const recruiterOptions = [
   { value: "petrov", label: "Петров П.П." },
   { value: "you", label: "Вы" },
 ];
+
+const MultiValueRemove = (props) => {
+  return (
+    <div {...props.innerProps}>
+      <div className="p-1">
+        <CrossIconSelect />
+      </div>
+    </div>
+  );
+};
+
+const Option = (props) => {
+  const { innerProps, isDisabled, isFocused, isSelected, data } = props;
+
+  return (
+    <div
+      className={clsx("flex justify-between my-2 p-2 hover:opacity-70", {
+        "bg-custom-bg-gray": isSelected,
+      })}
+      {...innerProps}
+    >
+      <div className="text-custom-gray-dark text-[15px] font-medium overflow-hidden">
+        {data.label}
+        {data.description && (
+          <div className="truncate text-[13px] overflow-hidden whitespace-nowrap text-ellipsis">
+            {data.description}
+          </div>
+        )}
+      </div>
+      <div>{isSelected && <TickIconFilter />}</div>
+    </div>
+  );
+};
 
 const ChatsFilter = ({ onClose }) => {
   const { state, dispatch } = useContext(ChatContext);
@@ -60,9 +117,9 @@ const ChatsFilter = ({ onClose }) => {
   };
 
   return (
-    <form className="space-y-4">
+    <form className="space-y-2">
       <div className="flex flex-row justify-between mt-2">
-        <div className="text-custom-gray-dark text-[15px] align-top font-medium">
+        <div className="text-custom-gray-dark text-[15px] align-top font-semibold">
           Фильтры
         </div>
         <button className="text-custom-gray-dark m-0 p-0" onClick={onClose}>
@@ -70,7 +127,7 @@ const ChatsFilter = ({ onClose }) => {
         </button>
       </div>
       <div>
-        <div className="text-[13px] text-custom-gray-filter">
+        <div className="text-[13px] mb-1 text-custom-gray-filter">
           Фильтрация по клиентам
         </div>
         <Select
@@ -80,51 +137,15 @@ const ChatsFilter = ({ onClose }) => {
           onChange={handleFilterChange("clients")}
           placeholder="Все по умолчанию"
           isClearable={false}
-          styles={{
-            multiValue: (provided) => ({
-              ...provided,
-              display: "flex",
-              alignItems: "left",
-              backgroundColor: "#e5e7eb", // Tailwind gray-200
-              borderRadius: "0.375rem", // Tailwind rounded
-              padding: "0.25rem",
-              marginRight: "0.25rem",
-            }),
-            multiValueLabel: (provided) => ({
-              ...provided,
-              marginRight: "0.5rem",
-              color: "gray",
-            }),
-            multiValueRemove: (provided) => ({
-              ...provided,
-              cursor: "pointer",
-              color: "gray", // Tailwind red-600
-            }),
-            control: (provided, state) => ({
-              ...provided,
-              outline: "none",
-              border: "none",
-              boxShadow: state.isFocused ? "none" : "none",
-              borderColor: state.isFocused ? "transparent" : "inherit",
-              ":focus": {
-                outline: "none",
-                boxShadow: "none",
-                border: "none",
-              },
-            }),
-            dropdownIndicator: (provided) => ({
-              ...provided,
-              display: "none", // Убираем крестик
-            }),
-            indicatorSeparator: () => ({
-              display: "none",
-            }),
-          }}
+          closeMenuOnSelect={false}
+          hideSelectedOptions={false}
+          components={{ Option, MultiValueRemove }}
+          styles={customSelectStyles}
         />
       </div>
 
       <div>
-        <div className="text-[13px] text-custom-gray-filter">
+        <div className="text-[13px] mb-1 text-custom-gray-filter">
           Фильтрация по вакансиям
         </div>
         <Select
@@ -134,53 +155,15 @@ const ChatsFilter = ({ onClose }) => {
           onChange={handleFilterChange("vacancies")}
           placeholder="Активные по умолчанию"
           isClearable={false}
-          styles={{
-            control: (provided, state) => ({
-              ...provided,
-              outline: "none",
-              border: "none",
-              boxShadow: state.isFocused ? "none" : "none",
-              borderColor: state.isFocused ? "transparent" : "inherit",
-              ":focus": {
-                outline: "none",
-                boxShadow: "none",
-                border: "none",
-              },
-            }),
-            multiValue: (provided) => ({
-              ...provided,
-              display: "flex",
-              flexWrap: "wrap",
-              alignItems: "center",
-              backgroundColor: "#e5e7eb", // Tailwind gray-200
-              borderRadius: "0.375rem", // Tailwind rounded
-              padding: "0.25rem",
-              marginRight: "0.25rem",
-              fontSize: "15px",
-            }),
-            multiValueLabel: (provided) => ({
-              ...provided,
-              marginRight: "0.5rem",
-              color: "gray",
-            }),
-            multiValueRemove: (provided) => ({
-              ...provided,
-              cursor: "pointer",
-              color: "gray", // Tailwind red-600
-            }),
-            dropdownIndicator: (provided) => ({
-              ...provided,
-              display: "none", // Убираем крестик
-            }),
-            indicatorSeparator: () => ({
-              display: "none",
-            }),
-          }}
+          closeMenuOnSelect={false}
+          hideSelectedOptions={false}
+          components={{ Option, MultiValueRemove }}
+          styles={customSelectStyles}
         />
       </div>
 
       <div>
-        <div className="text-[13px] text-custom-gray-filter">
+        <div className="text-[13px] mb-1 text-custom-gray-filter">
           Фильтрация по рекрутерам
         </div>
         <Select
@@ -190,52 +173,15 @@ const ChatsFilter = ({ onClose }) => {
           onChange={handleFilterChange("recruiters")}
           placeholder=" "
           isClearable={false}
-          styles={{
-            control: (provided, state) => ({
-              ...provided,
-              outline: "none",
-              border: "none",
-              boxShadow: state.isFocused ? "none" : "none",
-              borderColor: state.isFocused ? "transparent" : "inherit",
-              ":focus": {
-                outline: "none",
-                boxShadow: "none",
-                border: "none",
-              },
-            }),
-            multiValue: (provided) => ({
-              ...provided,
-              display: "flex",
-              flexWrap: "wrap",
-              alignItems: "center",
-              backgroundColor: "#e5e7eb", // Tailwind gray-200
-              borderRadius: "0.375rem", // Tailwind rounded
-              padding: "0.25rem",
-              marginRight: "0.25rem",
-              color: "gray",
-            }),
-            multiValueLabel: (provided) => ({
-              ...provided,
-              marginRight: "0.5rem",
-              color: "gray",
-            }),
-            multiValueRemove: (provided) => ({
-              ...provided,
-              cursor: "pointer",
-              color: "gray", // Tailwind red-600
-            }),
-            dropdownIndicator: (provided) => ({
-              ...provided,
-              display: "none", // Убираем крестик
-            }),
-            indicatorSeparator: () => ({
-              display: "none",
-            }),
-          }}
+          closeMenuOnSelect={false}
+          hideSelectedOptions={false}
+          components={{ Option, MultiValueRemove }}
+          styles={customSelectStyles}
         />
       </div>
+      <hr className="my-4" />
 
-      <div className="flex flex-col">
+      <div className="flex flex-col items-start">
         <button
           onClick={applyFiltersHandler}
           //type="submit"

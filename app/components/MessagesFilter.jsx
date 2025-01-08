@@ -1,6 +1,57 @@
 import CrossIconFilter from "../ui/icons/CrossIconFilter";
 import FilterIcon from "../ui/icons/FilterIcon";
 import Select from "react-select";
+import { customSelectStyles } from "../ui/selectStyles";
+import TickIconFilter from "../ui/icons/TickIconFilter";
+import CrossIconSelect from "../ui/icons/CrossIconSelect";
+import clsx from "clsx";
+
+const clientOptions = [
+  {
+    value: "telegram",
+    label: "Telegram",
+  },
+  {
+    value: "email",
+    label: "Email",
+  },
+  { value: "whatsapp", label: "Whatsapp" },
+];
+
+const nameOptions = [
+  { value: "semenov", label: "Сергей Семенов" },
+  { value: "zosulkina", label: "Дарья Зосулькина" },
+  { value: "ivanov", label: "Иван Иванов" },
+  { value: "petrov", label: "Петр Петров" },
+];
+
+const MultiValueRemove = (props) => {
+  return (
+    <div {...props.innerProps}>
+      <div className="p-1">
+        <CrossIconSelect />
+      </div>
+    </div>
+  );
+};
+
+const Option = (props) => {
+  const { innerProps, isDisabled, isFocused, isSelected, data } = props;
+
+  return (
+    <div
+      className={clsx("flex justify-between my-2 p-2 hover:opacity-70", {
+        "bg-custom-bg-gray": isSelected,
+      })}
+      {...innerProps}
+    >
+      <div className="text-custom-gray-dark text-[15px] font-medium">
+        {data.label}
+      </div>
+      <div>{isSelected && <TickIconFilter />}</div>
+    </div>
+  );
+};
 
 export default function MessagesFilter({ onClose }) {
   return (
@@ -9,115 +60,44 @@ export default function MessagesFilter({ onClose }) {
         <div>
           <FilterIcon />
         </div>
-        <div className="flex flex-col">
-          <p>Фильтры</p>
-          <div>
-            <div className="text-[13px] text-custom-gray-filter">
+        <div className="flex flex-col w-[524px]">
+          <p className="font-semibold text-sm text-custom-gray-dark mb-2">
+            Фильтры
+          </p>
+          <div className="mb-4">
+            <div className="text-[13px] text-custom-gray-filter mb-1">
               Фильтрация по авторам сообщений
             </div>
             <Select
               isMulti
-              //options={clientOptions}
+              options={nameOptions}
               //value={state.selectedFilters.clients}
               //onChange={handleFilterChange("clients")}
-              placeholder="Все по умолчанию"
+              placeholder="Введите имя автора"
               isClearable={false}
-              styles={{
-                multiValue: (provided) => ({
-                  ...provided,
-                  display: "flex",
-                  alignItems: "left",
-                  backgroundColor: "#e5e7eb", // Tailwind gray-200
-                  borderRadius: "0.375rem", // Tailwind rounded
-                  padding: "0.25rem",
-                  marginRight: "0.25rem",
-                }),
-                multiValueLabel: (provided) => ({
-                  ...provided,
-                  marginRight: "0.5rem",
-                  color: "gray",
-                }),
-                multiValueRemove: (provided) => ({
-                  ...provided,
-                  cursor: "pointer",
-                  color: "gray", // Tailwind red-600
-                }),
-                control: (provided, state) => ({
-                  ...provided,
-                  outline: "none",
-                  border: "none",
-                  boxShadow: state.isFocused ? "none" : "none",
-                  borderColor: state.isFocused ? "transparent" : "inherit",
-                  ":focus": {
-                    outline: "none",
-                    boxShadow: "none",
-                    border: "none",
-                  },
-                }),
-                dropdownIndicator: (provided) => ({
-                  ...provided,
-                  display: "none", // Убираем крестик
-                }),
-                indicatorSeparator: () => ({
-                  display: "none",
-                }),
-              }}
+              closeMenuOnSelect={false}
+              hideSelectedOptions={false}
+              components={{ Option, MultiValueRemove }}
+              styles={customSelectStyles}
             />
           </div>
           <div>
-            <div className="text-[13px] text-custom-gray-filter">
+            <div className="text-[13px] text-custom-gray-filter mb-1">
               Фильтрация по каналу
             </div>
             <Select
               isMulti
-              //options={clientOptions}
-              //value={state.selectedFilters.clients}
-              //onChange={handleFilterChange("clients")}
-              placeholder="Все по умолчанию"
+              options={clientOptions}
+              closeMenuOnSelect={false}
+              hideSelectedOptions={false}
+              components={{ Option, MultiValueRemove }}
+              styles={customSelectStyles}
+              placeholder="Введите название канала"
               isClearable={false}
-              styles={{
-                multiValue: (provided) => ({
-                  ...provided,
-                  display: "flex",
-                  alignItems: "left",
-                  backgroundColor: "#e5e7eb", // Tailwind gray-200
-                  borderRadius: "0.375rem", // Tailwind rounded
-                  padding: "0.25rem",
-                  marginRight: "0.25rem",
-                }),
-                multiValueLabel: (provided) => ({
-                  ...provided,
-                  marginRight: "0.5rem",
-                  color: "gray",
-                }),
-                multiValueRemove: (provided) => ({
-                  ...provided,
-                  cursor: "pointer",
-                  color: "gray", // Tailwind red-600
-                }),
-                control: (provided, state) => ({
-                  ...provided,
-                  outline: "none",
-                  border: "none",
-                  boxShadow: state.isFocused ? "none" : "none",
-                  borderColor: state.isFocused ? "transparent" : "inherit",
-                  ":focus": {
-                    outline: "none",
-                    boxShadow: "none",
-                    border: "none",
-                  },
-                }),
-                dropdownIndicator: (provided) => ({
-                  ...provided,
-                  display: "none", // Убираем крестик
-                }),
-                indicatorSeparator: () => ({
-                  display: "none",
-                }),
-              }}
             />
           </div>
-          <div className="">
+          <hr className="my-4" />
+          <div className="space-x-2">
             <button
               //onClick={applyFiltersHandler}
               //type="submit"
@@ -128,7 +108,7 @@ export default function MessagesFilter({ onClose }) {
             <button
               type="button"
               //onClick={resetFilters}
-              className="px-4 py-2 mt-2 text-sm text-custom-gray-filter-light border border-custom-gray-filter-light rounded"
+              className="px-4 py-2 text-sm text-custom-gray-filter-light border border-custom-gray-filter-light rounded"
             >
               Сбросить фильтры
             </button>

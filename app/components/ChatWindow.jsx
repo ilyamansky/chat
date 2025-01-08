@@ -13,6 +13,7 @@ import FilterIcon from "../ui/icons/FilterIcon";
 import InfoIcon from "../ui/icons/InfoIcon";
 import CrossIconButton from "../ui/icons/CrossIconButton";
 import CrossIconFilter from "../ui/icons/CrossIconFilter";
+import ChatInput from "./ChatInput";
 
 export default function ChatWindow() {
   const { state, dispatch } = useContext(ChatContext);
@@ -118,7 +119,7 @@ export default function ChatWindow() {
 
   return (
     <div className="flex-1 h-full p-6 overflow-y-scroll overflow-x-hidden relative bg-white">
-      <div className=" relative flex flex-row mb-4 p-2 bg-custom-bg-gray rounded border justify-between items-center">
+      <div className="relative flex flex-row mb-4 p-2 bg-custom-bg-gray rounded border justify-between items-center">
         <div className="flex flex-row gap-2 items-center">
           <div className="rounded-full text-sm text-custom-gray-thin border-custom-gray-thin p-2 border">
             {chat.name
@@ -127,18 +128,20 @@ export default function ChatWindow() {
               .join("")
               .toUpperCase()}
           </div>
-          <div className="font-semibold text-sm text-custom-gray-dark">
-            {isSearching ? (
-              <input
-                type="text"
-                placeholder="Поиск по сообщениям..."
-                className="mb-4 w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                value={filter}
-                onChange={(e) => setFilter(e.target.value)}
-              />
-            ) : (
-              <span>{chat.name} / Общение</span>
-            )}
+          <div className="flex">
+            <div className="text-sm text-custom-gray-dark">
+              {isSearching ? (
+                <input
+                  type="text"
+                  placeholder="Введите строку для поиска"
+                  className="bg-custom-bg-gray rounded-md focus:outline-none"
+                  value={filter}
+                  onChange={(e) => setFilter(e.target.value)}
+                />
+              ) : (
+                <span>{chat.name} / Общение</span>
+              )}
+            </div>
           </div>
         </div>
         <div className="flex flex-row gap-2">
@@ -230,6 +233,9 @@ export default function ChatWindow() {
             </button>
           </div>
         ))}
+      </div>
+      <div className="ml-4 mt-2">
+        <ChatInput />
       </div>
 
       {/* Форма отправки сообщения */}
