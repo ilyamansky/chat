@@ -12,17 +12,17 @@ const ChatInput = () => {
   };
 
   return (
-    <div className="p-4 bg-white border rounded-md shadow-md border-orange-500">
+    <div className=" bg-white border rounded shadow-md overflow-hidden border-[#9E6D2D]">
       {/* Первый блок: табы */}
-      <div className="flex space-x-4 mb-4 bg-[#FCF8EC]">
+      <div className="flex pl-1 space-x-4 mb-1 bg-[#FCF8EC]">
         {["Email", "Telegram", "WA", "SMS"].map((tab) => (
           <button
             key={tab}
             className={clsx(
-              "py-2 px-4 font-semibold rounded-md",
+              "py-2 px-1 text-sm rounded-md",
               selectedTab === tab
-                ? "underline text-orange-500"
-                : "text-gray-600"
+                ? "underline text-[#B67E34]"
+                : "text-[#858B97]"
             )}
             onClick={() => setSelectedTab(tab)}
           >
@@ -32,8 +32,8 @@ const ChatInput = () => {
       </div>
 
       {selectedTab === "Email" && (
-        <div className="flex flex-row items-center mb-2">
-          <div className="mr-2">Тема:</div>
+        <div className="flex flex-row items-center">
+          <div className="pl-2">Тема:</div>
           <div>
             <input
               type="text"
@@ -45,18 +45,18 @@ const ChatInput = () => {
           </div>
         </div>
       )}
-      <div className="mb-4">
+      <div className="mb-0 mt-0">
         <textarea
           type="text"
           value={message}
           onChange={(e) => setMessage(e.target.value)}
           placeholder="Введите текст сообщения"
-          className="w-full p-2 border rounded-md focus:outline-none"
+          className="w-full m-0 py-0 px-2 text-[15px] resize-none h-10 focus:outline-none"
         />
       </div>
 
       {/* Третий блок: иконка прикрепления файла и кнопки */}
-      <div className="flex items-center">
+      <div className="flex px-2 items-center mt-0 pt-0">
         <label className="cursor-pointer">
           <svg
             width="16"
@@ -74,10 +74,16 @@ const ChatInput = () => {
             />
           </svg>
 
-          <input type="file" onChange={handleFileChange} className="hidden" />
+          <input
+            type="file"
+            onChange={handleFileChange}
+            className="mt-0 hidden"
+          />
         </label>
-        <span className="ml-2 text-gray-600">Прикрепить файл</span>
-        <button className="ml-auto px-4 py-2">
+        <span className="ml-2 mt-0 pt-0 text-[#939393] text-[13px]">
+          Прикрепить файл
+        </span>
+        <button className="ml-auto px-2 pb-2">
           <svg
             width="16"
             height="16"

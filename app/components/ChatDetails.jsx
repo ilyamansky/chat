@@ -22,8 +22,10 @@ export default function ChatDetails() {
   const customStyles = {
     control: (provided, state) => ({
       ...provided,
-      height: "20px",
+      height: "30px",
+      minHeight: "30px",
       width: "70px",
+      minWidth: "70px",
       margin: 0,
       padding: 0,
       boxShadow: state.isFocused ? "none" : provided.boxShadow,
@@ -152,8 +154,8 @@ export default function ChatDetails() {
         <div>
           <input
             type="text"
-            placeholder="не задано"
-            className="h-[30px] w-[140px] border-custom-gray-details outline-none rounded"
+            placeholder="Hе задано"
+            className="h-[30px] w-[140px] pl-1 border-custom-gray-details outline-none rounded"
           />
         </div>
         <TickIcon />

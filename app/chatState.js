@@ -77,7 +77,7 @@ const initialState = {
       vacanciesInProcess: [
         { role: "C++ developer", company: "VTB" },
         { role: "C# developer", company: "Sberbank" },
-        { role: "Python developer", company: "Alfa bank" },
+        { role: "Python developer", company: "AlfaAlfaAlfaAlfa" },
         { role: "Java developer", company: "T-bank" },
       ],
       vacanciesInProcessId: 678,
@@ -307,6 +307,11 @@ export const ChatContext = createContext();
 // Функция редуктора
 const reducer = (state, action) => {
   switch (action.type) {
+    case "TOGGLE_IS_OPEN": // Новый кейс для управления состоянием isOpen
+      return {
+        ...state,
+        isOpen: !state.isOpen,
+      };
     case "APPLY_FILTERS":
       const { selectedFilters } = state;
       const appliedFilters = Object.values(selectedFilters).filter(

@@ -5,12 +5,18 @@ export const customSelectStyles = {
     ...provided,
     display: "flex",
     justifyContent: "flex-start",
+    //justifyItems: "center",
     alignItems: "center",
-    backgroundColor: "#F9F9F9",
+    //textAlign: "center",
+    backgroundColor: "#f9f9f9",
     borderRadius: "0.375rem",
-    padding: "px",
-    marginRight: "px",
-    border: "1px solid #64748B",
+    padding: 0,
+    margin: 0,
+    marginRight: "4px",
+    marginTop: "4px",
+    marginBottom: "4px",
+    border: "1px solid #94A3B8",
+    overflow: "hidden",
   }),
   placeholder: (base, state) => ({
     ...base,
@@ -19,12 +25,25 @@ export const customSelectStyles = {
   }),
   multiValueLabel: (provided) => ({
     ...provided,
-    marginRight: "mr-2",
+    //marginRight: "mr-2",
     //marginLeft: "1px",
     color: "#64748B",
     fontSize: "13px",
+    //justifyContent: "left",
+    //textAlign: "left !important",
+    //items: "center",
+    margin: 0,
+    padding: 0,
+    paddingTop: "2px",
+    //paddingLeft: "4px",
+    paddingRight: "5px",
+    paddingLeft: "4px",
+    paddingBottom: "2px",
     backgroundColor: "white",
-    margin: "1px",
+    borderRight: "1px solid #94A3B8",
+    borderRadius: 0,
+    justifyContent: "center",
+    //margin: "1px",
   }),
   multiValueRemove: (provided) => ({
     ...provided,
@@ -33,17 +52,22 @@ export const customSelectStyles = {
   }),
   control: (provided, state) => ({
     ...provided,
+    margin: 0,
+    padding: 0,
+    paddingLeft: "0px",
     outline: "none",
     border: "custom-bg-gray",
     boxShadow: "none",
-    backgroundColor: state.hasValue || state.isFocused ? "white" : "gray-100", // Изменение фона в зависимости от наличия значения
-    borderColor: state.isFocused ? "inherit" : "inherit",
-    "&:hover": {
-      backgroundColor: state.hasValue ? "white" : "gray-300", // Изменение фона при наведении курсора
-    },
+    backgroundColor: "white", // Изменение фона в зависимости от наличия значения
+    //borderColor: state.isFocused ? "#789CCC" : "#F1F5F9",
+    //"&:hover": {
+    //borderColor: state.isHovered ? "#789CCC" : "inherit", // Изменение фона при наведении курсора
+    //},
+    //borderColor: "#F1F5F9",
     "&:focus": {
       outline: "none",
       boxShadow: "none",
+      //borderColor: "#789CCC",
     },
   }),
   dropdownIndicator: (provided) => ({

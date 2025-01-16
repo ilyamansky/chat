@@ -2,6 +2,7 @@ import React, { useContext, useState } from "react";
 import { ChatContext } from "../chatState";
 import ChatsFilter from "./ChatsFilter";
 import FilterIcon from "../ui/icons/FilterIcon";
+import clsx from "clsx";
 
 import {
   Popover,
@@ -53,19 +54,27 @@ export default function ChatList() {
         <div className="mb-1 flex flex-row justify-between items-center relative">
           <h2 className="text-[13px] font-bold inline-block mr-2">Чаты</h2>
           <button
-            className="flex items-center border rounded-lg px-2 py-1"
+            className={clsx(
+              "flex items-center border bg-white rounded-lg px-2 py-1",
+              {
+                "bg-[#F1F5F9]": !state.appliedFilters,
+                "border-none": !state.filtersApplied,
+              }
+            )}
             onClick={handleFilterToggle}
           >
-            <span className="text-custom-blue-light text-sm pr-2">
-              Применено {state.appliedFilters} фильтра
-            </span>
-            <div className="pr-2">
+            {!!state.appliedFilters && (
+              <span className="text-custom-blue-light text-sm pr-1">
+                Применено {state.appliedFilters} фильтра
+              </span>
+            )}
+            <div className="">
               <FilterIcon />
             </div>
           </button>
           {/* Выпадающее меню для фильтров */}
           {isDropdownOpen && (
-            <div className="absolute top-full mt-2 bg-custom-bg-gray shadow-xl border rounded-md p-4 w-[302px] z-30">
+            <div className="absolute top-full mt-2 bg-custom-bg-gray shadow-xl border border-[#6E9DD0] rounded-md p-4 w-[302px] z-30">
               <ChatsFilter onClose={handleFilterClose} />
             </div>
           )}
@@ -98,9 +107,11 @@ export default function ChatList() {
           onClick={() => dispatch({ type: "TOGGLE_FILTER" })}
         >
           Ожидают ответа
-          <span className="rounded-full items-center w-[8px] ml-1 h-[15px] px-2 py-1 justify-center bg-custom-blue text-xs text-white">
-            {state.chats.filter((u) => u.awaitingResponse).length}
-          </span>
+          {!!state.chats.filter((u) => u.awaitingResponse).length && (
+            <span className="rounded-full items-center w-[8px] ml-1 h-[15px] px-2 py-1 justify-center bg-custom-blue text-xs text-white">
+              {state.chats.filter((u) => u.awaitingResponse).length}
+            </span>
+          )}
         </button>
       </div>
 
@@ -168,21 +179,21 @@ export default function ChatList() {
                             вакансиям:
                             <hr className="my-1" />
                           </div>
-                          {user.vacanciesInProcess.slice(1).map((v, i) => (
-                            <div
-                              className="border rounded-lg my-1"
-                              key={`${user.id}-${i}`}
-                            >
-                              <div className="flex flex-row">
+                          <div className="flex flex-col">
+                            {user.vacanciesInProcess.slice().map((v, i) => (
+                              <div
+                                className="border flex flex-row overflow-hidden border-[#94A3B8] rounded-lg my-1 w-fit"
+                                key={`${user.id}-${i}`}
+                              >
                                 <div className="p-1 text-custom-gray-dark">
                                   {v.role}
                                 </div>
-                                <div className="border-l-2 p-1 text-custom-gray-filter">
+                                <div className="border-l p-1 bg-clip-padding bg-[#f9f9f9] text-custom-gray-filter">
                                   {v.company}
                                 </div>
                               </div>
-                            </div>
-                          ))}
+                            ))}
+                          </div>
                         </div>
                       </PopoverContent>
                     </Popover>

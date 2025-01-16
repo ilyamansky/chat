@@ -55,8 +55,8 @@ const recruiterOptions = [
 
 const MultiValueRemove = (props) => {
   return (
-    <div {...props.innerProps}>
-      <div className="p-1">
+    <div className="m-0 p-0" {...props.innerProps}>
+      <div className=" m-0 p-0 overflow-hidden">
         <CrossIconSelect />
       </div>
     </div>
@@ -112,17 +112,29 @@ const ChatsFilter = ({ onClose }) => {
     });
   };
 
+  const [isOpen, setIsOpen] = useState(false);
+  const [value, setValue] = useState([]); // Состояние для хранения выбранных значений
+
+  const handleRemoveValue = (removedValue) => {
+    setValue(value.filter((v) => v.value !== removedValue.value)); // Удаляем значение из массива
+  };
+
   const resetFilters = () => {
     dispatch({ type: "RESET_FILTERS" });
   };
 
+  const setIsOpenFilter = (e) => {
+    e.preventDefault();
+    dispatch({ type: "TOGGLE_IS_OPEN" });
+  };
+
   return (
-    <form className="space-y-2">
-      <div className="flex flex-row justify-between mt-2">
-        <div className="text-custom-gray-dark text-[15px] align-top font-semibold">
+    <form className="space-y-2 flex flex-col">
+      <div className="flex flex-row items-center justify-between">
+        <div className="text-custom-gray-dark text-[15px]  font-semibold">
           Фильтры
         </div>
-        <button className="text-custom-gray-dark m-0 p-0" onClick={onClose}>
+        <button className="text-custom-gray-dark" onClick={onClose}>
           <CrossIconFilter />
         </button>
       </div>
@@ -130,18 +142,101 @@ const ChatsFilter = ({ onClose }) => {
         <div className="text-[13px] mb-1 text-custom-gray-filter">
           Фильтрация по клиентам
         </div>
-        <Select
-          isMulti
-          options={clientOptions}
-          value={state.selectedFilters.clients}
-          onChange={handleFilterChange("clients")}
-          placeholder="Все по умолчанию"
-          isClearable={false}
-          closeMenuOnSelect={false}
-          hideSelectedOptions={false}
-          components={{ Option, MultiValueRemove }}
-          styles={customSelectStyles}
-        />
+        <div className="relative w-full">
+          <button
+            className="w-full m-h-10 flex flex-wrap p-1 rounded bg-white border"
+            onClick={(e) => {
+              e.preventDefault(), setIsOpen((prev) => !prev);
+            }}
+          >
+            {value.length > 0 ? (
+              value.map((v) => (
+                <div
+                  key={v.value}
+                  className="flex flex-row overflow-hidden flex-start ml-1 my-1  items-center text-[#64748B] text-[13px] border border-[#94A3B8] rounded"
+                >
+                  <div className="p-[2px] px-1">{v.label}</div>
+                  <div
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation(); // Останавливаем всплытие события, чтобы не закрыть меню
+                      handleRemoveValue(v);
+                    }}
+                    className="cursor-pointer border-l border-[#94A3B8] py-[2px] bg-[#f9f9f9]"
+                  >
+                    <CrossIconSelect />
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="text-left pl-1 py-1 text-[#CACACA] text-[15px]">
+                Все по умолчанию
+              </div>
+            )}
+          </button>
+          {isOpen && (
+            <>
+              <div
+                className="fixed inset-0 z-10"
+                onClick={() => setIsOpen(false)}
+              />
+              <div className="absolute w-full mt-1 z-20">
+                <Select
+                  isMulti
+                  autoFocus
+                  menuIsOpen
+                  options={clientOptions}
+                  value={value}
+                  controlShouldRenderValue={false}
+                  //value={state.selectedFilters.clients}
+                  //onChange={handleFilterChange("clients")}
+                  placeholder="Поиск по названию или клиенту"
+                  isClearable={false}
+                  closeMenuOnSelect={false}
+                  hideSelectedOptions={false}
+                  components={{ Option, MultiValueRemove }}
+                  isSearchable={true}
+                  onChange={(selectedOptions) => {
+                    setValue(selectedOptions); // Сохраняем массив выбранных значений
+                    setIsOpen(false);
+                  }}
+                  styles={{
+                    ...customSelectStyles, // Расширяем существующие стили
+                    control: (provided, state) => ({
+                      ...provided,
+                      marginTop: 0, // Устраняем верхний отступ
+                      borderRadius: 0, // Устраняем скругление углов
+                      outline: "none",
+                      border: "custom-bg-gray",
+                      boxShadow: "none",
+                      backgroundColor: "white",
+
+                      borderColor: state.isFocused ? "inherit" : "inherit",
+                      "&:hover": {
+                        //backgroundColor: state.hasValue ? "white" : "gray-300", // Изменение фона при наведении курсора
+                      },
+                      "&:focus": {
+                        outline: "none",
+                        boxShadow: "none",
+                      },
+                    }),
+                    menu: (provided) => ({
+                      ...provided,
+                      borderTop: "none",
+                      marginTop: 0, // Устраняем верхний отступ
+                      borderRadius: 0, // Устраняем скругление углов
+                      outline: "none",
+                      "&:focus": {
+                        outline: "none",
+                        boxShadow: "none",
+                      },
+                    }),
+                  }}
+                />
+              </div>
+            </>
+          )}
+        </div>
       </div>
 
       <div>
@@ -179,6 +274,7 @@ const ChatsFilter = ({ onClose }) => {
           styles={customSelectStyles}
         />
       </div>
+
       <hr className="my-4" />
 
       <div className="flex flex-col items-start">

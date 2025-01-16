@@ -28,7 +28,7 @@ const nameOptions = [
 const MultiValueRemove = (props) => {
   return (
     <div {...props.innerProps}>
-      <div className="p-1">
+      <div className="overflow-hidden">
         <CrossIconSelect />
       </div>
     </div>
@@ -55,7 +55,7 @@ const Option = (props) => {
 
 export default function MessagesFilter({ onClose }) {
   return (
-    <div className="flex flex-row justify-between w-[608px] border p-4 rounded-lg">
+    <div className="flex flex-row justify-between w-[608px]  p-4 ">
       <div className="flex flex-row gap-2 pb-4">
         <div>
           <FilterIcon />
