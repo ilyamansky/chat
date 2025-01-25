@@ -57,7 +57,7 @@ const ChatInput = () => {
 
       {/* Третий блок: иконка прикрепления файла и кнопки */}
       <div className="flex px-2 items-center mt-0 pt-0">
-        <label className="cursor-pointer">
+        <label className="cursor-pointer flex items-center">
           <svg
             width="16"
             height="16"
@@ -74,15 +74,13 @@ const ChatInput = () => {
             />
           </svg>
 
-          <input
-            type="file"
-            onChange={handleFileChange}
-            className="mt-0 hidden"
-          />
+          <input type="file" onChange={handleFileChange} className="hidden" />
+
+          <span className="ml-2 text-[#939393] text-[13px]">
+            Прикрепить файл
+          </span>
         </label>
-        <span className="ml-2 mt-0 pt-0 text-[#939393] text-[13px]">
-          Прикрепить файл
-        </span>
+
         <button className="ml-auto px-2 pb-2">
           <svg
             width="16"

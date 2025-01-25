@@ -7,6 +7,8 @@ import CrossIconSelect from "../ui/icons/CrossIconSelect";
 import { customSelectStyles } from "../ui/selectStyles";
 import TickIconFilter from "../ui/icons/TickIconFilter";
 import clsx from "clsx";
+import CustomScrollbar from "../ui/CustomScrollbar";
+import MenuList from "../ui/MenuList";
 
 // Опции для селекторов
 const clientOptions = [
@@ -194,7 +196,7 @@ const ChatsFilter = ({ onClose }) => {
                   isClearable={false}
                   closeMenuOnSelect={false}
                   hideSelectedOptions={false}
-                  components={{ Option, MultiValueRemove }}
+                  components={{ Option, MultiValueRemove, MenuList }}
                   isSearchable={true}
                   onChange={(selectedOptions) => {
                     setValue(selectedOptions); // Сохраняем массив выбранных значений
@@ -252,7 +254,7 @@ const ChatsFilter = ({ onClose }) => {
           isClearable={false}
           closeMenuOnSelect={false}
           hideSelectedOptions={false}
-          components={{ Option, MultiValueRemove }}
+          components={{ Option, MultiValueRemove, MenuList }}
           styles={customSelectStyles}
         />
       </div>
@@ -270,7 +272,7 @@ const ChatsFilter = ({ onClose }) => {
           isClearable={false}
           closeMenuOnSelect={false}
           hideSelectedOptions={false}
-          components={{ Option, MultiValueRemove }}
+          components={{ Option, MultiValueRemove, MenuList }}
           styles={customSelectStyles}
         />
       </div>

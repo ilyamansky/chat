@@ -1,4 +1,4 @@
-import { useContext } from "react";
+import { useContext, useState } from "react";
 import { ChatContext } from "../chatState";
 import Image from "next/image";
 import UserImage from "../../public/contactIcons/UserImage.png";
@@ -16,6 +16,15 @@ export default function ChatDetails() {
   const { state } = useContext(ChatContext);
   const selectedChat = state.selectedChat;
   const contacts = state.selectedChat?.contacts;
+  const [isOpen, setIsOpen] = useState(false);
+
+  const handleAddClick = () => {
+    setIsOpen(true); // Показываем блок с Select
+  };
+
+  const handleClose = () => {
+    setIsOpen(false); // Скрываем блок с Select
+  };
 
   if (!selectedChat) return null;
 
@@ -142,28 +151,39 @@ export default function ChatDetails() {
           })}
         </ul>
       </div>
-      <div className="flex flex-row gap-2 mt-2">
-        <div className="">
-          <Select
-            options={optionsSelect}
-            components={components}
-            placeholder=""
-            styles={customStyles}
-          />
+      {isOpen && (
+        <div className="flex flex-row gap-2 mt-4">
+          <div className="">
+            <Select
+              options={optionsSelect}
+              components={components}
+              placeholder=""
+              styles={customStyles}
+            />
+          </div>
+          <div>
+            <input
+              type="text"
+              placeholder="Hе задано"
+              className="h-[30px] w-[140px] pl-1 border-custom-gray-details outline-none rounded"
+            />
+          </div>
+          <button onClick={handleClose}>
+            <TickIcon />
+          </button>
+          <button onClick={handleClose}>
+            <CrossIconButton />
+          </button>
         </div>
-        <div>
-          <input
-            type="text"
-            placeholder="Hе задано"
-            className="h-[30px] w-[140px] pl-1 border-custom-gray-details outline-none rounded"
-          />
-        </div>
-        <TickIcon />
-        <CrossIconButton />
-      </div>
-      <button className="border flex text-custom-gray-details mt-2 p-[2px] rounded">
-        Добавить
-      </button>
+      )}
+      {!isOpen && (
+        <button
+          onClick={handleAddClick}
+          className="border border-[#CACACA] flex text-custom-gray-details mt-4 py-[2px] px-2 rounded"
+        >
+          Добавить
+        </button>
+      )}
     </div>
   );
 }

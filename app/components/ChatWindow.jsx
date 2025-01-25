@@ -16,6 +16,7 @@ import CrossIconFilter from "../ui/icons/CrossIconFilter";
 import ChatInput from "./ChatInput";
 import InfoIcon2 from "../ui/icons/InfoIcon2";
 import FilterIcon2 from "../ui/icons/FilterIcon2";
+import CustomScrollbar from "../ui/CustomScrollbar";
 
 export default function ChatWindow() {
   const { state, dispatch } = useContext(ChatContext);
@@ -84,14 +85,15 @@ export default function ChatWindow() {
             <div className="text-sm text-custom-gray-dark">
               {isSearching ? (
                 <input
+                  autoFocus
                   type="text"
-                  placeholder="Введите строку для поиска"
-                  className="bg-custom-bg-gray rounded-md focus:outline-none"
+                  placeholder="Введите строку для поиска           "
+                  className="bg-white w-full flex p-2 rounded-md focus:outline-none"
                   value={filter}
                   onChange={(e) => setFilter(e.target.value)}
                 />
               ) : (
-                <span>{chat.name} / Общение</span>
+                <div className="">{chat.name} / Общение </div>
               )}
             </div>
           </div>
@@ -101,7 +103,15 @@ export default function ChatWindow() {
             {isSearching ? <CrossIconFilter /> : <SearchIcon />}
           </div>
           <button onClick={handleFilterToggle}>
-            {isSearching ? <FilterIcon /> : <FilterIcon2 />}
+            {isSearching ? (
+              <div>
+                <FilterIcon />
+              </div>
+            ) : (
+              <div>
+                <FilterIcon2 />
+              </div>
+            )}
           </button>
           <div>{isSearching ? <InfoIcon /> : <InfoIcon2 />}</div>
         </div>
@@ -113,81 +123,87 @@ export default function ChatWindow() {
         </div>
       )}
       {/* Сообщения чата */}
-      <div className=" space-y-2 w-full flex flex-col items-center  mr-0 pr-0 pl-4 overflow-y-auto">
-        {filteredMessages.map((message) => (
-          <div
-            key={message.id}
-            className={clsx("flex flex-col  relative w-[608px]", {
-              //"items-end": message.senderRole === "recruiter",
-            })}
-          >
-            {/* Иконка и информация об отправителе */}
-            <div className="flex items-start mb-1">
-              <div className="mr-4">
-                {message.messanger === "telegram" ? (
-                  <Image
-                    src={TgIcon}
-                    alt="Telegram Icon"
-                    style={{ width: 24 }}
-                  />
-                ) : (
-                  <Image src={MailIcon} alt="Mail Icon" style={{ width: 24 }} />
-                )}
-              </div>
-              <div>
-                <div
-                  className={clsx("font-medium text-[15px]", {
-                    "text-[#4766FF]": message.senderRole === "candidate",
-                    "text-[#B67E34]": message.senderRole === "recruiter",
-                  })}
-                >
-                  {message.sender}{" "}
-                  {message.senderRole === "candidate" ? (
-                    <span className="text-[13px] text-[#4766FF]">
-                      Сообщение от кандидата - 11:45
-                    </span>
-                  ) : (
-                    <span className="text-[13px] text-[#B67E34]">
-                      Сообщение от рекрутера - 12:30
-                    </span>
-                  )}{" "}
-                </div>
-              </div>
-            </div>
-
-            {/* Вертикальная линия, идущая вниз от середины иконки */}
-            <div className="absolute top-9 bottom-0 left-3 border-l border-gray-300" />
-
-            {/* Тело письма */}
+      <CustomScrollbar>
+        <div className=" space-y-2 w-full flex flex-col items-center  mr-0 pr-0 pl-4 overflow-y-auto">
+          {filteredMessages.map((message) => (
             <div
-              className={clsx(
-                "ml-10 px-2 py-1 mt-1 border rounded w-[568px] relative",
-                {
-                  "bg-custom-gray-md border-blue-500":
-                    message.senderRole === "candidate",
-                  "bg-custom-orange-bg border-custom-orange-border":
-                    message.senderRole === "recruiter",
-                }
-              )}
+              key={message.id}
+              className={clsx("flex flex-col  relative w-[608px]", {
+                //"items-end": message.senderRole === "recruiter",
+              })}
             >
-              {message.messanger === "email" && (
-                <div className="font-semibold text-[#1E293B] text-[16px]">
-                  Тема: Предложение вакансии
+              {/* Иконка и информация об отправителе */}
+              <div className="flex items-start mb-1">
+                <div className="mr-4">
+                  {message.messanger === "telegram" ? (
+                    <Image
+                      src={TgIcon}
+                      alt="Telegram Icon"
+                      style={{ width: 24 }}
+                    />
+                  ) : (
+                    <Image
+                      src={MailIcon}
+                      alt="Mail Icon"
+                      style={{ width: 24 }}
+                    />
+                  )}
                 </div>
-              )}
-              <div className="py-1">{message.text}</div>
-            </div>
+                <div>
+                  <div
+                    className={clsx("font-medium text-[15px]", {
+                      "text-[#4766FF]": message.senderRole === "candidate",
+                      "text-[#B67E34]": message.senderRole === "recruiter",
+                    })}
+                  >
+                    {message.sender}{" "}
+                    {message.senderRole === "candidate" ? (
+                      <span className="text-[13px] text-[#4766FF]">
+                        Сообщение от кандидата - 11:45
+                      </span>
+                    ) : (
+                      <span className="text-[13px] text-[#B67E34]">
+                        Сообщение от рекрутера - 12:30
+                      </span>
+                    )}{" "}
+                  </div>
+                </div>
+              </div>
 
-            {/* Кнопка "Отправить" */}
-            <button
-              onClick={() => console.log("Отправляем сообщение")} // Замените на вашу логику отправки
-              className="mt-2 ml-10 text-center text-custom-gray-filter-light w-[88px] border py-1 px-2 rounded"
-            >
-              Ответить
-            </button>
-          </div>
-        ))}
-      </div>
+              {/* Вертикальная линия, идущая вниз от середины иконки */}
+              <div className="absolute top-9 bottom-0 left-3 border-l border-gray-300" />
+
+              {/* Тело письма */}
+              <div
+                className={clsx(
+                  "ml-10 px-2 py-1 mt-1 border rounded w-[568px] relative",
+                  {
+                    "bg-custom-gray-md border-blue-500":
+                      message.senderRole === "candidate",
+                    "bg-custom-orange-bg border-custom-orange-border":
+                      message.senderRole === "recruiter",
+                  }
+                )}
+              >
+                {message.messanger === "email" && (
+                  <div className="font-semibold text-[#1E293B] text-[16px]">
+                    Тема: Предложение вакансии
+                  </div>
+                )}
+                <div className="py-1">{message.text}</div>
+              </div>
+
+              {/* Кнопка "Отправить" */}
+              <button
+                onClick={() => console.log("Отправляем сообщение")} // Замените на вашу логику отправки
+                className="mt-2 ml-10 text-center text-custom-gray-filter-light w-[88px] border py-1 px-2 rounded"
+              >
+                Ответить
+              </button>
+            </div>
+          ))}
+        </div>
+      </CustomScrollbar>
       <div className="ml-3 mt-2 w-[608px] sticky bottom-0 bg-white">
         <ChatInput />
       </div>

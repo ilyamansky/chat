@@ -7,7 +7,6 @@ import ChatList from "./components/ChatList";
 import ChatWindow from "./components/ChatWindow";
 import ChatDetails from "./components/ChatDetails";
 import SearchableDropdown from "./components/DropDown";
-import LoginForm from "./components/LoginForm";
 
 export default function Home() {
   const { state, dispatch } = useContext(ChatContext);
@@ -21,10 +20,14 @@ export default function Home() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <main className="w-screen h-screen shadow-xl  flex items-center justify-center">
-        <div className="flex items-center justify-center">
-          <LoginForm />
-        </div>
+      <main className="w-screen h-screen shadow-xl  flex">
+        {/* Левая панель с чатом */}
+        <ChatList />
+        {/*<SearchableDropdown />*/}
+
+        {/* Правая панель с сообщениями */}
+        <ChatWindow />
+        <ChatDetails />
       </main>
     </div>
   );

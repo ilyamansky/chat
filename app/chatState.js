@@ -42,6 +42,13 @@ const initialState = {
       vacancies: ["developer", "devOps", "juniorBackend", "manager"],
       recruiters: ["you"],
       clients: ["tbank", "alfabank", "rosbank"],
+      vacanciesInProcess: [
+        { role: "JS developer", company: "Roskosmos" },
+        { role: "C# developer", company: "Sberbank" },
+        { role: "Python developer", company: "Alfa bank" },
+        { role: "Java developer", company: "T-bank" },
+      ],
+      vacanciesInProcessId: 6741,
     },
     {
       id: 3,
@@ -58,6 +65,13 @@ const initialState = {
       vacancies: ["manager", "devOps", "seniorFrontend", "designer"],
       recruiters: ["you"],
       clients: ["alfabank", "vtb"],
+      vacanciesInProcess: [
+        { role: "ML engineer", company: "VTB" },
+        { role: "C# developer", company: "Sberbank" },
+        { role: "Python developer", company: "Alfa bank" },
+        { role: "Java developer", company: "T-bank" },
+      ],
+      vacanciesInProcessId: 1678,
     },
     {
       id: 4,
@@ -77,7 +91,7 @@ const initialState = {
       vacanciesInProcess: [
         { role: "C++ developer", company: "VTB" },
         { role: "C# developer", company: "Sberbank" },
-        { role: "Python developer", company: "AlfaAlfaAlfaAlfa" },
+        { role: "Python developer", company: "Alfa bank" },
         { role: "Java developer", company: "T-bank" },
       ],
       vacanciesInProcessId: 678,
@@ -97,6 +111,13 @@ const initialState = {
       vacancies: ["developer", "seniorFrontend", "juniorBackend", "manager"],
       recruiters: ["you"],
       clients: ["alfabank"],
+      vacanciesInProcess: [
+        { role: "C# developer", company: "Rosbank" },
+        { role: "C# developer", company: "Sberbank" },
+        { role: "Go developer", company: "Alfa Bank" },
+        { role: "Java developer", company: "T-bank" },
+      ],
+      vacanciesInProcessId: 6750,
     },
   ],
   selectedFilters: {

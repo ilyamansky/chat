@@ -1,7 +1,11 @@
+"use client";
+
 import React, { useContext, useState } from "react";
 import { ChatContext } from "../chatState";
 import ChatsFilter from "./ChatsFilter";
 import FilterIcon from "../ui/icons/FilterIcon";
+import SearchIconChatList from "../ui/icons/SearchIconChatList";
+import CustomScrollbar from "../ui/CustomScrollbar";
 import clsx from "clsx";
 
 import {
@@ -25,14 +29,6 @@ export default function ChatList() {
     setIsDropdownOpen(false);
   };
 
-  {
-    /*const [openPopover, setOpenPopover] = useState(false);
-
-  const triggers = {
-    onMouseEnter: () => setOpenPopover(true),
-    onMouseLeave: () => setOpenPopover(false),
-  };*/
-  }
   // Функционал
   const [popovers, setPopovers] = useState({});
 
@@ -49,18 +45,18 @@ export default function ChatList() {
   });
 
   return (
-    <div className="w-[320px] h-full border-r relative  border-gray-200 p-2 overflow-y-auto">
-      <div className="mb-2 flex flex-col">
+    <div className="w-[320px] flex flex-col h-full border-r relative overflow-hidden border-gray-200">
+      <div className="mb-2 flex flex-col px-2">
         <div className="mb-1 flex flex-row justify-between items-center relative">
-          <h2 className="text-[13px] font-bold inline-block mr-2">Чаты</h2>
+          <h2 className="text-[13px] font-bold inline-block mt-2 mr-2">Чаты</h2>
           <button
-            className={clsx(
-              "flex items-center border bg-white rounded-lg px-2 py-1",
-              {
-                "bg-[#F1F5F9]": !state.appliedFilters,
-                "border-none": !state.filtersApplied,
-              }
-            )}
+            className="flex items-center border border-[#6E9DD0]  shadow mt-2 bg-white rounded px-1 py-1"
+            //"bg-[#F1F5F9]": !state.appliedFilters,
+            //"border-none": !state.filtersApplied,
+
+            style={{
+              boxShadow: "0 1px 2px rgba(0, 0, 0, 0.25)",
+            }}
             onClick={handleFilterToggle}
           >
             {!!state.appliedFilters && (
@@ -80,14 +76,16 @@ export default function ChatList() {
           )}
         </div>
       </div>
+      <div className="flex border rounded px-3 py-2 mx-2 border-custom-placeholder-gray items-center gap-1 bg-white">
+        <SearchIconChatList />
+        <input
+          type="text"
+          placeholder="Поиск по контактам и сообщениям"
+          className="placeholder:text-custom-placeholder-gray text-[15px] block w-full outline-none border-gray-300 rounded"
+        />
+      </div>
 
-      <input
-        type="text"
-        placeholder="Поиск по контактам и сообщениям"
-        className="text-[15px] block w-full mb-3 px-3 py-2 outline-none border border-gray-300 rounded"
-      />
-
-      <div className="flex mb-4">
+      <div className="flex items-center ml-2 mt-2 mb-2">
         <button
           className={`mr-4 text-sm ${
             !state.showAwaitingResponse
@@ -99,116 +97,128 @@ export default function ChatList() {
           Все
         </button>
         <button
-          className={`text-sm ${
+          className={`text-sm flex flex-row items-center ${
             state.showAwaitingResponse
               ? "text-custom-blue"
               : "text-custom-text-gray"
           }`}
           onClick={() => dispatch({ type: "TOGGLE_FILTER" })}
         >
-          Ожидают ответа
+          <div className="text-sm">Ожидают ответа</div>
           {!!state.chats.filter((u) => u.awaitingResponse).length && (
-            <span className="rounded-full items-center w-[8px] ml-1 h-[15px] px-2 py-1 justify-center bg-custom-blue text-xs text-white">
+            <div className="flex rounded-full items-center ml-1 min-w-4 h-4 justify-center bg-custom-blue text-xs text-white">
               {state.chats.filter((u) => u.awaitingResponse).length}
-            </span>
+            </div>
           )}
         </button>
       </div>
 
       {/* Карточки чатов */}
-      {!state.appliedFilters &&
-        state.chats
-          .filter(
-            (user) => !state.showAwaitingResponse || user.awaitingResponse
-          )
-          .map((user, index) => (
-            <div
-              key={user.id}
-              className={`flex items-center text-sm text-custom-text-gray p-2 rounded-md hover:bg-gray-50 cursor-pointer ${
-                state.selectedChat?.id === user.id ? "bg-gray-100" : ""
-              }`}
-              onClick={() => dispatch({ type: "SELECT_CHAT", payload: user })}
-            >
+      {/*<CustomScrollbar>*/}
+      <div className="flex flex-col overflow-y-auto ml-2 mr-2">
+        {!state.appliedFilters &&
+          state.chats
+            .filter(
+              (user) => !state.showAwaitingResponse || user.awaitingResponse
+            )
+            .map((user, index) => (
               <div
-                className={`w-10 h-10 mr-4 flex items-center justify-center rounded-full border ${
-                  user.awaitingResponse
-                    ? "border-custom-blue text-custom-blue bg-custom-gray-md"
-                    : "border-custom-text-gray"
+                key={user.id}
+                className={`flex text-sm text-custom-text-gray mb-2 p-1 rounded-md hover:bg-gray-50 cursor-pointer ${
+                  state.selectedChat?.id === user.id ? "bg-white" : ""
                 }`}
+                onClick={() => dispatch({ type: "SELECT_CHAT", payload: user })}
               >
-                {user.name
-                  .split(" ")
-                  .map((word) => word.charAt(0))
-                  .join("")
-                  .toUpperCase()}
-              </div>
-              <div>
-                <p
-                  className={`font-medium ${
-                    user.awaitingResponse ? "text-custom-blue" : "text-black"
+                <div
+                  className={`w-8 h-8 m-[3px] mb-0 flex items-center justify-center rounded-full border ${
+                    user.awaitingResponse
+                      ? "border-custom-blue text-custom-blue bg-custom-gray-md"
+                      : "border-custom-text-gray"
                   }`}
                 >
-                  {user.name}
-                </p>
-                <p className="text-sm text-gray-600">Please help me find...</p>
-                {user.vacanciesInProcess && (
-                  <div className="flex flex-row gap-1">
-                    <div className="flex flex-row m-0 border p-1 rounded-lg">
-                      <div className="pr-1">
-                        {" "}
-                        {user.vacanciesInProcess[0].role}
-                      </div>
-
-                      <div className="border-l-2 pl-1">
-                        {user.vacanciesInProcess[0].company}
-                      </div>
-                    </div>
-                    <Popover
-                      open={!!popovers[index]}
-                      handler={() => handlePopoverToggle(index)}
+                  {user.name
+                    .split(" ")
+                    .map((word) => word.charAt(0))
+                    .join("")
+                    .toUpperCase()}
+                </div>
+                <div className="flex flex-col grow pl-1">
+                  <div className="flex justify-between mb-0 pb-0">
+                    <p
+                      className={`text-sm mb-0 pb-0 ${
+                        user.awaitingResponse
+                          ? "text-custom-blue"
+                          : "text-black"
+                      }`}
                     >
-                      <PopoverHandler {...triggers(index)}>
-                        <div className="border p-1 rounded-lg">
-                          +{user.vacanciesInProcess.length - 1}
-                        </div>
-                      </PopoverHandler>
-                      <PopoverContent {...triggers(index)} className="z-50">
-                        <div className="flex flex-col">
-                          <div className="text-custom-gray-filter">
-                            В работе по {user.vacanciesInProcess.length}{" "}
-                            вакансиям:
-                            <hr className="my-1" />
-                          </div>
-                          <div className="flex flex-col">
-                            {user.vacanciesInProcess.slice().map((v, i) => (
-                              <div
-                                className="border flex flex-row overflow-hidden border-[#94A3B8] rounded-lg my-1 w-fit"
-                                key={`${user.id}-${i}`}
-                              >
-                                <div className="p-1 text-custom-gray-dark">
-                                  {v.role}
-                                </div>
-                                <div className="border-l p-1 bg-clip-padding bg-[#f9f9f9] text-custom-gray-filter">
-                                  {v.company}
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      </PopoverContent>
-                    </Popover>
+                      {user.name}
+                    </p>
+                    <p className="text-[12px] m-0 p-0 mr-2">12 дек 12:40</p>
                   </div>
-                )}
+                  <div className="flex justify-between m-0 p-0">
+                    <p className=" m-0 p-0 text-[13px] text-custom-text-gray">
+                      please help me find...
+                    </p>
+                    <div className=" m-0 p-0 flex items-center justify-between mr-2">
+                      {user.unreadMessagesCount > 0 && (
+                        <span className="bg-blue-500 flex w-4 h-4 items-center justify-center text-white rounded-full text-xs font-bold">
+                          {user.unreadMessagesCount}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  {user.vacanciesInProcess && (
+                    <div className="flex flex-row gap-1 mt-1">
+                      <div className="flex flex-row m-0 border border-custom-gray-filter-light rounded">
+                        <div className="px-1 text-custom-gray-dark text-[13px]">
+                          {" "}
+                          {user.vacanciesInProcess[0].role}
+                        </div>
+
+                        <div className="border-l px-1 text-custom-text-gray text-[13px] border-custom-gray-filter-light">
+                          {user.vacanciesInProcess[0].company}
+                        </div>
+                      </div>
+                      <Popover
+                        open={!!popovers[index]}
+                        handler={() => handlePopoverToggle(index)}
+                      >
+                        <PopoverHandler {...triggers(index)}>
+                          <div className="border border-custom-gray-filter-light px-1 rounded">
+                            +{user.vacanciesInProcess.length - 1}
+                          </div>
+                        </PopoverHandler>
+                        <PopoverContent {...triggers(index)} className="z-50">
+                          <div className="flex flex-col">
+                            <div className="text-custom-gray-filter">
+                              В работе по {user.vacanciesInProcess.length}{" "}
+                              вакансиям:
+                              <hr className="my-1" />
+                            </div>
+                            <div className="flex flex-col">
+                              {user.vacanciesInProcess.slice().map((v, i) => (
+                                <div
+                                  className="border flex flex-row overflow-hidden border-[#94A3B8] rounded-lg my-1 w-fit"
+                                  key={`${user.id}-${i}`}
+                                >
+                                  <div className="p-1 text-custom-gray-dark">
+                                    {v.role}
+                                  </div>
+                                  <div className="border-l p-1 bg-clip-padding bg-[#f9f9f9] text-custom-gray-filter">
+                                    {v.company}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        </PopoverContent>
+                      </Popover>
+                    </div>
+                  )}
+                </div>
               </div>
-              <div className="ml-auto">
-                {user.unreadMessagesCount > 0 && (
-                  <span className="bg-blue-500 text-white px-2 py-1 rounded-full text-xs font-bold">
-                    {user.unreadMessagesCount}
-                  </span>
-                )}
-              </div>
-            </div>
-          ))}
+            ))}
+      </div>
       {state.appliedFilters > 0 &&
         state.filteredChats
           .filter(
@@ -246,6 +256,7 @@ export default function ChatList() {
               </div>
             </div>
           ))}
+      {/*</CustomScrollbar>*/}
     </div>
   );
 }
