@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect, useContext } from "react";
-import { mockMessages } from "../mockData/mockMessages";
-import { ChatContext } from "../chatState";
+import { useState, useEffect } from "react";
+import { useSelector, useDispatch } from "react-redux"; // Import Redux hooks
+import { resetUnreadCount } from "../redux/chatSlice"; // Import Redux actions
 import clsx from "clsx";
 import TgIcon from "../../public/contactIcons/TgIcon.png";
 import MailIcon from "../../public/contactIcons/MailIcon.png";
@@ -19,46 +19,39 @@ import FilterIcon2 from "../ui/icons/FilterIcon2";
 import CustomScrollbar from "../ui/CustomScrollbar";
 
 export default function ChatWindow() {
-  const { state, dispatch } = useContext(ChatContext);
-  const chat = state.selectedChat;
-  const messages = state.messages[chat?.id] || [];
-  console.log(messages);
-  //const [messages, setMessages] = useState([]);
+  const dispatch = useDispatch();
+  const { selectedChat, messages } = useSelector((state) => state.chat); // Access Redux state
+  const chat = selectedChat;
+  const chatMessages = messages[chat?.id] || [];
+
   const [message, setMessage] = useState("");
   const [isSearching, setIsSearching] = useState(false);
   const [filter, setFilter] = useState("");
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+
   const handleSearchToggle = () => {
     setIsSearching((prev) => !prev);
-    setFilter(""); // Сбросить фильтр при переключении
+    setFilter(""); // Reset filter when toggling search
   };
-
-  // Логика для сброса счетчика непрочитанных сообщений
-  useEffect(() => {
-    if (chat) {
-      dispatch({
-        type: "RESET_UNREAD_COUNT",
-        payload: {
-          chatId: chat.id,
-        },
-      });
-    }
-  }, [chat]);
-
-  const filteredMessages = messages.filter((message) =>
-    message.text.toLowerCase().includes(filter.toLowerCase())
-  );
-
-  // Состояние для управления видимостью выпадающего меню
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   const handleFilterToggle = () => {
     setIsDropdownOpen((prevState) => !prevState);
   };
 
-  // Функция для закрытия выпадающего меню
   const handleFilterClose = () => {
     setIsDropdownOpen(false);
   };
+
+  // Reset unread count when a chat is selected
+  useEffect(() => {
+    if (chat) {
+      dispatch(resetUnreadCount({ chatId: chat.id })); // Use Redux action
+    }
+  }, [chat, dispatch]);
+
+  const filteredMessages = chatMessages.filter((message) =>
+    message.text.toLowerCase().includes(filter.toLowerCase())
+  );
 
   if (!chat) {
     return (
@@ -73,7 +66,7 @@ export default function ChatWindow() {
   return (
     <div className="flex flex-col flex-grow relative p-6 pl-0 pr-0 pt-1 items-center h-screen bg-white">
       <div className="relative bg-[#F1F5F9] p-1 w-[608px] flex flex-row mb-4 rounded border justify-between items-center">
-        <div className="flex flex-row gap-2 items-center">
+        <div className="flex flex-row gap-2 items-center flex-1">
           <div className="rounded-full text-sm text-custom-gray-thin border-custom-gray-thin p-2 border">
             {chat.name
               .split(" ")
@@ -81,39 +74,55 @@ export default function ChatWindow() {
               .join("")
               .toUpperCase()}
           </div>
-          <div className="flex">
-            <div className="text-sm text-custom-gray-dark">
-              {isSearching ? (
+          <div className="flex-1">
+            {isSearching ? (
+              <div className="relative w-full">
                 <input
                   autoFocus
                   type="text"
-                  placeholder="Введите строку для поиска           "
-                  className="bg-white w-full flex p-2 rounded-md focus:outline-none"
+                  placeholder="Введите строку для поиска"
+                  className="bg-white w-full flex p-2 rounded-md focus:outline-none pr-8"
                   value={filter}
                   onChange={(e) => setFilter(e.target.value)}
                 />
-              ) : (
-                <div className="">{chat.name} / Общение </div>
-              )}
-            </div>
+                <div
+                  className="absolute right-2 top-1/2 -translate-y-1/2 cursor-pointer"
+                  onClick={handleSearchToggle}
+                >
+                  <CrossIconFilter />
+                </div>
+              </div>
+            ) : (
+              <div className="text-sm text-custom-gray-dark">
+                {chat.name} / Общение
+              </div>
+            )}
           </div>
         </div>
         <div className="flex items-center flex-row gap-2">
-          <div onClick={handleSearchToggle}>
-            {isSearching ? <CrossIconFilter /> : <SearchIcon />}
-          </div>
-          <button onClick={handleFilterToggle}>
-            {isSearching ? (
-              <div>
-                <FilterIcon />
+          {!isSearching && (
+            <>
+              <div onClick={handleSearchToggle}>
+                <SearchIcon />
               </div>
-            ) : (
-              <div>
+              <button className="" onClick={handleFilterToggle}>
                 <FilterIcon2 />
+              </button>
+              <div>
+                <InfoIcon2 />
               </div>
-            )}
-          </button>
-          <div>{isSearching ? <InfoIcon /> : <InfoIcon2 />}</div>
+            </>
+          )}
+          {isSearching && (
+            <>
+              <button onClick={handleFilterToggle}>
+                <FilterIcon />
+              </button>
+              <div>
+                <InfoIcon />
+              </div>
+            </>
+          )}
         </div>
       </div>
 
@@ -122,17 +131,18 @@ export default function ChatWindow() {
           <MessagesFilter onClose={handleFilterClose} />
         </div>
       )}
-      {/* Сообщения чата */}
+
+      {/* Chat Messages */}
       <CustomScrollbar>
-        <div className=" space-y-2 w-full flex flex-col items-center  mr-0 pr-0 pl-4 overflow-y-auto">
+        <div className="space-y-2 w-full flex flex-col items-center mr-0 pr-0 pl-4 overflow-y-auto">
           {filteredMessages.map((message) => (
             <div
               key={message.id}
-              className={clsx("flex flex-col  relative w-[608px]", {
+              className={clsx("flex flex-col relative w-[608px]", {
                 //"items-end": message.senderRole === "recruiter",
               })}
             >
-              {/* Иконка и информация об отправителе */}
+              {/* Sender Icon and Info */}
               <div className="flex items-start mb-1">
                 <div className="mr-4">
                   {message.messanger === "telegram" ? (
@@ -170,10 +180,10 @@ export default function ChatWindow() {
                 </div>
               </div>
 
-              {/* Вертикальная линия, идущая вниз от середины иконки */}
+              {/* Vertical Line */}
               <div className="absolute top-9 bottom-0 left-3 border-l border-gray-300" />
 
-              {/* Тело письма */}
+              {/* Message Body */}
               <div
                 className={clsx(
                   "ml-10 px-2 py-1 mt-1 border rounded w-[568px] relative",
@@ -187,16 +197,16 @@ export default function ChatWindow() {
               >
                 {message.messanger === "email" && (
                   <div className="font-semibold text-[#1E293B] text-[16px]">
-                    Тема: Предложение вакансии
+                    {message.subject || "Тема не задана"}{" "}
                   </div>
                 )}
                 <div className="py-1">{message.text}</div>
               </div>
 
-              {/* Кнопка "Отправить" */}
+              {/* Reply Button */}
               <button
-                onClick={() => console.log("Отправляем сообщение")} // Замените на вашу логику отправки
-                className="mt-2 ml-10 text-center text-custom-gray-filter-light w-[88px] border py-1 px-2 rounded"
+                onClick={() => console.log("Отправляем сообщение")} // Replace with your send logic
+                className="mt-2 ml-10 text-center hover:bg-gray-100 text-custom-gray-filter-light w-[88px] border py-1 px-2 rounded"
               >
                 Ответить
               </button>
@@ -204,6 +214,8 @@ export default function ChatWindow() {
           ))}
         </div>
       </CustomScrollbar>
+
+      {/* Chat Input */}
       <div className="ml-3 mt-2 w-[608px] sticky bottom-0 bg-white">
         <ChatInput />
       </div>

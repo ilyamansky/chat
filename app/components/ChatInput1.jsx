@@ -1,10 +1,9 @@
 import { useState } from "react";
 import clsx from "clsx";
 import TextareaAutosize from "react-textarea-autosize";
-import { LinearProgress } from "@mui/material";
+import { LinearProgress } from "@mui/material"; // You can use any progress bar library
 import FileIcon from "../ui/icons/FileIcon";
-import { useSelector, useDispatch } from "react-redux";
-import { addMessage } from "../redux/chatSlice";
+import { useSelector, useDispatch } from "react-redux"; // Import useDispatch
 import { getIconSrc } from "../utils/functions";
 import Image from "next/image";
 import {
@@ -14,9 +13,12 @@ import {
 } from "@material-tailwind/react";
 
 const ChatInput = () => {
-  const dispatch = useDispatch();
-  const { selectedChat } = useSelector((state) => state.chat);
-  const contacts = selectedChat?.contacts || {};
+  const dispatch = useDispatch(); // Initialize dispatch
+  const { chats, selectedChat: selectedChatState } = useSelector(
+    (state) => state.chat
+  );
+  const selectedChat = chats.find((chat) => chat.id === selectedChatState?.id);
+  const contacts = selectedChat?.contacts;
   const [selectedTab, setSelectedTab] = useState("Email");
   const [message, setMessage] = useState("");
   const [subject, setSubject] = useState("");
@@ -25,21 +27,43 @@ const ChatInput = () => {
   const [isAttaching, setIsAttaching] = useState(false);
   const [uploadStatus, setUploadStatus] = useState("");
   const [openPopover, setOpenPopover] = useState(null);
-
   const handleOpen = (contactType) => {
     setOpenPopover(contactType);
   };
+
+  {
+    /*const handleFileChange = (event) => {
+    const selectedFile = event.target.files[0];
+    if (selectedFile) {
+      setIsAttaching(true);
+      setAttachmentProgress(0);
+
+      // Simulate file attachment process (e.g., reading the file, validating it, etc.)
+      const interval = setInterval(() => {
+        setAttachmentProgress((prevProgress) => {
+          if (prevProgress >= 100) {
+            clearInterval(interval);
+            setIsAttaching(false);
+            setFile(selectedFile); // Attach the file to the form
+            return 100;
+          }
+          return prevProgress + 10;
+        });
+      }, 100); // Adjust the interval for faster/slower progress
+    }
+  };*/
+  }
 
   const handleFileChange = (event) => {
     const selectedFile = event.target.files[0];
     if (selectedFile) {
       setIsAttaching(true);
       setAttachmentProgress(0);
-      setUploadStatus("");
+      setUploadStatus(""); // Сбрасываем статус перед новой загрузкой
 
       const reader = new FileReader();
       reader.onload = () => {
-        setFile(selectedFile);
+        setFile(reader.result);
         setIsAttaching(false);
         setAttachmentProgress(100);
         setUploadStatus(`Файл ${selectedFile.name} успешно загружен!`);
@@ -50,6 +74,7 @@ const ChatInput = () => {
         setUploadStatus(`Ошибка при загрузке файла ${selectedFile.name}.`);
       };
 
+      // Отслеживание прогресса чтения файла
       reader.onprogress = (event) => {
         if (event.lengthComputable) {
           const percentComplete = Math.round(
@@ -62,59 +87,62 @@ const ChatInput = () => {
       reader.readAsArrayBuffer(selectedFile);
     }
   };
-
-  // In ChatInput.js - modify handleSubmit
+  // Отправка формы
   const handleSubmit = async (event) => {
     event.preventDefault();
 
-    if (!message.trim() || !selectedChat) return;
+    const formData = new FormData();
+    formData.append("message", message);
+    formData.append("subject", subject);
+    if (file) {
+      formData.append("file", file);
+    }
 
-    const newMessage = {
-      id: Date.now(),
-      subject:
-        selectedTab === "Email" && subject
-          ? `Тема: ${subject}`
-          : "Тема не задана",
-      text: message,
-      //selectedTab === "Email" && subject
-      //? `Тема: ${subject}\n${message}`
-      //: message,
-      sender: "Дарья Зовулькина",
-      timestamp: new Date().toISOString(),
-      isUnread: false,
-      senderRole: "recruiter",
-      messanger: selectedTab.toLowerCase(),
-      // Add file metadata
-      attachments: file
-        ? [
-            {
-              name: file.name,
-              size: file.size,
-              type: file.type,
-              preview: URL.createObjectURL(file), // Create preview URL
-            },
-          ]
-        : [],
-    };
+    try {
+      // Send the form data to the server
+      const response = await fetch("/api/send-message", {
+        method: "POST",
+        body: formData,
+      });
 
-    dispatch(
-      addMessage({
-        chatId: selectedChat.id,
-        message: newMessage,
-      })
-    );
-
-    setMessage("");
-    setSubject("");
-    setFile(null);
+      if (response.ok) {
+        console.log("Form submitted successfully!");
+        // Reset the form
+        setMessage("");
+        setSubject("");
+        setFile(null);
+      } else {
+        console.error("Form submission failed.");
+      }
+    } catch (error) {
+      console.error("Error submitting form:", error);
+    }
   };
 
   return (
     <form
       onSubmit={handleSubmit}
-      className="bg-white mt-1 border rounded shadow-md overflow-hidden border-[#9E6D2D]"
+      className="bg-white border rounded shadow-md overflow-hidden border-[#9E6D2D]"
     >
-      {/* Contact tabs */}
+      {/* Первый блок: табы */}
+      {/*<div className="flex pl-1 space-x-4 mb-1 bg-[#FCF8EC]">
+        {contacts.map((tab) => (
+          <button
+            key={tab}
+            type="button" // Prevent form submission
+            className={clsx(
+              "py-2 px-1 text-sm rounded-md",
+              selectedTab === tab
+                ? "underline text-[#B67E34]"
+                : "text-[#858B97]"
+            )}
+            onClick={() => setSelectedTab(tab)}
+          >
+            {tab}
+          </button>
+        ))}
+      </div>*/}
+
       <ul className="flex pl-1 space-x-4 mb-1 bg-[#FCF8EC]">
         {Object.entries(contacts)
           .filter(([_, group]) => group.length > 0)
@@ -142,7 +170,7 @@ const ChatInput = () => {
                   <span>{contactType}</span>
                 </PopoverHandler>
                 <PopoverContent
-                  className="z-50  p-2"
+                  className="z-50 min-w-[200px] p-2"
                   onMouseEnter={() => handleOpen(contactType)}
                   onMouseLeave={() => setOpenPopover(null)}
                 >
@@ -155,17 +183,7 @@ const ChatInput = () => {
                           contact.isPrimary ? "font-medium" : "text-gray-600"
                         )}
                       >
-                        <div className="flex flex-row gap-2">
-                          <Image
-                            src={getIconSrc(contactType)}
-                            alt={contactType}
-                            width={18}
-                            height={18}
-                          />
-                          <p className="text-sm text-custom-gray-dark">
-                            {contact.content}
-                          </p>
-                        </div>
+                        {contact.content}
                       </div>
                     ))}
                   </div>
@@ -175,7 +193,6 @@ const ChatInput = () => {
           ))}
       </ul>
 
-      {/* Email subject field */}
       {selectedTab === "Email" && (
         <div className="flex flex-row items-center">
           <div className="pl-2">Тема:</div>
@@ -190,20 +207,17 @@ const ChatInput = () => {
           </div>
         </div>
       )}
-
-      {/* Message input */}
       <div className="mb-0 mt-0">
         <TextareaAutosize
+          type="text"
           value={message}
           onChange={(e) => setMessage(e.target.value)}
           placeholder="Введите текст сообщения"
           className="w-full m-0 py-0 px-2 text-[15px] resize-none h-10 focus:outline-none"
-          minRows={1}
-          //maxRows={6}
         />
       </div>
 
-      {/* File attachment and submit section */}
+      {/* Третий блок: иконка прикрепления файла и кнопки */}
       <div className="flex px-2 items-center mt-0 pt-0">
         <label className="cursor-pointer flex items-center">
           <svg
@@ -221,7 +235,9 @@ const ChatInput = () => {
               strokeLinejoin="round"
             />
           </svg>
+
           <input type="file" onChange={handleFileChange} className="hidden" />
+
           <span className="ml-2 text-[#939393] text-[13px]">
             Прикрепить файл
           </span>
@@ -253,7 +269,7 @@ const ChatInput = () => {
         </button>
       </div>
 
-      {/* File upload status */}
+      {/* Display file name, size, and progress bar */}
       {isAttaching && (
         <div className="px-2 mt-2">
           <div className="flex items-center justify-between">
@@ -265,11 +281,11 @@ const ChatInput = () => {
             </div>
           </div>
           <LinearProgress variant="determinate" value={attachmentProgress} />
+          {/* Сообщение о статусе загрузки */}
           <p>{uploadStatus}</p>
         </div>
       )}
 
-      {/* Attached file display */}
       {file && !isAttaching && (
         <div className="px-2 mt-2">
           <div className="flex items-center justify-between">
@@ -311,3 +327,13 @@ const ChatInput = () => {
 };
 
 export default ChatInput;
+
+<div className="flex flex-row gap-2">
+  <Image
+    src={getIconSrc(contactType)}
+    alt={contactType}
+    width={18}
+    height={18}
+  />
+  <p className="text-sm text-custom-gray-dark">{contact.content}</p>
+</div>;

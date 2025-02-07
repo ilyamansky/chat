@@ -1,7 +1,13 @@
 "use client";
-import React, { useContext, useState } from "react";
+import React, { useState } from "react";
 import Select from "react-select";
-import { ChatContext } from "../chatState";
+import { useSelector, useDispatch } from "react-redux"; // Import Redux hooks
+import {
+  setFilters,
+  applyFilters,
+  resetFilters,
+  toggleIsOpen,
+} from "../redux/chatSlice"; // Import Redux actions
 import CrossIconFilter from "../ui/icons/CrossIconFilter";
 import CrossIconSelect from "../ui/icons/CrossIconSelect";
 import { customSelectStyles } from "../ui/selectStyles";
@@ -10,7 +16,7 @@ import clsx from "clsx";
 import CustomScrollbar from "../ui/CustomScrollbar";
 import MenuList from "../ui/MenuList";
 
-// Опции для селекторов
+// Options for selectors
 const clientOptions = [
   {
     value: "sberbank",
@@ -53,12 +59,14 @@ const recruiterOptions = [
   { value: "ivanov", label: "Иванов И.И." },
   { value: "petrov", label: "Петров П.П." },
   { value: "you", label: "Вы" },
+  { value: "zovulkina", label: "Зовулькина Дарья" },
+  { value: "nemov", label: "Михаил Немов" },
 ];
 
 const MultiValueRemove = (props) => {
   return (
     <div className="m-0 p-0" {...props.innerProps}>
-      <div className=" m-0 p-0 overflow-hidden">
+      <div className="m-0 p-0 overflow-hidden">
         <CrossIconSelect />
       </div>
     </div>
@@ -89,51 +97,44 @@ const Option = (props) => {
 };
 
 const ChatsFilter = ({ onClose }) => {
-  const { state, dispatch } = useContext(ChatContext);
-  const handleFilterChange = (filterType) => (selectedOptions) => {
-    dispatch({
-      type: "SET_FILTERS",
-      payload: {
-        [filterType]: selectedOptions || [],
-      },
-    });
-  };
-  const applyFiltersHandler = (e) => {
-    e.preventDefault();
-    dispatch({
-      type: "APPLY_FILTERS",
-      payload: {
-        clients: state.selectedFilters.clients.map((option) => option.value), // Получаем значения
-        vacancies: state.selectedFilters.vacancies.map(
-          (option) => option.value
-        ), // Получаем значения
-        recruiters: state.selectedFilters.recruiters.map(
-          (option) => option.value
-        ), // Получаем значения
-      },
-    });
-  };
+  const dispatch = useDispatch();
+  const { selectedFilters } = useSelector((state) => state.chat); // Access Redux state
 
   const [isOpen, setIsOpen] = useState(false);
-  const [value, setValue] = useState([]); // Состояние для хранения выбранных значений
+  const [value, setValue] = useState([]); // State for selected values
 
-  const handleRemoveValue = (removedValue) => {
-    setValue(value.filter((v) => v.value !== removedValue.value)); // Удаляем значение из массива
+  const handleFilterChange = (filterType) => (selectedOptions) => {
+    dispatch(setFilters({ [filterType]: selectedOptions || [] })); // Use Redux action
   };
 
-  const resetFilters = () => {
-    dispatch({ type: "RESET_FILTERS" });
+  const applyFiltersHandler = (e) => {
+    e.preventDefault();
+    dispatch(
+      applyFilters({
+        clients: selectedFilters.clients.map((option) => option.value),
+        vacancies: selectedFilters.vacancies.map((option) => option.value),
+        recruiters: selectedFilters.recruiters.map((option) => option.value),
+      })
+    ); // Use Redux action
+  };
+
+  const handleRemoveValue = (removedValue) => {
+    setValue(value.filter((v) => v.value !== removedValue.value)); // Remove value from array
+  };
+
+  const resetFiltersHandler = () => {
+    dispatch(resetFilters()); // Use Redux action
   };
 
   const setIsOpenFilter = (e) => {
     e.preventDefault();
-    dispatch({ type: "TOGGLE_IS_OPEN" });
+    dispatch(toggleIsOpen()); // Use Redux action
   };
 
   return (
     <form className="space-y-2 flex flex-col">
       <div className="flex flex-row items-center justify-between">
-        <div className="text-custom-gray-dark text-[15px]  font-semibold">
+        <div className="text-custom-gray-dark text-[15px] font-semibold">
           Фильтры
         </div>
         <button className="text-custom-gray-dark" onClick={onClose}>
@@ -155,13 +156,13 @@ const ChatsFilter = ({ onClose }) => {
               value.map((v) => (
                 <div
                   key={v.value}
-                  className="flex flex-row overflow-hidden flex-start ml-1 my-1  items-center text-[#64748B] text-[13px] border border-[#94A3B8] rounded"
+                  className="flex flex-row overflow-hidden flex-start ml-1 my-1 items-center text-[#64748B] text-[13px] border border-[#94A3B8] rounded"
                 >
                   <div className="p-[2px] px-1">{v.label}</div>
                   <div
                     onClick={(e) => {
                       e.preventDefault();
-                      e.stopPropagation(); // Останавливаем всплытие события, чтобы не закрыть меню
+                      e.stopPropagation(); // Stop event bubbling
                       handleRemoveValue(v);
                     }}
                     className="cursor-pointer border-l border-[#94A3B8] py-[2px] bg-[#f9f9f9]"
@@ -190,8 +191,6 @@ const ChatsFilter = ({ onClose }) => {
                   options={clientOptions}
                   value={value}
                   controlShouldRenderValue={false}
-                  //value={state.selectedFilters.clients}
-                  //onChange={handleFilterChange("clients")}
                   placeholder="Поиск по названию или клиенту"
                   isClearable={false}
                   closeMenuOnSelect={false}
@@ -199,23 +198,22 @@ const ChatsFilter = ({ onClose }) => {
                   components={{ Option, MultiValueRemove, MenuList }}
                   isSearchable={true}
                   onChange={(selectedOptions) => {
-                    setValue(selectedOptions); // Сохраняем массив выбранных значений
+                    setValue(selectedOptions); // Save selected values
                     setIsOpen(false);
                   }}
                   styles={{
-                    ...customSelectStyles, // Расширяем существующие стили
+                    ...customSelectStyles,
                     control: (provided, state) => ({
                       ...provided,
-                      marginTop: 0, // Устраняем верхний отступ
-                      borderRadius: 0, // Устраняем скругление углов
+                      marginTop: 0,
+                      borderRadius: 0,
                       outline: "none",
                       border: "custom-bg-gray",
                       boxShadow: "none",
                       backgroundColor: "white",
-
                       borderColor: state.isFocused ? "inherit" : "inherit",
                       "&:hover": {
-                        //backgroundColor: state.hasValue ? "white" : "gray-300", // Изменение фона при наведении курсора
+                        backgroundColor: state.hasValue ? "white" : "gray-300",
                       },
                       "&:focus": {
                         outline: "none",
@@ -225,8 +223,8 @@ const ChatsFilter = ({ onClose }) => {
                     menu: (provided) => ({
                       ...provided,
                       borderTop: "none",
-                      marginTop: 0, // Устраняем верхний отступ
-                      borderRadius: 0, // Устраняем скругление углов
+                      marginTop: 0,
+                      borderRadius: 0,
                       outline: "none",
                       "&:focus": {
                         outline: "none",
@@ -248,7 +246,7 @@ const ChatsFilter = ({ onClose }) => {
         <Select
           isMulti
           options={vacancyOptions}
-          value={state.selectedFilters.vacancies}
+          value={selectedFilters.vacancies}
           onChange={handleFilterChange("vacancies")}
           placeholder="Активные по умолчанию"
           isClearable={false}
@@ -266,7 +264,7 @@ const ChatsFilter = ({ onClose }) => {
         <Select
           isMulti
           options={recruiterOptions}
-          value={state.selectedFilters.recruiters}
+          value={selectedFilters.recruiters}
           onChange={handleFilterChange("recruiters")}
           placeholder=" "
           isClearable={false}
@@ -282,14 +280,13 @@ const ChatsFilter = ({ onClose }) => {
       <div className="flex flex-col items-start">
         <button
           onClick={applyFiltersHandler}
-          //type="submit"
           className="px-4 py-2 bg-custom-gray-filter-dark text-sm text-white rounded"
         >
           Применить фильтры
         </button>
         <button
           type="button"
-          onClick={resetFilters}
+          onClick={resetFiltersHandler}
           className="px-4 py-2 mt-2 text-sm text-custom-gray-filter-light border border-custom-gray-filter-light rounded"
         >
           Сбросить фильтры

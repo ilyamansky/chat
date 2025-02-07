@@ -1,13 +1,13 @@
 "use client";
 
-import React, { useContext, useState } from "react";
-import { ChatContext } from "../chatState";
+import React, { useState } from "react";
+import { useSelector, useDispatch } from "react-redux"; // Import Redux hooks
+import { toggleFilter, selectChat } from "../redux/chatSlice"; // Import Redux actions
 import ChatsFilter from "./ChatsFilter";
 import FilterIcon from "../ui/icons/FilterIcon";
 import SearchIconChatList from "../ui/icons/SearchIconChatList";
 import CustomScrollbar from "../ui/CustomScrollbar";
 import clsx from "clsx";
-
 import {
   Popover,
   PopoverHandler,
@@ -15,22 +15,25 @@ import {
 } from "@material-tailwind/react";
 
 export default function ChatList() {
-  const { state, dispatch } = useContext(ChatContext);
+  const dispatch = useDispatch();
+  const {
+    chats,
+    filteredChats,
+    appliedFilters,
+    showAwaitingResponse,
+    selectedChat,
+  } = useSelector((state) => state.chat); // Access Redux state
 
-  // Состояние для управления видимостью выпадающего меню
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [popovers, setPopovers] = useState({});
 
   const handleFilterToggle = () => {
     setIsDropdownOpen((prevState) => !prevState);
   };
 
-  // Функция для закрытия выпадающего меню
   const handleFilterClose = () => {
     setIsDropdownOpen(false);
   };
-
-  // Функционал
-  const [popovers, setPopovers] = useState({});
 
   const handlePopoverToggle = (index) => {
     setPopovers({
@@ -50,25 +53,19 @@ export default function ChatList() {
         <div className="mb-1 flex flex-row justify-between items-center relative">
           <h2 className="text-[13px] font-bold inline-block mt-2 mr-2">Чаты</h2>
           <button
-            className="flex items-center border border-[#6E9DD0]  shadow mt-2 bg-white rounded px-1 py-1"
-            //"bg-[#F1F5F9]": !state.appliedFilters,
-            //"border-none": !state.filtersApplied,
-
-            style={{
-              boxShadow: "0 1px 2px rgba(0, 0, 0, 0.25)",
-            }}
+            className="flex items-center border border-[#6E9DD0] shadow mt-2 bg-white hover:bg-gray-100 rounded px-1 py-1"
+            style={{ boxShadow: "0 1px 2px rgba(0, 0, 0, 0.25)" }}
             onClick={handleFilterToggle}
           >
-            {!!state.appliedFilters && (
+            {!!appliedFilters && (
               <span className="text-custom-blue-light text-sm pr-1">
-                Применено {state.appliedFilters} фильтра
+                Применено {appliedFilters} фильтра
               </span>
             )}
             <div className="">
               <FilterIcon />
             </div>
           </button>
-          {/* Выпадающее меню для фильтров */}
           {isDropdownOpen && (
             <div className="absolute top-full mt-2 bg-custom-bg-gray shadow-xl border border-[#6E9DD0] rounded-md p-4 w-[302px] z-30">
               <ChatsFilter onClose={handleFilterClose} />
@@ -88,46 +85,38 @@ export default function ChatList() {
       <div className="flex items-center ml-2 mt-2 mb-2">
         <button
           className={`mr-4 text-sm ${
-            !state.showAwaitingResponse
-              ? "text-custom-blue"
-              : "text-custom-text-gray"
+            !showAwaitingResponse ? "text-custom-blue" : "text-custom-text-gray"
           }`}
-          onClick={() => dispatch({ type: "TOGGLE_FILTER" })}
+          onClick={() => dispatch(toggleFilter())} // Use Redux action
         >
           Все
         </button>
         <button
           className={`text-sm flex flex-row items-center ${
-            state.showAwaitingResponse
-              ? "text-custom-blue"
-              : "text-custom-text-gray"
+            showAwaitingResponse ? "text-custom-blue" : "text-custom-text-gray"
           }`}
-          onClick={() => dispatch({ type: "TOGGLE_FILTER" })}
+          onClick={() => dispatch(toggleFilter())} // Use Redux action
         >
           <div className="text-sm">Ожидают ответа</div>
-          {!!state.chats.filter((u) => u.awaitingResponse).length && (
+          {!!chats.filter((u) => u.awaitingResponse).length && (
             <div className="flex rounded-full items-center ml-1 min-w-4 h-4 justify-center bg-custom-blue text-xs text-white">
-              {state.chats.filter((u) => u.awaitingResponse).length}
+              {chats.filter((u) => u.awaitingResponse).length}
             </div>
           )}
         </button>
       </div>
 
-      {/* Карточки чатов */}
-      {/*<CustomScrollbar>*/}
       <div className="flex flex-col overflow-y-auto ml-2 mr-2">
-        {!state.appliedFilters &&
-          state.chats
-            .filter(
-              (user) => !state.showAwaitingResponse || user.awaitingResponse
-            )
+        {!appliedFilters &&
+          chats
+            .filter((user) => !showAwaitingResponse || user.awaitingResponse)
             .map((user, index) => (
               <div
                 key={user.id}
                 className={`flex text-sm text-custom-text-gray mb-2 p-1 rounded-md hover:bg-gray-50 cursor-pointer ${
-                  state.selectedChat?.id === user.id ? "bg-white" : ""
+                  selectedChat?.id === user.id ? "bg-white" : ""
                 }`}
-                onClick={() => dispatch({ type: "SELECT_CHAT", payload: user })}
+                onClick={() => dispatch(selectChat(user))} // Use Redux action
               >
                 <div
                   className={`w-8 h-8 m-[3px] mb-0 flex items-center justify-center rounded-full border ${
@@ -219,18 +208,16 @@ export default function ChatList() {
               </div>
             ))}
       </div>
-      {state.appliedFilters > 0 &&
-        state.filteredChats
-          .filter(
-            (user) => !state.showAwaitingResponse || user.awaitingResponse
-          )
+      {appliedFilters > 0 &&
+        filteredChats
+          .filter((user) => !showAwaitingResponse || user.awaitingResponse)
           .map((user) => (
             <div
               key={user.id}
               className={`flex items-center p-2 rounded-md hover:bg-gray-50 cursor-pointer ${
-                state.selectedChat?.id === user.id ? "bg-gray-100" : ""
+                selectedChat?.id === user.id ? "bg-gray-100" : ""
               }`}
-              onClick={() => dispatch({ type: "SELECT_CHAT", payload: user })}
+              onClick={() => dispatch(selectChat(user))} // Use Redux action
             >
               <div
                 className={`w-10 h-10 mr-4 bg-${user.avatarColor} text-white flex items-center justify-center rounded-full uppercase font-semibold`}
@@ -256,7 +243,6 @@ export default function ChatList() {
               </div>
             </div>
           ))}
-      {/*</CustomScrollbar>*/}
     </div>
   );
 }

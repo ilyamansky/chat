@@ -1,3 +1,6 @@
+import { useState } from "react";
+import { useSelector, useDispatch } from "react-redux"; // Import Redux hooks
+import { setFilters, applyFilters, resetFilters } from "../redux/chatSlice"; // Import Redux actions
 import CrossIconFilter from "../ui/icons/CrossIconFilter";
 import FilterIcon from "../ui/icons/FilterIcon";
 import Select from "react-select";
@@ -54,8 +57,29 @@ const Option = (props) => {
 };
 
 export default function MessagesFilter({ onClose }) {
+  const dispatch = useDispatch();
+  const { selectedFilters } = useSelector((state) => state.chat); // Access Redux state
+
+  const handleFilterChange = (filterType) => (selectedOptions) => {
+    dispatch(setFilters({ [filterType]: selectedOptions || [] })); // Use Redux action
+  };
+
+  const applyFiltersHandler = (e) => {
+    e.preventDefault();
+    dispatch(
+      applyFilters({
+        authors: selectedFilters.authors?.map((option) => option.value) || [],
+        channels: selectedFilters.channels?.map((option) => option.value) || [],
+      })
+    ); // Use Redux action
+  };
+
+  const resetFiltersHandler = () => {
+    dispatch(resetFilters()); // Use Redux action
+  };
+
   return (
-    <div className="flex flex-row justify-between w-[608px]  p-4 ">
+    <div className="flex flex-row justify-between w-[608px] p-4">
       <div className="flex flex-row gap-2 pb-4">
         <div>
           <FilterIcon />
@@ -71,8 +95,8 @@ export default function MessagesFilter({ onClose }) {
             <Select
               isMulti
               options={nameOptions}
-              //value={state.selectedFilters.clients}
-              //onChange={handleFilterChange("clients")}
+              value={selectedFilters.authors}
+              onChange={handleFilterChange("authors")}
               placeholder="Введите имя автора"
               isClearable={false}
               closeMenuOnSelect={false}
@@ -88,26 +112,27 @@ export default function MessagesFilter({ onClose }) {
             <Select
               isMulti
               options={clientOptions}
+              value={selectedFilters.channels}
+              onChange={handleFilterChange("channels")}
+              placeholder="Введите название канала"
+              isClearable={false}
               closeMenuOnSelect={false}
               hideSelectedOptions={false}
               components={{ Option, MultiValueRemove }}
               styles={customSelectStyles}
-              placeholder="Введите название канала"
-              isClearable={false}
             />
           </div>
           <hr className="my-4" />
           <div className="space-x-2">
             <button
               //onClick={applyFiltersHandler}
-              //type="submit"
               className="px-4 py-2 bg-custom-gray-filter-dark text-sm text-white rounded"
             >
               Применить фильтры
             </button>
             <button
               type="button"
-              //onClick={resetFilters}
+              //onClick={resetFiltersHandler}
               className="px-4 py-2 text-sm text-custom-gray-filter-light border border-custom-gray-filter-light rounded"
             >
               Сбросить фильтры

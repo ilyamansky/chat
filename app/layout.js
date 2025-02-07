@@ -1,6 +1,9 @@
 "use client";
 
-import { ChatProvider } from "./chatState";
+//import { ChatProvider } from "./chatState";
+import { Provider } from "react-redux";
+import store from "./store";
+
 import { inter } from "./ui/font";
 import "./globals.css";
 
@@ -11,10 +14,10 @@ import "./globals.css";
 
 export default function RootLayout({ children }) {
   return (
-    <ChatProvider>
+    <Provider store={store}>
       <html lang="en">
         <body className={`${inter.className} antialiased`}>{children}</body>
       </html>
-    </ChatProvider>
+    </Provider>
   );
 }
