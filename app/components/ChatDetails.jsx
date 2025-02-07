@@ -263,7 +263,7 @@ export default function ChatDetails() {
         </ul>
       </div>
       {isOpen && (
-        <div className="flex flex-row gap-2 mt-4">
+        <div className="flex flex-row gap-2 mx-4 mt-4">
           <div className="">
             <Select
               isSearchable={false}
@@ -277,7 +277,7 @@ export default function ChatDetails() {
               onChange={setSelectedOption}
             />
           </div>
-          <div>
+          <div className="">
             <input
               type="text"
               placeholder="Hе задано"
@@ -297,7 +297,7 @@ export default function ChatDetails() {
       {!isOpen && (
         <button
           onClick={handleAddClick}
-          className="border border-[#CACACA] hover:bg-gray-50 flex text-custom-gray-details mt-4 py-[2px] px-2 rounded"
+          className="border mx-4 border-[#CACACA] hover:bg-gray-50 flex text-custom-gray-details mt-4 py-[2px] px-2 rounded"
         >
           Добавить
         </button>
