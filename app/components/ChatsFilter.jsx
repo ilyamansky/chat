@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import Select from "react-select";
 import { useSelector, useDispatch } from "react-redux"; // Import Redux hooks
 import {
@@ -106,6 +106,19 @@ const ChatsFilter = ({ onClose }) => {
   const handleFilterChange = (filterType) => (selectedOptions) => {
     dispatch(setFilters({ [filterType]: selectedOptions || [] })); // Use Redux action
   };
+
+  const filterRef1 = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside1 = (event) => {
+      if (filterRef1.current && !filterRef1.current.contains(event.target)) {
+        onClose();
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside1);
+    return () => document.removeEventListener("mousedown", handleClickOutside1);
+  }, [onClose]);
 
   const applyFiltersHandler = (e) => {
     e.preventDefault();

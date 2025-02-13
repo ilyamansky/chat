@@ -113,8 +113,8 @@ export default function ChatList() {
             .map((user, index) => (
               <div
                 key={user.id}
-                className={`flex text-sm text-custom-text-gray mb-2 p-1 rounded-md hover:bg-gray-50 cursor-pointer ${
-                  selectedChat?.id === user.id ? "bg-white" : ""
+                className={`flex text-sm text-custom-text-gray mb-2 p-1 rounded-md hover:bg-white cursor-pointer ${
+                  selectedChat?.id === user.id ? "bg-gray-50" : ""
                 }`}
                 onClick={() => dispatch(selectChat(user))} // Use Redux action
               >
@@ -157,7 +157,7 @@ export default function ChatList() {
                     </div>
                   </div>
                   {user.vacanciesInProcess && (
-                    <div className="flex flex-row gap-1 mt-1">
+                    <div className="flex flex-row gap-1 mt-1 mb-1">
                       <div className="flex flex-row m-0 border border-custom-gray-filter-light rounded">
                         <div className="px-1 text-custom-gray-dark text-[13px]">
                           {" "}

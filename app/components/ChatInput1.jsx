@@ -337,3 +337,18 @@ export default ChatInput;
   />
   <p className="text-sm text-custom-gray-dark">{contact.content}</p>
 </div>;
+
+<div className="mr-4">
+  {message.messenger === "telegram" && (
+    <Image src={TgIcon} alt="Telegram Icon" style={{ width: 24 }} />
+  )}
+  {message.messenger === "whatsapp" && (
+    <Image src={WhatsappIcon} alt="WhatsApp Icon" style={{ width: 24 }} />
+  )}
+  {message.messenger === "phone" && (
+    <Image src={PhoneIcon} alt="Phone Icon" style={{ width: 24 }} />
+  )}
+  {message.messenger === "email" && (
+    <Image src={MailIcon} alt="Mail Icon" style={{ width: 24 }} />
+  )}
+</div>;

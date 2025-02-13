@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useSelector, useDispatch } from "react-redux"; // Import Redux hooks
 import { setFilters, applyFilters, resetFilters } from "../redux/chatSlice"; // Import Redux actions
 import CrossIconFilter from "../ui/icons/CrossIconFilter";
@@ -64,6 +64,19 @@ export default function MessagesFilter({ onClose }) {
     dispatch(setFilters({ [filterType]: selectedOptions || [] })); // Use Redux action
   };
 
+  const filterRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (filterRef.current && !filterRef.current.contains(event.target)) {
+        onClose();
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [onClose]);
+
   const applyFiltersHandler = (e) => {
     e.preventDefault();
     dispatch(
@@ -79,7 +92,7 @@ export default function MessagesFilter({ onClose }) {
   };
 
   return (
-    <div className="flex flex-row justify-between w-[608px] p-4">
+    <div className="flex flex-row justify-between  p-4">
       <div className="flex flex-row gap-2 pb-4">
         <div>
           <FilterIcon />

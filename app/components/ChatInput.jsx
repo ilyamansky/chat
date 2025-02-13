@@ -1,10 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import clsx from "clsx";
 import TextareaAutosize from "react-textarea-autosize";
 import { LinearProgress } from "@mui/material";
 import FileIcon from "../ui/icons/FileIcon";
 import { useSelector, useDispatch } from "react-redux";
-import { addMessage } from "../redux/chatSlice";
+import { addMessage, setReplyingTo } from "../redux/chatSlice";
 import { getIconSrc } from "../utils/functions";
 import Image from "next/image";
 import {
@@ -15,8 +15,20 @@ import {
 
 const ChatInput = () => {
   const dispatch = useDispatch();
-  const { selectedChat } = useSelector((state) => state.chat);
-  const contacts = selectedChat?.contacts || {};
+  //const { selectedChat } = useSelector((state) => state.chat);
+  //const contacts = selectedChat?.contacts || {};
+  const {
+    chats,
+    selectedChat: selectedChatState,
+    messages,
+  } = useSelector((state) => state.chat);
+  const selectedChat = chats.find((chat) => chat.id === selectedChatState?.id);
+  const contacts = selectedChat?.contacts;
+  const chatMessages = messages[selectedChat?.id] || [];
+  //const messanger = chatMessages[id];
+  //console.log(messanger, "messanger");
+  console.log("messages", messages);
+  const { replyingTo } = useSelector((state) => state.chat);
   const [selectedTab, setSelectedTab] = useState("Email");
   const [message, setMessage] = useState("");
   const [subject, setSubject] = useState("");
@@ -26,10 +38,79 @@ const ChatInput = () => {
   const [uploadStatus, setUploadStatus] = useState("");
   const [openPopover, setOpenPopover] = useState(null);
 
+  const validateMessenger = () => {
+    if (!selectedChat) return false;
+
+    // Extract base contact type without number
+    const baseType = selectedTab.replace(/\s\d+$/, "");
+    const hasContacts = contacts[baseType]?.length > 0;
+
+    if (!hasContacts) {
+      alert(
+        `Нет доступных контактов для ${baseType}. Добавьте контакт сначала!`
+      );
+      return false;
+    }
+    return true;
+  };
+  useEffect(() => {
+    if (replyingTo) {
+      const originalMessenger = replyingTo.messanger;
+      const isValid = selectedChat?.contacts[originalMessenger]?.length > 0;
+
+      if (!isValid) {
+        alert("Контакт для ответа был удален!");
+        dispatch(setReplyingTo(null));
+        return;
+      }
+
+      setSelectedTab(
+        originalMessenger.charAt(0).toUpperCase() + originalMessenger.slice(1)
+      );
+    }
+  }, [replyingTo, selectedChat]);
+
+  useEffect(() => {
+    if (replyingTo && !selectedTab.startsWith(replyingTo.messanger)) {
+      dispatch(setReplyingTo(null));
+    }
+  }, [selectedTab]);
+
+  useEffect(() => {
+    if (replyingTo) {
+      // Find original message in all chats
+      const originalMessage = chats
+        .flatMap((chat) => messages[chat.id] || [])
+        .find((msg) => msg.id === replyingTo.id);
+
+      if (originalMessage?.messanger === "Email") {
+        setSubject(originalMessage.subject?.replace("Тема: ", "") || "");
+      }
+    } else {
+      setSubject(""); // Reset subject when reply is canceled
+    }
+  }, [replyingTo, chats, messages]);
+
+  useEffect(() => {
+    if (replyingTo) {
+      const originalMessage = chats
+        .flatMap((chat) => chatMessages[chat.id] || [])
+        .find((msg) => msg.id === replyingTo.id);
+
+      if (originalMessage) {
+        setSelectedTab(
+          originalMessage.messanger.charAt(0).toUpperCase() +
+            originalMessage.messanger.slice(1)
+        );
+      }
+    }
+  }, [replyingTo]);
+
   const handleOpen = (contactType) => {
     setOpenPopover(contactType);
   };
 
+  // In ChatInput.js - Update file handling
   const handleFileChange = (event) => {
     const selectedFile = event.target.files[0];
     if (selectedFile) {
@@ -37,35 +118,34 @@ const ChatInput = () => {
       setAttachmentProgress(0);
       setUploadStatus("");
 
-      const reader = new FileReader();
-      reader.onload = () => {
-        setFile(selectedFile);
-        setIsAttaching(false);
+      // Simulate upload progress
+      const interval = setInterval(() => {
+        setAttachmentProgress((prev) => {
+          if (prev >= 95) {
+            // Stop at 95% for realistic simulation
+            clearInterval(interval);
+            return 95;
+          }
+          return prev + 5;
+        });
+      }, 100);
+
+      // Complete simulation after 2 seconds
+      setTimeout(() => {
+        clearInterval(interval);
         setAttachmentProgress(100);
-        setUploadStatus(`Файл ${selectedFile.name} успешно загружен!`);
-      };
-
-      reader.onerror = () => {
         setIsAttaching(false);
-        setUploadStatus(`Ошибка при загрузке файла ${selectedFile.name}.`);
-      };
-
-      reader.onprogress = (event) => {
-        if (event.lengthComputable) {
-          const percentComplete = Math.round(
-            (event.loaded / event.total) * 100
-          );
-          setAttachmentProgress(percentComplete);
-        }
-      };
-
-      reader.readAsArrayBuffer(selectedFile);
+        setFile(selectedFile); // This was missing - actually set the file
+        setUploadStatus(`Файл ${selectedFile.name} успешно загружен!`);
+      }, 2000);
     }
   };
 
   // In ChatInput.js - modify handleSubmit
   const handleSubmit = async (event) => {
     event.preventDefault();
+
+    if (!validateMessenger()) return;
 
     if (!message.trim() || !selectedChat) return;
 
@@ -79,11 +159,13 @@ const ChatInput = () => {
       //selectedTab === "Email" && subject
       //? `Тема: ${subject}\n${message}`
       //: message,
+      replyTo: replyingTo?.id,
       sender: "Дарья Зовулькина",
       timestamp: new Date().toISOString(),
       isUnread: false,
       senderRole: "recruiter",
-      messanger: selectedTab.toLowerCase(),
+      //messanger: selectedTab,
+      messanger: selectedTab.replace(/\s\d+$/, ""), // Store base type without number
       // Add file metadata
       attachments: file
         ? [
@@ -114,69 +196,100 @@ const ChatInput = () => {
       onSubmit={handleSubmit}
       className="bg-white mt-1 border rounded shadow-md overflow-hidden border-[#9E6D2D]"
     >
+      {replyingTo && (
+        <div
+          onClick={() => {
+            const messageElement = document.getElementById(
+              `message-${replyingTo.id}`
+            );
+            if (messageElement) {
+              messageElement.scrollIntoView({
+                behavior: "smooth",
+                block: "center",
+              });
+            }
+          }}
+          className="bg-[#F1F5F9] p-2 flex justify-between items-center"
+        >
+          <div className="text-sm text-[#4766FF]">
+            Ответ на: "{replyingTo.messanger}" для{" "}
+            {replyingTo.senderRole === "recruiter"
+              ? '"Сообщение от рекрутера"'
+              : '"Сообщение от кандидата"'}
+            <div>{replyingTo.text.substring(0, 30)}...</div>
+          </div>
+
+          <button
+            onClick={() => dispatch(setReplyingTo(null))}
+            className="text-red-500 hover:text-red-700"
+          >
+            ×
+          </button>
+        </div>
+      )}
       {/* Contact tabs */}
+
       <ul className="flex pl-1 space-x-4 mb-1 bg-[#FCF8EC]">
         {Object.entries(contacts)
           .filter(([_, group]) => group.length > 0)
-          .map(([contactType, contactGroup]) => (
+          .flatMap(([contactType, contactGroup]) =>
+            contactGroup.map((contact, index) => ({
+              type: contactType,
+              contact,
+              displayName:
+                contactGroup.length > 1
+                  ? `${contactType} ${index + 1}`
+                  : contactType,
+            }))
+          )
+          .map(({ type, displayName, contact }) => (
             <li
-              key={contactType}
+              key={`${type}-${contact.content}`}
               className={clsx(
                 "py-2 px-1 text-sm rounded-md cursor-pointer",
-                selectedTab === contactType
+                selectedTab === displayName
                   ? "underline text-[#B67E34]"
                   : "text-[#858B97]"
               )}
             >
               <Popover
-                open={openPopover === contactType}
+                open={openPopover === displayName}
                 handler={setOpenPopover}
                 placement="top"
-                dismiss={{ ancestorScroll: true }}
+                dismiss={{ enabled: false }} // Disable auto-dismiss
               >
                 <PopoverHandler
-                  onMouseEnter={() => handleOpen(contactType)}
+                  onMouseEnter={() => setOpenPopover(displayName)}
                   onMouseLeave={() => setOpenPopover(null)}
-                  onClick={() => setSelectedTab(contactType)}
+                  onClick={() => {
+                    if (
+                      replyingTo &&
+                      !displayName.startsWith(replyingTo.messanger)
+                    ) {
+                      dispatch(setReplyingTo(null));
+                    }
+                    setSelectedTab(displayName);
+                  }}
                 >
-                  <span>{contactType}</span>
+                  <span>{displayName}</span>
                 </PopoverHandler>
-                <PopoverContent
-                  className="z-50  p-2"
-                  onMouseEnter={() => handleOpen(contactType)}
-                  onMouseLeave={() => setOpenPopover(null)}
-                >
-                  <div className="flex flex-col gap-1">
-                    {contactGroup.map((contact, index) => (
-                      <div
-                        key={`${contactType}-${index}`}
-                        className={clsx(
-                          "p-1 text-sm",
-                          contact.isPrimary ? "font-medium" : "text-gray-600"
-                        )}
-                      >
-                        <div className="flex flex-row gap-2">
-                          <Image
-                            src={getIconSrc(contactType)}
-                            alt={contactType}
-                            width={18}
-                            height={18}
-                          />
-                          <p className="text-sm text-custom-gray-dark">
-                            {contact.content}
-                          </p>
-                        </div>
-                      </div>
-                    ))}
+                <PopoverContent className="z-50 p-2">
+                  <div className="flex items-center gap-2">
+                    <Image
+                      src={getIconSrc(type)}
+                      alt={type}
+                      width={18}
+                      height={18}
+                    />
+                    <span>{contact.content}</span>
                   </div>
                 </PopoverContent>
               </Popover>
             </li>
           ))}
       </ul>
-
       {/* Email subject field */}
-      {selectedTab === "Email" && (
+      {selectedTab === "Email" && contacts.Email?.length > 0 && (
         <div className="flex flex-row items-center">
           <div className="pl-2">Тема:</div>
           <div>
@@ -186,11 +299,11 @@ const ChatInput = () => {
               onChange={(e) => setSubject(e.target.value)}
               placeholder="Не задано"
               className="w-full p-2 rounded-md focus:outline-none"
+              readOnly={replyingTo?.messanger === "Email"} // Add readOnly for replies
             />
           </div>
         </div>
       )}
-
       {/* Message input */}
       <div className="mb-0 mt-0">
         <TextareaAutosize
@@ -199,10 +312,76 @@ const ChatInput = () => {
           placeholder="Введите текст сообщения"
           className="w-full m-0 py-0 px-2 text-[15px] resize-none h-10 focus:outline-none"
           minRows={1}
-          //maxRows={6}
+          maxRows={10}
         />
       </div>
-
+      {/* File upload status */}
+      {isAttaching && (
+        <div className="pr-2 mb-1">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center">
+              <FileIcon />
+              <span className="ml-2 text-[#939393] text-[13px]">
+                Attaching file...
+              </span>
+            </div>
+          </div>
+          <LinearProgress
+            variant="determinate"
+            value={attachmentProgress}
+            sx={{
+              height: 6,
+              borderRadius: 3,
+              backgroundColor: "#e5e7eb",
+              "& .MuiLinearProgress-bar": {
+                borderRadius: 3,
+                backgroundColor: "#3b82f6",
+              },
+            }}
+          />
+          <p>{uploadStatus}</p>
+        </div>
+      )}
+      {/* Attached file display */}
+      {file && !isAttaching && (
+        <div className="pr-2 mb-1">
+          <div className="text-[13px] text-[#858585] pl-2">
+            Прикрепленные файлы
+          </div>
+          <div className="flex items-center justify-between p-1 pr-2 rounded">
+            <div className="flex items-center">
+              <FileIcon className="w-4 h-4" />
+              <span className="ml-2 text-sm">
+                {file.name} ({(file.size / 1024).toFixed(1)} KB)
+              </span>
+            </div>
+            <button onClick={() => setFile(null)} className="text-[#9E6D2D]">
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 16 16"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M12 4L4 12"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                <path
+                  d="M4 4L12 12"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </button>
+          </div>
+        </div>
+      )}
       {/* File attachment and submit section */}
       <div className="flex px-2 items-center mt-0 pt-0">
         <label className="cursor-pointer flex items-center">
@@ -221,7 +400,12 @@ const ChatInput = () => {
               strokeLinejoin="round"
             />
           </svg>
-          <input type="file" onChange={handleFileChange} className="hidden" />
+          <input
+            type="file"
+            onChange={handleFileChange}
+            className="hidden"
+            key={file ? "file-selected" : "no-file"} // Force re-render
+          />
           <span className="ml-2 text-[#939393] text-[13px]">
             Прикрепить файл
           </span>
@@ -252,60 +436,6 @@ const ChatInput = () => {
           </svg>
         </button>
       </div>
-
-      {/* File upload status */}
-      {isAttaching && (
-        <div className="px-2 mt-2">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              <FileIcon />
-              <span className="ml-2 text-[#939393] text-[13px]">
-                Attaching file...
-              </span>
-            </div>
-          </div>
-          <LinearProgress variant="determinate" value={attachmentProgress} />
-          <p>{uploadStatus}</p>
-        </div>
-      )}
-
-      {/* Attached file display */}
-      {file && !isAttaching && (
-        <div className="px-2 mt-2">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              <FileIcon />
-              <span className="ml-2 text-[#939393] text-[13px]">
-                {file.name} ({(file.size / 1024).toFixed(2)} KB)
-              </span>
-            </div>
-            <button onClick={() => setFile(null)} className="text-red-500">
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 16 16"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M12 4L4 12"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-                <path
-                  d="M4 4L12 12"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </button>
-          </div>
-        </div>
-      )}
     </form>
   );
 };

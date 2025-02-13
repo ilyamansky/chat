@@ -254,7 +254,7 @@ const initialState = {
         timestamp: "2023-01-01T00:00:00.000Z",
         isUnread: true,
         senderRole: "candidate",
-        messanger: "email",
+        messanger: "Email",
       },
       {
         id: 2,
@@ -264,7 +264,7 @@ const initialState = {
         timestamp: "2023-02-01T00:00:00.000Z",
         isUnread: false,
         senderRole: "recruiter",
-        messanger: "email",
+        messanger: "Email",
       },
       {
         id: 3,
@@ -273,7 +273,7 @@ const initialState = {
         timestamp: "2023-03-01T00:00:00.000Z",
         isUnread: false,
         senderRole: "candidate",
-        messanger: "telegram",
+        messanger: "Telegram",
       },
       {
         id: 4,
@@ -282,7 +282,7 @@ const initialState = {
         timestamp: "2023-04-01T00:00:00.000Z",
         isUnread: false,
         senderRole: "recruiter",
-        messanger: "telegram",
+        messanger: "SMS",
       },
     ],
     2: [
@@ -293,7 +293,7 @@ const initialState = {
         timestamp: "2023-05-01T00:00:00.000Z",
         isUnread: true,
         senderRole: "recruiter",
-        messanger: "telegram",
+        messanger: "Telegram",
       },
       {
         id: 12,
@@ -302,7 +302,7 @@ const initialState = {
         timestamp: "2023-06-01T00:00:00.000Z",
         isUnread: false,
         senderRole: "candidate",
-        messanger: "telegram",
+        messanger: "WA",
       },
       {
         id: 13,
@@ -311,7 +311,7 @@ const initialState = {
         timestamp: "2023-07-01T00:00:00.000Z",
         isUnread: false,
         senderRole: "recruiter",
-        messanger: "email",
+        messanger: "Email",
       },
       {
         id: 14,
@@ -320,7 +320,7 @@ const initialState = {
         timestamp: "2023-08-01T00:00:00.000Z",
         isUnread: false,
         senderRole: "candidate",
-        messanger: "email",
+        messanger: "Email",
       },
     ],
     3: [
@@ -331,7 +331,7 @@ const initialState = {
         timestamp: "2023-09-01T00:00:00.000Z",
         isUnread: true,
         senderRole: "candidate",
-        messanger: "email",
+        messanger: "Email",
       },
       {
         id: 22,
@@ -340,7 +340,7 @@ const initialState = {
         timestamp: "2023-10-01T00:00:00.000Z",
         isUnread: false,
         senderRole: "recruiter",
-        messanger: "email",
+        messanger: "SMS",
       },
       {
         id: 23,
@@ -349,7 +349,7 @@ const initialState = {
         timestamp: "2023-11-01T00:00:00.000Z",
         isUnread: false,
         senderRole: "candidate",
-        messanger: "email",
+        messanger: "WA",
       },
       {
         id: 24,
@@ -358,7 +358,7 @@ const initialState = {
         timestamp: "2023-12-01T00:00:00.000Z",
         isUnread: false,
         senderRole: "recruiter",
-        messanger: "email",
+        messanger: "SMS",
       },
     ],
     4: [
@@ -369,7 +369,7 @@ const initialState = {
         timestamp: "2024-01-01T00:00:00.000Z",
         isUnread: true,
         senderRole: "candidate",
-        messanger: "email",
+        messanger: "Email",
       },
       {
         id: 32,
@@ -378,7 +378,7 @@ const initialState = {
         timestamp: "2024-02-01T00:00:00.000Z",
         isUnread: false,
         senderRole: "recruiter",
-        messanger: "email",
+        messanger: "Email",
       },
       {
         id: 33,
@@ -387,7 +387,7 @@ const initialState = {
         timestamp: "2024-03-01T00:00:00.000Z",
         isUnread: false,
         senderRole: "candidate",
-        messanger: "email",
+        messanger: "WA",
       },
       {
         id: 34,
@@ -396,7 +396,7 @@ const initialState = {
         timestamp: "2024-04-01T00:00:00.000Z",
         isUnread: false,
         senderRole: "recruiter",
-        messanger: "telegram",
+        messanger: "Telegram",
       },
     ],
     5: [
@@ -404,10 +404,10 @@ const initialState = {
         id: 41,
         text: "Доброго времени суток!",
         sender: "Дарья Зовулькина",
-        timestamp: "2024-05-01T00:00:00.000Z",
+        timestamp: "2024-05-01T00:11:25.000Z",
         isUnread: true,
         senderRole: "recruiter",
-        messanger: "email",
+        messanger: "Email",
       },
       {
         id: 42,
@@ -416,7 +416,7 @@ const initialState = {
         timestamp: "2024-06-01T00:00:00.000Z",
         isUnread: false,
         senderRole: "candidate",
-        messanger: "telegram",
+        messanger: "Telegram",
       },
       {
         id: 43,
@@ -425,7 +425,7 @@ const initialState = {
         timestamp: "2024-07-01T00:00:00.000Z",
         isUnread: false,
         senderRole: "recruiter",
-        messanger: "telegram",
+        messanger: "Telegram",
       },
       {
         id: 44,
@@ -434,7 +434,7 @@ const initialState = {
         timestamp: "2024-08-01T00:00:00.000Z",
         isUnread: false,
         senderRole: "candidate",
-        messanger: "telegram",
+        messanger: "Telegram",
       },
     ],
   },
@@ -518,12 +518,24 @@ const chatSlice = createSlice({
     },
 
     // New reducer to remove a contact
+    // In removeContact reducer
     removeContact(state, action) {
       const { chatId, contactType, contactIndex } = action.payload;
       const chat = state.chats.find((chat) => chat.id === chatId);
       if (chat && chat.contacts[contactType]) {
         chat.contacts[contactType].splice(contactIndex, 1);
+
+        // Clear reply if contact type becomes empty
+        if (
+          chat.contacts[contactType].length === 0 &&
+          state.replyingTo?.messanger === contactType
+        ) {
+          state.replyingTo = null;
+        }
       }
+    },
+    setReplyingTo: (state, action) => {
+      state.replyingTo = action.payload;
     },
   },
 });
@@ -539,6 +551,7 @@ export const {
   resetUnreadCount,
   addContact,
   removeContact,
+  setReplyingTo,
 } = chatSlice.actions;
 
 export default chatSlice.reducer;
