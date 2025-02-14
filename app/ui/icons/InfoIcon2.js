@@ -1,6 +1,7 @@
-export default function InfoIcon2() {
+export default function InfoIcon2({ className }) {
   return (
     <svg
+      className={`fill-current ${className}`}
       width="30"
       height="30"
       viewBox="0 0 30 30"

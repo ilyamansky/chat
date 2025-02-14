@@ -450,8 +450,9 @@ const chatSlice = createSlice({
     toggleIsOpen(state) {
       state.isOpen = !state.isOpen;
     },
-    applyFilters(state, action) {
-      const { vacancies, recruiters, clients } = action.payload;
+    applyFilters(state) {
+      {
+        /*const { vacancies, recruiters, clients } = action.payload;
       state.filteredChats = state.chats.filter((chat) => {
         const matchesVacancy = vacancies.length
           ? vacancies.includes(chat.vacancy)
@@ -463,7 +464,8 @@ const chatSlice = createSlice({
           ? clients.some((client) => chat.clients?.includes(client))
           : true;
         return matchesVacancy && matchesRecruiter && matchesClients;
-      });
+      }); */
+      }
       state.appliedFilters = Object.values(state.selectedFilters).filter(
         (arr) => arr.length > 0
       ).length;

@@ -126,13 +126,18 @@ const ChatsFilter = ({ onClose }) => {
   }, [onClose]);
   const applyFiltersHandler = (e) => {
     e.preventDefault();
-    dispatch(
-      applyFilters({
+    dispatch(applyFilters()); // Use Redux action
+    onClose();
+    //dispatch(
+    {
+      /*applyFilters({
         clients: selectedFilters.clients.map((option) => option.value),
         vacancies: selectedFilters.vacancies.map((option) => option.value),
         recruiters: selectedFilters.recruiters.map((option) => option.value),
-      })
-    ); // Use Redux action
+      })*/
+    }
+
+    // ); // Use Redux action
   };
 
   const handleRemoveValue = (removedValue) => {
@@ -298,7 +303,7 @@ const ChatsFilter = ({ onClose }) => {
         <button
           onClick={applyFiltersHandler}
           //onClick={onClose}
-          className="px-4 py-2 bg-custom-gray-filter-dark text-sm text-white rounded"
+          className="px-4 py-2 bg-custom-gray-filter-dark text-sm border border-custom-gray-filter-dark text-white rounded"
         >
           Применить фильтры
         </button>

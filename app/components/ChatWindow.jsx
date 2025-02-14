@@ -16,8 +16,8 @@ import InfoIcon from "../ui/icons/InfoIcon";
 import CrossIconButton from "../ui/icons/CrossIconButton";
 import CrossIconFilter from "../ui/icons/CrossIconFilter";
 import ChatInput from "./ChatInput";
-import InfoIcon2 from "../ui/icons/InfoIcon2";
 import FilterIcon2 from "../ui/icons/FilterIcon2";
+import InfoIcon2 from "../ui/icons/InfoIcon2";
 import FileIcon from "../ui/icons/FileIcon";
 import { formatMessageDate } from "../utils/formatDate";
 import CustomScrollbar from "../ui/CustomScrollbar";
@@ -132,10 +132,10 @@ export default function ChatWindow() {
                   className="filter-toggle-button"
                   onClick={handleFilterToggle}
                 >
-                  <FilterIcon2 />
+                  <FilterIcon2 className="text-white hover:text-gray-100" />
                 </button>
                 <div>
-                  <InfoIcon2 />
+                  <InfoIcon2 className="text-white hover:text-gray-100" />
                 </div>
               </>
             )}
@@ -177,7 +177,7 @@ export default function ChatWindow() {
           <div
             key={message.id}
             id={`message-${message.id}`} // Add ID here
-            className={clsx("flex flex-col ml-16 mr-12  relative", {
+            className={clsx("flex flex-col ml-16 pl-2 mr-12  relative", {
               //"items-end": message.senderRole === "recruiter",
             })}
           >
@@ -232,9 +232,9 @@ export default function ChatWindow() {
               </div>
             </div>
             {/* Vertical Line */}
-            <div className="absolute top-9 bottom-0 left-3 border-l border-gray-300" />
+            <div className="absolute top-9 bottom-0 left-[18px] border-l border-gray-300" />
             {message.replyTo && (
-              <div className="mt-1 ml-10 p-2 bg-gray-100 rounded text-sm text-gray-600 border-l-4 border-blue-500">
+              <div className="mt-1 ml-10 p-2 bg-[#F1F5F9] rounded text-sm text-gray-600 border-l-4 border-blue-500">
                 <div className="font-medium">{replyingTo?.sender}</div>
                 {chatMessages.find((m) => m.id === message.replyTo)?.text}
               </div>

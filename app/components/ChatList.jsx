@@ -2,7 +2,11 @@
 
 import React, { useState } from "react";
 import { useSelector, useDispatch } from "react-redux"; // Import Redux hooks
-import { toggleFilter, selectChat } from "../redux/chatSlice"; // Import Redux actions
+import {
+  toggleFilter,
+  selectChat,
+  setShowAwaitingResponse,
+} from "../redux/chatSlice"; // Import Redux actions
 import ChatsFilter from "./ChatsFilter";
 import FilterIcon from "../ui/icons/FilterIcon";
 import SearchIconChatList from "../ui/icons/SearchIconChatList";
@@ -21,7 +25,7 @@ export default function ChatList() {
     filteredChats,
     appliedFilters,
     showAwaitingResponse,
-    setShowAwaitingResponse,
+    //setShowAwaitingResponse,
     selectedChat,
   } = useSelector((state) => state.chat); // Access Redux state
 
@@ -89,8 +93,8 @@ export default function ChatList() {
           className={`mr-4 text-sm ${
             !showAwaitingResponse ? "text-custom-blue" : "text-custom-text-gray"
           }`}
-          onClick={() => dispatch(toggleFilter())} // Use Redux action
-          //onClick={() => dispatch(setShowAwaitingResponse(false))}
+          //onClick={() => dispatch(toggleFilter())} // Use Redux action
+          onClick={() => dispatch(setShowAwaitingResponse(false))}
         >
           Все
         </button>
@@ -98,8 +102,8 @@ export default function ChatList() {
           className={`text-sm flex flex-row items-center ${
             showAwaitingResponse ? "text-custom-blue" : "text-custom-text-gray"
           }`}
-          onClick={() => dispatch(toggleFilter())} // Use Redux action
-          //onClick={() => dispatch(setShowAwaitingResponse(true))}
+          //onClick={() => dispatch(toggleFilter())} // Use Redux action
+          onClick={() => dispatch(setShowAwaitingResponse(true))}
         >
           <div className="text-sm">Ожидают ответа</div>
           {!!chats.filter((u) => u.awaitingResponse).length && (

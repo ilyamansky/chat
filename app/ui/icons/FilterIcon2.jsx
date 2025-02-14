@@ -1,6 +1,7 @@
-export default function FilterIcon2() {
+export default function FilterIcon2({ className }) {
   return (
     <svg
+      className={`fill-current ${className}`}
       width="43"
       height="32"
       viewBox="0 0 43 32"

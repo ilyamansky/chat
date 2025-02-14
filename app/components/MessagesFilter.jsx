@@ -144,7 +144,7 @@ export default function MessagesFilter({ onClose }) {
             <button
               //onClick={applyFiltersHandler}
               onClick={onClose}
-              className="px-4 py-2 bg-custom-gray-filter-dark text-sm text-white rounded"
+              className="px-4 py-2 bg-custom-gray-filter-dark text-sm border border-custom-gray-filter-dark text-white rounded"
             >
               Применить фильтры
             </button>
