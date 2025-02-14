@@ -471,6 +471,9 @@ const chatSlice = createSlice({
     toggleFilter(state) {
       state.showAwaitingResponse = !state.showAwaitingResponse;
     },
+    setShowAwaitingResponse: (state, action) => {
+      state.showAwaitingResponse = action.payload;
+    },
     selectChat(state, action) {
       state.selectedChat = action.payload;
     },
@@ -544,6 +547,7 @@ export const {
   toggleIsOpen,
   applyFilters,
   toggleFilter,
+  setShowAwaitingResponse,
   selectChat,
   resetFilters,
   setFilters,

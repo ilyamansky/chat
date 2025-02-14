@@ -21,13 +21,15 @@ export default function ChatList() {
     filteredChats,
     appliedFilters,
     showAwaitingResponse,
+    setShowAwaitingResponse,
     selectedChat,
   } = useSelector((state) => state.chat); // Access Redux state
 
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [popovers, setPopovers] = useState({});
 
-  const handleFilterToggle = () => {
+  const handleFilterToggle = (e) => {
+    e.stopPropagation();
     setIsDropdownOpen((prevState) => !prevState);
   };
 
@@ -53,7 +55,7 @@ export default function ChatList() {
         <div className="mb-1 flex flex-row justify-between items-center relative">
           <h2 className="text-[13px] font-bold inline-block mt-2 mr-2">Чаты</h2>
           <button
-            className="flex items-center border border-[#6E9DD0] shadow mt-2 bg-white hover:bg-gray-100 rounded px-1 py-1"
+            className="filter-toggle-button1 flex items-center border border-[#6E9DD0] shadow mt-2 bg-white hover:bg-gray-100 rounded px-1 py-1"
             style={{ boxShadow: "0 1px 2px rgba(0, 0, 0, 0.25)" }}
             onClick={handleFilterToggle}
           >
@@ -78,7 +80,7 @@ export default function ChatList() {
         <input
           type="text"
           placeholder="Поиск по контактам и сообщениям"
-          className="placeholder:text-custom-placeholder-gray text-[15px] block w-full outline-none border-gray-300 rounded"
+          className="placeholder:text-custom-placeholder-gray text-[15px] block w-full outline-none border-[#E3E3E3] rounded"
         />
       </div>
 
@@ -88,6 +90,7 @@ export default function ChatList() {
             !showAwaitingResponse ? "text-custom-blue" : "text-custom-text-gray"
           }`}
           onClick={() => dispatch(toggleFilter())} // Use Redux action
+          //onClick={() => dispatch(setShowAwaitingResponse(false))}
         >
           Все
         </button>
@@ -96,6 +99,7 @@ export default function ChatList() {
             showAwaitingResponse ? "text-custom-blue" : "text-custom-text-gray"
           }`}
           onClick={() => dispatch(toggleFilter())} // Use Redux action
+          //onClick={() => dispatch(setShowAwaitingResponse(true))}
         >
           <div className="text-sm">Ожидают ответа</div>
           {!!chats.filter((u) => u.awaitingResponse).length && (

@@ -201,10 +201,10 @@ export default function ChatDetails() {
   return (
     <div className="w-[300px] border-l  pt-2 overflow-y-auto">
       <nav className="flex flex-row h-[30px] py-1 px-4 items-center border-b">
-        <p className=" hover:bg-gray-50  text-sm text-custom-blue border-b border-custom-blue px-1 py-1">
+        <p className=" hover:bg-gray-50 py-1 text-sm text-custom-text-gray px-1">
           Вакансия
         </p>
-        <p className=" hover:bg-gray-50 py-1 text-sm text-custom-text-gray px-1">
+        <p className=" hover:bg-gray-50  text-sm text-custom-blue border-b border-custom-blue px-1 py-1">
           Кандидат
         </p>
         <p className="text-sm py-1 px-1 hover:bg-gray-50 text-custom-text-gray">
@@ -281,7 +281,7 @@ export default function ChatDetails() {
             <input
               type="text"
               placeholder="Hе задано"
-              className="h-[30px] w-[140px] pl-1 text-custom-gray-dark border-custom-gray-details outline-none rounded"
+              className="h-[30px] w-[140px] pl-1 text-custom-gray-dark border border-[#E3E3E3] outline-none rounded"
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
             />

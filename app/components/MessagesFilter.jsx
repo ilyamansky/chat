@@ -68,7 +68,12 @@ export default function MessagesFilter({ onClose }) {
 
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (filterRef.current && !filterRef.current.contains(event.target)) {
+      const filterButton = document.querySelector(".filter-toggle-button");
+      if (
+        filterRef.current &&
+        !filterRef.current.contains(event.target) &&
+        !filterButton.contains(event.target)
+      ) {
         onClose();
       }
     };
@@ -76,7 +81,6 @@ export default function MessagesFilter({ onClose }) {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [onClose]);
-
   const applyFiltersHandler = (e) => {
     e.preventDefault();
     dispatch(
@@ -92,17 +96,17 @@ export default function MessagesFilter({ onClose }) {
   };
 
   return (
-    <div className="flex flex-row justify-between  p-4">
-      <div className="flex flex-row gap-2 pb-4">
+    <div ref={filterRef} className="flex flex-row justify-between  p-4">
+      <div className="flex w-full  flex-row gap-2 pb-4">
         <div>
           <FilterIcon />
         </div>
-        <div className="flex flex-col w-[524px]">
-          <p className="font-semibold text-sm text-custom-gray-dark mb-2">
+        <div className="flex  w-full flex-col">
+          <p className="font-semibold w-full text-sm text-custom-gray-dark mb-2">
             Фильтры
           </p>
-          <div className="mb-4">
-            <div className="text-[13px] text-custom-gray-filter mb-1">
+          <div className="mb-4 w-full">
+            <div className="text-[13px] w-full text-custom-gray-filter mb-1">
               Фильтрация по авторам сообщений
             </div>
             <Select
@@ -139,6 +143,7 @@ export default function MessagesFilter({ onClose }) {
           <div className="space-x-2">
             <button
               //onClick={applyFiltersHandler}
+              onClick={onClose}
               className="px-4 py-2 bg-custom-gray-filter-dark text-sm text-white rounded"
             >
               Применить фильтры

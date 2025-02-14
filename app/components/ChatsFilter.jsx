@@ -110,16 +110,20 @@ const ChatsFilter = ({ onClose }) => {
   const filterRef1 = useRef(null);
 
   useEffect(() => {
-    const handleClickOutside1 = (event) => {
-      if (filterRef1.current && !filterRef1.current.contains(event.target)) {
+    const handleClickOutside = (event) => {
+      const filterButton1 = document.querySelector(".filter-toggle-button1");
+      if (
+        filterRef1.current &&
+        !filterRef1.current.contains(event.target) &&
+        !filterButton1.contains(event.target)
+      ) {
         onClose();
       }
     };
 
-    document.addEventListener("mousedown", handleClickOutside1);
-    return () => document.removeEventListener("mousedown", handleClickOutside1);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [onClose]);
-
   const applyFiltersHandler = (e) => {
     e.preventDefault();
     dispatch(
@@ -145,7 +149,7 @@ const ChatsFilter = ({ onClose }) => {
   };
 
   return (
-    <form className="space-y-2 flex flex-col">
+    <form ref={filterRef1} className="space-y-2 flex flex-col">
       <div className="flex flex-row items-center justify-between">
         <div className="text-custom-gray-dark text-[15px] font-semibold">
           Фильтры
@@ -293,6 +297,7 @@ const ChatsFilter = ({ onClose }) => {
       <div className="flex flex-col items-start">
         <button
           onClick={applyFiltersHandler}
+          //onClick={onClose}
           className="px-4 py-2 bg-custom-gray-filter-dark text-sm text-white rounded"
         >
           Применить фильтры

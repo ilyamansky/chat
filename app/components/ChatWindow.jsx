@@ -53,7 +53,8 @@ export default function ChatWindow() {
     setFilter(""); // Reset filter when toggling search
   };
 
-  const handleFilterToggle = () => {
+  const handleFilterToggle = (e) => {
+    e.stopPropagation(); // Prevent event bubbling
     setIsDropdownOpen((prevState) => !prevState);
   };
 
@@ -127,7 +128,10 @@ export default function ChatWindow() {
                 <div onClick={handleSearchToggle}>
                   <SearchIcon />
                 </div>
-                <button className="" onClick={handleFilterToggle}>
+                <button
+                  className="filter-toggle-button"
+                  onClick={handleFilterToggle}
+                >
                   <FilterIcon2 />
                 </button>
                 <div>
@@ -137,7 +141,10 @@ export default function ChatWindow() {
             )}
             {isSearching && (
               <>
-                <button onClick={handleFilterToggle}>
+                <button
+                  className="filter-toggle-button"
+                  onClick={handleFilterToggle}
+                >
                   <FilterIcon />
                 </button>
                 <div>
@@ -149,8 +156,10 @@ export default function ChatWindow() {
         </div>
       </div>
       {isDropdownOpen && (
-        <div className="absolute mt-[60px] border border-[#6E9DD0] rounded bg-custom-bg-gray z-30">
-          <MessagesFilter onClose={handleFilterClose} />
+        <div className="absolute mt-[60px] w-full  z-30">
+          <div className="border border-[#6E9DD0] rounded  bg-custom-bg-gray mx-16">
+            <MessagesFilter onClose={handleFilterClose} />
+          </div>
         </div>
       )}
 
