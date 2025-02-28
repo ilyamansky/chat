@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useSelector, useDispatch } from "react-redux"; // Import useDispatch
+import { useSelector, useDispatch } from "react-redux";
 import Image from "next/image";
 import UserImage from "../../public/contactIcons/UserImage.png";
 import TgIcon from "../../public/contactIcons/TgIcon.png";
@@ -13,125 +13,263 @@ import CrossIconButton from "../ui/icons/CrossIconButton";
 import CrossIconContacts from "../ui/icons/CrossIconContacts";
 import clsx from "clsx";
 import { getIconSrc } from "../utils/functions";
-import { addContact, removeContact } from "../redux/chatSlice"; // Import the new actions
+import {
+  addContact,
+  removeContact,
+  updateContactsAPI,
+} from "../redux/chatSlice";
+
+const parseContacts = (contactsInput) => {
+  try {
+    // Parse input if it's a string
+    let parsedContacts;
+    if (typeof contactsInput === "string") {
+      parsedContacts = JSON.parse(contactsInput);
+    } else if (typeof contactsInput === "object") {
+      parsedContacts = contactsInput;
+    } else {
+      return {};
+    }
+
+    return Object.entries(parsedContacts).reduce(
+      (result, [contactType, contactsList]) => {
+        result[contactType] = contactsList?.map((contact) => {
+          // Extract proper value based on contact type
+          let content;
+          switch (contactType) {
+            case "phone":
+              content = contact.phone;
+              break;
+            case "email":
+              content = contact.email;
+              break;
+            case "whatsapp":
+              content = contact.phone;
+              break;
+            case "telegram":
+              content = contact.user_id || contact.phone;
+              break;
+            default:
+              content = "";
+          }
+
+          return {
+            content: content.toString(), // Ensure string output
+            isPrimary: false,
+          };
+        });
+
+        return result;
+      },
+      {}
+    );
+  } catch (error) {
+    console.error("Error parsing contacts:", error);
+    return {};
+  }
+};
 
 export default function ChatDetails() {
-  //const { selectedChat } = useSelector((state) => state.chat); // Access Redux state
-
-  const dispatch = useDispatch(); // Initialize dispatch
+  const dispatch = useDispatch();
   const { chats, selectedChat: selectedChatState } = useSelector(
     (state) => state.chat
   );
-  const selectedChat = chats.find((chat) => chat.id === selectedChatState?.id);
-  const contacts = selectedChat?.contacts;
-  //const { contacts } = useSelector((state) => state.chat?.contacts);
-  console.log("selectedChatFirsr", selectedChat);
+
+  const selectedChat = chats?.find((chat) => chat.id === selectedChatState?.id);
+  const rawContacts = selectedChat?.contacts || {};
+  const contacts = parseContacts(rawContacts);
+  //const contacts = rawContacts;
+
   const [isOpen, setIsOpen] = useState(false);
   const [selectedOption, setSelectedOption] = useState(null);
   const [inputValue, setInputValue] = useState("");
-
+  if (!contacts) return null;
   useEffect(() => {
     if (contacts) {
       console.log("Updated Contacts:", contacts);
+      console.log("ChatDetails, chatId", selectedChat?.id);
     }
   }, [contacts]);
 
   const handleAddClick = () => {
-    setIsOpen(true); // Show the Select block
+    setIsOpen(true);
   };
 
   const handleClose = () => {
-    setIsOpen(false); // Hide the Select block
+    setIsOpen(false);
   };
 
-  const handleAddContact = () => {
-    if (selectedOption && inputValue) {
-      const newContact = {
-        content: inputValue,
-        isPrimary: false,
-      };
-      console.log(newContact);
-      console.log(contacts);
-      console.log(selectedOption.value, "selected option value");
-      console.log(inputValue, "input value");
-      console.log(selectedChat.id, "selected chat id");
-      dispatch(
-        addContact({
-          chatId: selectedChat.id,
-          contactType: selectedOption.value,
-          contact: newContact,
-        }),
-        console.log(contacts, "newcontactlist")
-      );
-      console.log(contacts, "contacts");
-      setSelectedOption(null);
-      setInputValue("");
-      handleClose();
+  const convertToBackendFormat = (contacts) => {
+    return Object.entries(contacts).reduce((acc, [type, items]) => {
+      acc[type] = items.map((item) => {
+        switch (type) {
+          case "phone":
+          case "whatsapp":
+            return { phone: item.content, channel_name: type };
+          case "email":
+            return { email: item.content, channel_name: type };
+          case "telegram":
+            return { user_id: item.content, channel_name: type };
+          default:
+            return { [type]: item.content, channel_name: type };
+        }
+      });
+      return acc;
+    }, {});
+  };
+
+  const handleSaveContacts = async () => {
+    if (selectedChat) {
+      try {
+        // Convert contacts to backend format
+        const backendContacts = Object.entries(contacts).reduce(
+          (acc, [type, items]) => {
+            acc[type] = items.map((item) => {
+              // Convert back to original API format
+              switch (type) {
+                case "phone":
+                case "whatsapp":
+                  return { phone: item.content, channel_name: type };
+                case "email":
+                  return { email: item.content, channel_name: type };
+                case "telegram":
+                  return { user_id: item.content, channel_name: type };
+                default:
+                  return { [type]: item.content, channel_name: type };
+              }
+            });
+            return acc;
+          },
+          {}
+        );
+
+        await dispatch(
+          updateContactsAPI({
+            candidateId: selectedChat.id,
+            contacts: backendContacts,
+          })
+        ).unwrap();
+      } catch (error) {
+        console.error("Failed to save contacts:", error);
+      }
     }
   };
 
-  const handleRemoveContact = (contactType, contactIndex) => {
-    dispatch(
-      removeContact({
-        chatId: selectedChat.id,
-        contactType,
-        contactIndex,
-      })
-    );
-    console.log(contacts, "contacts");
+  const handleAddContact = async () => {
+    if (!selectedChat || !selectedOption || !inputValue) return;
+
+    try {
+      // 1. Получить текущие контакты
+      const currentContacts = contacts;
+
+      const typeKey = selectedOption.value.toLowerCase();
+
+      // 2. Создать обновленные контакты
+      const updatedContacts = {
+        ...currentContacts,
+        [typeKey]: [
+          ...(currentContacts[typeKey] || []),
+          { content: inputValue, isPrimary: false },
+        ],
+      };
+
+      // 3. Отправить на сервер
+      const { payload } = await dispatch(
+        updateContactsAPI({
+          candidateId: selectedChat.id,
+          contacts: convertToBackendFormat(updatedContacts),
+        })
+      ).unwrap();
+
+      // 4. Обновить UI
+      dispatch({
+        type: "chat/updateContactsFromServer",
+        payload: {
+          chatId: selectedChat.id,
+          contacts: payload?.contacts,
+        },
+      });
+
+      setSelectedOption(null);
+      setInputValue("");
+      handleClose();
+    } catch (error) {
+      console.error("Ошибка добавления:", error);
+    }
+  };
+
+  const handleRemoveContact = async (contactType, contactIndex) => {
+    if (!selectedChat) return;
+
+    try {
+      // 1. Получить текущие контакты из Redux
+      const currentContacts = contacts;
+      console.log("Current Contacts:", currentContacts);
+
+      // 2. Создать обновленные контакты (без лишних копий)
+      const updatedContacts = {
+        ...currentContacts,
+        [contactType]: currentContacts[contactType].filter(
+          (_, idx) => idx !== contactIndex
+        ),
+      };
+
+      // 3. Отправить сразу на сервер
+      const { payload } = await dispatch(
+        updateContactsAPI({
+          candidateId: selectedChat.id,
+          contacts: convertToBackendFormat(updatedContacts),
+        })
+      ).unwrap();
+
+      // 4. Обновить UI через Redux только после успешного ответа
+      dispatch({
+        type: "chat/updateContactsFromServer",
+        payload: {
+          chatId: selectedChat.id,
+          contacts: payload?.contacts,
+        },
+      });
+    } catch (error) {
+      console.error("Ошибка удаления:", error);
+      // Можно добавить уведомление/алерт
+    }
   };
 
   if (!selectedChat) return null;
 
   const optionsSelect = [
-    {
-      value: "SMS",
-      icon: PhoneIcon.src,
-      //label: "SMS",
-    },
-    {
-      value: "Email",
-      icon: MailIcon.src,
-      //label: "Email",
-    },
-    {
-      value: "Telegram",
-      icon: TgIcon.src,
-      //label: "Telegram",
-    },
-    {
-      value: "WA",
-      icon: WhatsAppIcon.src,
-      //label: "WA",
-    },
+    { value: "phone", icon: PhoneIcon.src },
+    { value: "email", icon: MailIcon.src },
+    { value: "telegram", icon: TgIcon.src },
+    { value: "whatsapp", icon: WhatsAppIcon.src },
   ];
 
   const Option = (props) => {
-    const { innerProps, isDisabled, isFocused, isSelected, data } = props;
-
+    const { innerProps, data } = props;
     return (
       <div
+        {...innerProps}
         className={clsx(
-          "flex items-center justify-center py-4 hover:bg-gray-100 transition-colors", // Center the icon and add hover effect
+          "flex items-center justify-center py-4 hover:bg-gray-100 transition-colors",
           {
-            "bg-gray-100": isFocused, // Apply background color when focused
-            "bg-gray-200": isSelected, // Apply background color when selected
-            "opacity-50 cursor-not-allowed": isDisabled, // Disable interaction if the option is disabled
+            "bg-gray-100": props.isFocused,
+            "bg-gray-200": props.isSelected,
+            "opacity-50 cursor-not-allowed": props.isDisabled,
           }
         )}
         style={{
-          backgroundImage: `url(${data.icon})`, // Set the background image dynamically
-          backgroundSize: "20px 20px", // Adjust the size of the icon
+          backgroundImage: `url(${data.icon})`,
+          backgroundSize: "20px 20px",
           backgroundRepeat: "no-repeat",
           backgroundPosition: "center",
         }}
-        {...innerProps}
-      ></div>
+      />
     );
   };
 
   const customStyles = {
-    control: (provided, state) => ({
+    control: (provided) => ({
       ...provided,
       height: "30px",
       minHeight: "30px",
@@ -139,9 +277,7 @@ export default function ChatDetails() {
       minWidth: "48px",
       margin: 0,
       padding: 0,
-      ":focus": {
-        outline: "none",
-      },
+      ":focus": { outline: "none" },
     }),
     indicatorsContainer: (provided) => ({
       ...provided,
@@ -152,15 +288,9 @@ export default function ChatDetails() {
       ...provided,
       padding: "2px",
       color: "gray",
-      svg: {
-        width: "12px",
-        height: "12px",
-      },
+      svg: { width: "12px", height: "12px" },
     }),
-    indicatorSeparator: (provided) => ({
-      ...provided,
-      display: "none",
-    }),
+    indicatorSeparator: () => ({ display: "none" }),
     menu: (provided) => ({
       ...provided,
       width: "48px",
@@ -171,40 +301,27 @@ export default function ChatDetails() {
       width: "100%",
       padding: "4px 8px",
       backgroundColor: state.isFocused ? "#f3f4f6" : provided.backgroundColor,
-      ":active": {
-        backgroundColor: "#e5e7eb",
-      },
-      "&:hover": {
-        backgroundColor: "#f3f4f6",
-        border: "1px solid #d1d5db",
-      },
+      ":active": { backgroundColor: "#e5e7eb" },
     }),
-    singleValue: (provided, state) => {
-      const icon = state.data.icon; // Access the icon from the selected option
-      return {
-        ...provided,
-        display: "flex", // Ensure the container is a flexbox
-        backgroundImage: `url(${icon})`,
-        backgroundSize: "18px 18px",
-        backgroundRepeat: "no-repeat",
-        backgroundPosition: "left center",
-        paddingLeft: "25px", // Add padding to prevent text overlap
-        minHeight: "20px", // Ensure the container has a minimum height
-        overflow: "visible",
-      };
-    },
-    placeholder: (provided) => ({
+    singleValue: (provided, state) => ({
       ...provided,
+      backgroundImage: `url(${state.data.icon})`,
+      backgroundSize: "18px 18px",
+      backgroundRepeat: "no-repeat",
+      backgroundPosition: "left center",
+      paddingLeft: "25px",
+      minHeight: "20px",
+      overflow: "visible",
     }),
   };
 
   return (
-    <div className="w-[300px] border-l  pt-2 overflow-y-auto">
+    <div className="w-[300px] border-l pt-2 overflow-y-auto">
       <nav className="flex flex-row h-[30px] py-1 px-4 items-center border-b">
-        <p className=" hover:bg-gray-50 py-1 text-sm text-custom-text-gray px-1">
+        <p className="hover:bg-gray-50 py-1 text-sm text-custom-text-gray px-1">
           Вакансия
         </p>
-        <p className=" hover:bg-gray-50  text-sm text-custom-blue border-b border-custom-blue px-1 py-1">
+        <p className="hover:bg-gray-50 text-sm text-custom-blue border-b border-custom-blue px-1 py-1">
           Кандидат
         </p>
         <p className="text-sm py-1 px-1 hover:bg-gray-50 text-custom-text-gray">
@@ -212,9 +329,7 @@ export default function ChatDetails() {
         </p>
         <p className="text-sm text-custom-text-gray px-2">...</p>
       </nav>
-      <div className="flex flex-row px-4 justify-between mt-2">
-        <p className="text-[18px]">Информация о чате</p>
-      </div>
+
       <div className="flex flex-col px-4 mt-2 mb-2">
         <Image
           src={UserImage}
@@ -224,63 +339,65 @@ export default function ChatDetails() {
         />
         <p className="mt-2">{selectedChat.name}</p>
       </div>
+
       <p className="mt-2 text-sm px-4">Способы связи</p>
+
       <div className="mt-2 px-2">
-        <ul className="">
-          {Object.entries(contacts).map(([contactType, contactGroup]) =>
-            contactGroup.map((contact, index) => (
-              <li
-                key={`${contactType}-${index}`}
-                className="flex justify-between items-center px-2 hover:bg-gray-50 py-2 rounded"
-              >
-                <div className="flex flex-row gap-2">
-                  <Image
-                    src={getIconSrc(contactType)}
-                    alt={contactType}
-                    width={18}
-                    height={18}
-                  />
-                  <p className="text-sm text-custom-gray-dark">
-                    {contact.content}
-                  </p>
-                </div>
-                <div className="flex flex-row items-center">
-                  {contact.isPrimary && (
-                    <p className="text-[13px] text-[#B0B0B0] mr-2">
-                      (основной)
+        <ul>
+          {Object.entries(contacts).map(
+            ([contactType, contactGroup]) =>
+              Array.isArray(contactGroup) &&
+              contactGroup.map((contact, index) => (
+                <li
+                  key={`${contactType}-${index}`}
+                  className="flex justify-between items-center px-2 hover:bg-gray-50 py-2 rounded"
+                >
+                  <div className="flex flex-row gap-2">
+                    <Image
+                      src={getIconSrc(contactType)}
+                      alt={contactType}
+                      width={18}
+                      height={18}
+                    />
+                    <p className="text-sm text-custom-gray-dark">
+                      {contact.content}
                     </p>
-                  )}
-                  <div
-                    className=""
-                    onClick={() => handleRemoveContact(contactType, index)}
-                  >
-                    <CrossIconContacts />
                   </div>
-                </div>
-              </li>
-            ))
+                  <div className="flex flex-row items-center">
+                    {contact.isPrimary && (
+                      <p className="text-[13px] text-[#B0B0B0] mr-2">
+                        (основной)
+                      </p>
+                    )}
+                    <div
+                      onClick={() => handleRemoveContact(contactType, index)}
+                    >
+                      <CrossIconContacts />
+                    </div>
+                  </div>
+                </li>
+              ))
           )}
         </ul>
       </div>
-      {isOpen && (
+
+      {isOpen ? (
         <div className="flex flex-row gap-2 mx-4 mt-4">
-          <div className="">
+          <div>
             <Select
               isSearchable={false}
               options={optionsSelect}
-              components={{
-                Option,
-              }}
+              components={{ Option }}
               placeholder=""
               styles={customStyles}
               value={selectedOption}
               onChange={setSelectedOption}
             />
           </div>
-          <div className="">
+          <div>
             <input
               type="text"
-              placeholder="Hе задано"
+              placeholder="Не задано"
               className="h-[30px] w-[140px] pl-1 text-custom-gray-dark border border-[#E3E3E3] outline-none rounded"
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
@@ -293,8 +410,7 @@ export default function ChatDetails() {
             <CrossIconButton />
           </button>
         </div>
-      )}
-      {!isOpen && (
+      ) : (
         <button
           onClick={handleAddClick}
           className="border mx-4 border-[#CACACA] hover:bg-gray-50 flex text-custom-gray-details mt-4 py-[2px] px-2 rounded"
@@ -302,6 +418,11 @@ export default function ChatDetails() {
           Добавить
         </button>
       )}
+      <button
+        onClick={() => {
+          console.log(contacts);
+        }}
+      ></button>
     </div>
   );
 }

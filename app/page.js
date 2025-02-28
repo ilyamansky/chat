@@ -8,6 +8,7 @@ import ChatWindow from "./components/ChatWindow";
 import ChatDetails from "./components/ChatDetails";
 import SearchableDropdown from "./components/DropDown";
 import LoginForm from "./components/LoginForm";
+import TestSocket from "./components/TestSocket";
 
 export default function Home() {
   return (
@@ -21,6 +22,7 @@ export default function Home() {
       <main className="w-screen h-screen shadow-xl  flex items-center justify-center">
         <div className="flex items-center justify-center">
           <LoginForm />
+          {/*<TestSocket />*/}
         </div>
       </main>
     </div>

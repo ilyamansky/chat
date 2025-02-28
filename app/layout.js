@@ -2,6 +2,7 @@
 
 //import { ChatProvider } from "./chatState";
 import { Provider } from "react-redux";
+import AuthProvider from "./components/AuthProvider";
 import store from "./store";
 
 import { inter } from "./ui/font";
@@ -15,9 +16,11 @@ import "./globals.css";
 export default function RootLayout({ children }) {
   return (
     <Provider store={store}>
-      <html lang="en">
-        <body className={`${inter.className} antialiased`}>{children}</body>
-      </html>
+      <AuthProvider>
+        <html lang="en">
+          <body className={`${inter.className} antialiased`}>{children}</body>
+        </html>
+      </AuthProvider>
     </Provider>
   );
 }

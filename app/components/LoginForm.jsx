@@ -2,25 +2,61 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useDispatch } from "react-redux";
+import { setCredentials } from "../redux/authSlice";
 
 export default function LoginPage() {
+  const dispatch = useDispatch();
   const router = useRouter();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [isErrorVisible, setIsErrorVisible] = useState(false);
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
 
     // Захардкоженные данные для входа
-    const validUsername = "krikunenko@mail.ru";
-    const validPassword = "1234";
+    const validUsername = "a.v.krikunenko@yandex.ru";
+    const validPassword = "12345";
 
-    if (username === validUsername && password === validPassword) {
-      // Перенаправляем на страницу чатов пользователя
-      router.push("/users/krikunenko");
-    } else {
-      setIsErrorVisible(true);
+    // Данные для отправки на сервер
+    const loginData = {
+      login: username,
+      password: password,
+    };
+
+    try {
+      const response = await fetch(
+        "https://prokrinilik.beget.app/webhook/login",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(loginData),
+        }
+      );
+
+      // Проверяем, успешно ли выполнен запрос
+      if (response.ok) {
+        const data = await response.json();
+        const token = await data[0].token; // Читаем ответ сервера
+        dispatch(setCredentials(token));
+        localStorage.setItem("jwtToken", token);
+        //console.log(token); // Выводим ответ в консоль
+
+        // Здесь вы можете добавить логику для работы с полученными данными
+        // Например, перенаправление на страницу чатов пользователя
+        router.push("/users/krikunenko");
+      } else {
+        throw new Error(response.statusText);
+        // Обработка ошибки, если запрос не удался
+        //console.error("Ошибка входа:", response.statusText);
+        //setIsErrorVisible(true);
+      }
+    } catch (error) {
+      console.log("Ошибка при выполнении запроса:");
+      //setIsErrorVisible(true);
     }
   }
 

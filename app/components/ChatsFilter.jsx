@@ -7,6 +7,7 @@ import {
   applyFilters,
   resetFilters,
   toggleIsOpen,
+  fetchUsers, // Import Redux actions
 } from "../redux/chatSlice"; // Import Redux actions
 import CrossIconFilter from "../ui/icons/CrossIconFilter";
 import CrossIconSelect from "../ui/icons/CrossIconSelect";
@@ -108,6 +109,16 @@ const ChatsFilter = ({ onClose }) => {
   };
 
   const filterRef1 = useRef(null);
+
+  useEffect(() => {
+    //dispatch(fetchClients());
+    dispatch(fetchUsers()).then((result) => {
+      console.log(result);
+      if (result.meta.requestStatus === "fulfilled") {
+        console.log("Users data:", result.payload);
+      }
+    });
+  }, [dispatch]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {

@@ -5,13 +5,13 @@ import WhatsAppIcon from "../../public/contactIcons/WhatsappIcon.png";
 
 export function getIconSrc(contactType) {
   switch (contactType) {
-    case "Email":
+    case "email":
       return MailIcon;
-    case "SMS":
+    case "phone":
       return PhoneIcon;
-    case "Telegram":
+    case "telegram":
       return TgIcon;
-    case "WA":
+    case "whatsapp":
       return WhatsAppIcon;
     default:
       return MailIcon;

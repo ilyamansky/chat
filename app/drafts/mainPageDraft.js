@@ -32,3 +32,10 @@ export default function Home() {
     </div>
   );
 }
+
+//"subject-tema": "Тестовая тема из Redux",
+//reply_on_message: JSON.stringify({
+//id: 789,
+//text: "Оригинальное сообщение из Redux",
+//channel_name: "email",
+//}),

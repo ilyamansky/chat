@@ -1,14 +1,8 @@
 "use client";
 
-import { useState, useEffect, useRef, use } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useSelector, useDispatch } from "react-redux"; // Import Redux hooks
-import {
-  resetUnreadCount,
-  setReplyingTo,
-  fetchMessages,
-  sendHardcodedMessage,
-  resetUnreadCountMessages,
-} from "../redux/chatSlice"; // Import Redux actions
+import { resetUnreadCount, setReplyingTo } from "../redux/chatSlice"; // Import Redux actions
 import clsx from "clsx";
 import TgIcon from "../../public/contactIcons/TgIcon.png";
 import MailIcon from "../../public/contactIcons/MailIcon.png";
@@ -45,46 +39,15 @@ export default function ChatWindow() {
   // Add scroll ref
   const messagesEndRef = useRef(null);
   const scrollContainerRef = useRef(null);
-  const chatInputRef = useRef(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
-  //useEffect(() => {
-  //dispatch(sendHardcodedMessage());
-  // }, []);
-
-  {
-    /*useEffect(() => {
-    if (selectedChat?.id) {
-      dispatch(fetchMessages(selectedChat.id));
-      dispatch(resetUnreadCount({ chatId: selectedChat.id }));
-    }
-  }, [selectedChat?.id, dispatch]); */
-  }
-
-  useEffect(() => {
-    if (selectedChat?.id) {
-      dispatch(fetchMessages(selectedChat.id));
-
-      // Отправка PATCH-запроса через Redux Thunk
-      dispatch(resetUnreadCountMessages(selectedChat.id));
-    }
-  }, [selectedChat?.id, dispatch]);
-
   // Add scroll effect
-  //useEffect(() => {
-  //scrollToBottom();
-  //}, [selectedChat, messages]); // Scroll when chat or messages change
-
   useEffect(() => {
-    if (replyingTo) {
-      chatInputRef.current?.scrollIntoView({ behavior: "smooth" });
-    } else {
-      messagesEndRef.current?.scrollIntoView({ behavior: "auto" });
-    }
-  }, [replyingTo, chatMessages]);
+    scrollToBottom();
+  }, [selectedChat, messages]); // Scroll when chat or messages change
 
   const handleSearchToggle = () => {
     setIsSearching((prev) => !prev);
@@ -107,17 +70,8 @@ export default function ChatWindow() {
     }
   }, [chat, dispatch]);
 
-  if (!chatMessages) {
-    return (
-      <div className="flex-1 h-full">
-        <div>Нет сообщений</div>
-      </div>
-    );
-  }
-  console.log(selectedChat?.messages, "messagesLength");
-
   const filteredMessages = chatMessages.filter((message) =>
-    message?.text?.toLowerCase().includes(filter.toLowerCase())
+    message.text.toLowerCase().includes(filter.toLowerCase())
   );
 
   if (!chat) {
@@ -222,8 +176,8 @@ export default function ChatWindow() {
       >
         {filteredMessages.map((message) => (
           <div
-            key={`message-${message.id}`}
-            id={message.id} // Add ID here
+            key={message.id}
+            id={`message-${message.id}`} // Add ID here
             className={clsx(
               "flex flex-col ml-[10px] pl-2 mr-[10px]  relative",
               {
@@ -234,24 +188,24 @@ export default function ChatWindow() {
             {/* Sender Icon and Info */}
             <div className="flex items-start mb-1">
               <div className="mr-4">
-                {message.messanger === "telegram" && (
+                {message.messanger === "Telegram" && (
                   <Image
                     src={TgIcon}
                     alt="Telegram Icon"
                     style={{ width: 24 }}
                   />
                 )}
-                {message.messanger === "email" && (
+                {message.messanger === "Email" && (
                   <Image src={MailIcon} alt="Mail Icon" style={{ width: 24 }} />
                 )}
-                {message.messanger === "phone" && (
+                {message.messanger === "SMS" && (
                   <Image
                     src={PhoneIcon}
                     alt="Phone Icon"
                     style={{ width: 24 }}
                   />
                 )}
-                {message.messanger === "whatsapp" && (
+                {message.messanger === "WA" && (
                   <Image
                     src={WhatsappIcon}
                     alt="Whatsapp Icon"
@@ -262,12 +216,12 @@ export default function ChatWindow() {
               <div>
                 <div
                   className={clsx("font-medium text-[15px]", {
-                    "text-[#4766FF]": message.author.role === "candidate",
-                    "text-[#B67E34]": message.author.role === "recruiter",
+                    "text-[#4766FF]": message.senderRole === "candidate",
+                    "text-[#B67E34]": message.senderRole === "recruiter",
                   })}
                 >
-                  {message?.author.name}{" "}
-                  {message.author.role === "candidate" ? (
+                  {message.sender}{" "}
+                  {message.senderRole === "candidate" ? (
                     <span className="text-[13px] text-[#4766FF]">
                       Сообщение от кандидата -{" "}
                       {formatMessageDate(message.timestamp)}
@@ -279,30 +233,14 @@ export default function ChatWindow() {
                     </span>
                   )}{" "}
                 </div>
-                <button
-                  onClick={() => {
-                    console.log(message.messanger);
-                  }}
-                >
-                  HIIIII
-                </button>
               </div>
             </div>
             {/* Vertical Line */}
             <div className="absolute top-9 bottom-0 left-[18px] border-l border-gray-300" />
-            {/*{message.replyTo && (
+            {message.replyTo && (
               <div className="mt-1 ml-10 p-2 bg-[#F1F5F9] rounded text-sm text-gray-600 border-l-4 border-blue-500">
                 <div className="font-medium">{replyingTo?.sender}</div>
                 {chatMessages.find((m) => m.id === message.replyTo)?.text}
-              </div>
-            )}*/}
-
-            {message.replyTo && (
-              <div className="mt-1 ml-10 p-2 bg-[#F1F5F9] rounded text-sm text-gray-600 border-l-4 border-blue-500">
-                <div className="font-medium">
-                  Ответ на сообщение через {message.replyTo.channel_name}
-                </div>
-                <div>{message.replyTo.text.substring(0, 50)}...</div>
               </div>
             )}
 
@@ -310,12 +248,12 @@ export default function ChatWindow() {
             <div
               className={clsx("ml-10 px-2 py-1 mt-1 border rounded  relative", {
                 "bg-custom-gray-md border-blue-500":
-                  message.author.role === "candidate",
+                  message.senderRole === "candidate",
                 "bg-custom-orange-bg border-custom-orange-border":
-                  message.author.role === "recruiter",
+                  message.senderRole === "recruiter",
               })}
             >
-              {message.messanger === "email" && (
+              {message.messanger === "Email" && (
                 <div className="font-semibold text-[#1E293B] text-[16px]">
                   {message.subject || "Тема не задана"}{" "}
                 </div>
@@ -343,28 +281,7 @@ export default function ChatWindow() {
 
             {/* Reply Button */}
             <button
-              //onClick={() => dispatch(setReplyingTo(message))} // Replace with your send logic
-              onClick={() => {
-                dispatch(
-                  setReplyingTo({
-                    id: message.id,
-                    text: message.text,
-                    messanger: message.messanger,
-                    author: message.author,
-                    timestamp: message.timestamp,
-                  })
-                );
-
-                // Прокрутка к форме ввода
-                setTimeout(() => {
-                  document
-                    .querySelector(".chat-input-container")
-                    ?.scrollIntoView({
-                      behavior: "smooth",
-                      block: "end",
-                    });
-                }, 100);
-              }}
+              onClick={() => dispatch(setReplyingTo(message))} // Replace with your send logic
               className="mt-2 ml-10 text-center hover:bg-gray-100 text-custom-gray-filter-light w-[88px] border py-1 px-2 rounded"
             >
               Ответить
@@ -374,8 +291,10 @@ export default function ChatWindow() {
 
         <div ref={messagesEndRef}></div>
       </div>
-      <div className=" mt-auto w-full mb-0 bottom-0 bg-white chat-input-container ref={chatInputRef}">
-        <div className="mx-2">{<ChatInput />}</div>
+
+      {/* Chat Input */}
+      <div className=" mt-2 mb-1 w-full absolute bottom-0 bg-white">
+        <div className="mx-2"></div>
       </div>
     </div>
   );

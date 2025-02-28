@@ -1,17 +1,19 @@
 "use client";
 
-import React, { useState } from "react";
-import { useSelector, useDispatch } from "react-redux"; // Import Redux hooks
+import React, { useState, useEffect } from "react";
+import { useSelector, useDispatch } from "react-redux";
 import {
-  toggleFilter,
   selectChat,
   setShowAwaitingResponse,
-} from "../redux/chatSlice"; // Import Redux actions
+  fetchChats,
+  getCandidateByUrl,
+  addCandidate,
+} from "../redux/chatSlice";
 import ChatsFilter from "./ChatsFilter";
 import FilterIcon from "../ui/icons/FilterIcon";
 import SearchIconChatList from "../ui/icons/SearchIconChatList";
+import LogoutForm from "./LogoutForm";
 import CustomScrollbar from "../ui/CustomScrollbar";
-import clsx from "clsx";
 import {
   Popover,
   PopoverHandler,
@@ -25,13 +27,94 @@ export default function ChatList() {
     filteredChats,
     appliedFilters,
     showAwaitingResponse,
-    //setShowAwaitingResponse,
     selectedChat,
-  } = useSelector((state) => state.chat); // Access Redux state
+    searchedCandidate,
+  } = useSelector((state) => state.chat);
+  const { awaiting_response } = useSelector((state) => state.chat.meta);
 
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [popovers, setPopovers] = useState({});
+  const [activePopoverIndex, setActivePopoverIndex] = useState(null);
+  const [searchInput, setSearchInput] = useState("");
 
+  // Фильтрация по имени
+  const filteredBySearch = (chats) => {
+    if (!searchInput) return chats;
+
+    const searchTerm = searchInput.toLowerCase();
+    return chats.filter((user) => user.name.toLowerCase().includes(searchTerm));
+  };
+
+  {
+    /*const displayedChats = filteredBySearch(
+    (appliedFilters ? filteredChats : chats).filter(
+      (user) =>
+        !showAwaitingResponse ||
+        (user.unread_messages && parseInt(user.unread_messages) > 0)
+    )
+  ); */
+  }
+  const displayedChats = filteredBySearch(
+    (appliedFilters ? filteredChats : chats).filter((user) => {
+      if (!showAwaitingResponse) return true; // Все чаты
+
+      // Чаты, ожидающие ответа (unread_count > 0)
+      return user.unread_count > 0;
+    })
+  );
+
+  console.log(awaiting_response, "awaiting_response");
+
+  // Обработчик изменения поиска
+  const handleSearchChange = (e) => {
+    const value = e.target.value;
+    setSearchInput(value);
+
+    if (value.startsWith("https://app.friend.work/Candidate/Profile/")) {
+      dispatch(getCandidateByUrl(value));
+    } else {
+      //dispatch(clearSearchedCandidate());
+    }
+  };
+
+  // Рендер кандидата из поиска
+  const renderSearchedCandidate = () => {
+    if (!searchedCandidate) return null;
+
+    return (
+      <div className="flex p-1 mb-2 rounded-md hover:bg-white cursor-pointer">
+        <div className="w-8 h-8 m-[3px] flex items-center justify-center rounded-full border border-custom-blue bg-custom-gray-md">
+          {searchedCandidate.name.slice(0, 2).toUpperCase()}
+        </div>
+
+        <div className="flex-1 pl-1">
+          <div className="flex justify-between items-center">
+            <p className="text-sm text-custom-blue">{searchedCandidate.name}</p>
+            <button
+              onClick={async () => {
+                try {
+                  await dispatch(
+                    addCandidate(searchedCandidate.candidate_id)
+                  ).unwrap();
+                  alert("Кандидат успешно добавлен!");
+                  dispatch(fetchChats());
+                  setSearchInput("");
+                } catch (error) {
+                  alert(`Ошибка: ${error.message}`);
+                }
+              }}
+              className="ml-2 bg-custom-blue text-white px-2 py-1 rounded text-sm hover:bg-blue-600"
+            >
+              Добавить
+            </button>
+          </div>
+          <div className="text-[13px] text-custom-text-gray">
+            ID: {searchedCandidate.candidate_id}
+          </div>
+        </div>
+      </div>
+    );
+  };
   const handleFilterToggle = (e) => {
     e.stopPropagation();
     setIsDropdownOpen((prevState) => !prevState);
@@ -53,47 +136,68 @@ export default function ChatList() {
     onMouseLeave: () => handlePopoverToggle(index),
   });
 
+  useEffect(() => {
+    dispatch(fetchChats());
+  }, [dispatch]);
+
+  // Directly use backend fields without transformation
+  //const displayedChats = (appliedFilters ? filteredChats : chats).filter(
+  //(user) =>
+  //!showAwaitingResponse ||
+  //(user.unread_messages && parseInt(user.unread_messages) > 0)
+  //);
+
+  console.log(displayedChats?.meta, "displayed");
+
   return (
-    <div className="w-[320px] flex flex-col h-full border-r relative overflow-hidden border-gray-200">
+    <div className="w-[320px] flex flex-col h-screen border-r relative overflow-hidden border-gray-200">
+      {/* Header and Filter Section */}
       <div className="mb-2 flex flex-col px-2">
+        {/* ... (keep existing header code) */}
         <div className="mb-1 flex flex-row justify-between items-center relative">
           <h2 className="text-[13px] font-bold inline-block mt-2 mr-2">Чаты</h2>
           <button
             className="filter-toggle-button1 flex items-center border border-[#6E9DD0] shadow mt-2 bg-white hover:bg-gray-100 rounded px-1 py-1"
             style={{ boxShadow: "0 1px 2px rgba(0, 0, 0, 0.25)" }}
-            onClick={handleFilterToggle}
+            onClick={(e) => {
+              e.stopPropagation();
+              setIsDropdownOpen(!isDropdownOpen);
+            }}
           >
             {!!appliedFilters && (
               <span className="text-custom-blue-light text-sm pr-1">
                 Применено {appliedFilters} фильтра
               </span>
             )}
-            <div className="">
-              <FilterIcon />
-            </div>
+            <FilterIcon />
           </button>
           {isDropdownOpen && (
             <div className="absolute top-full mt-2 bg-custom-bg-gray shadow-xl border border-[#6E9DD0] rounded-md p-4 w-[302px] z-30">
-              <ChatsFilter onClose={handleFilterClose} />
+              <ChatsFilter onClose={() => setIsDropdownOpen(false)} />
             </div>
           )}
         </div>
       </div>
+
+      {/* Search Bar */}
       <div className="flex border rounded px-3 py-2 mx-2 border-custom-placeholder-gray items-center gap-1 bg-white">
+        {/* ... (keep existing search bar code) */}
         <SearchIconChatList />
         <input
           type="text"
+          value={searchInput}
+          onChange={handleSearchChange}
           placeholder="Поиск по контактам и сообщениям"
           className="placeholder:text-custom-placeholder-gray text-[15px] block w-full outline-none border-[#E3E3E3] rounded"
         />
       </div>
 
+      {/* Filter Tabs */}
       <div className="flex items-center ml-2 mt-2 mb-2">
         <button
           className={`mr-4 text-sm ${
             !showAwaitingResponse ? "text-custom-blue" : "text-custom-text-gray"
           }`}
-          //onClick={() => dispatch(toggleFilter())} // Use Redux action
           onClick={() => dispatch(setShowAwaitingResponse(false))}
         >
           Все
@@ -102,155 +206,162 @@ export default function ChatList() {
           className={`text-sm flex flex-row items-center ${
             showAwaitingResponse ? "text-custom-blue" : "text-custom-text-gray"
           }`}
-          //onClick={() => dispatch(toggleFilter())} // Use Redux action
           onClick={() => dispatch(setShowAwaitingResponse(true))}
         >
-          <div className="text-sm">Ожидают ответа</div>
-          {!!chats.filter((u) => u.awaitingResponse).length && (
-            <div className="flex rounded-full items-center ml-1 min-w-4 h-4 justify-center bg-custom-blue text-xs text-white">
-              {chats.filter((u) => u.awaitingResponse).length}
+          Ожидают ответа
+          {awaiting_response > 0 && (
+            <div className="ml-1 bg-custom-blue text-white rounded-full min-w-4 h-4 flex items-center justify-center text-xs">
+              {awaiting_response}
             </div>
           )}
         </button>
       </div>
 
-      <div className="flex flex-col overflow-y-auto ml-2 mr-2">
-        {!appliedFilters &&
-          chats
-            .filter((user) => !showAwaitingResponse || user.awaitingResponse)
-            .map((user, index) => (
+      {/* Chat List */}
+      <CustomScrollbar>
+        <div className="flex flex-col ml-2 mr-2">
+          {displayedChats.map((user, index) => {
+            // Inline parsing only where needed
+            const vacancies = user.vacancies;
+            const unreadCount = parseInt(user.unread_messages) || 0;
+
+            return (
               <div
                 key={user.id}
-                className={`flex text-sm text-custom-text-gray mb-2 p-1 rounded-md hover:bg-white cursor-pointer ${
+                className={`flex p-1 mb-2 rounded-md hover:bg-white cursor-pointer ${
                   selectedChat?.id === user.id ? "bg-gray-50" : ""
                 }`}
-                onClick={() => dispatch(selectChat(user))} // Use Redux action
+                onClick={() => dispatch(selectChat(user))}
               >
+                {/* Avatar */}
                 <div
-                  className={`w-8 h-8 m-[3px] mb-0 flex items-center justify-center rounded-full border ${
-                    user.awaitingResponse
+                  className={`w-8 h-8 m-[3px] flex items-center justify-center rounded-full border ${
+                    user.unread_count > 0
                       ? "border-custom-blue text-custom-blue bg-custom-gray-md"
-                      : "border-custom-text-gray"
+                      : "border-custom-text-gray text-custom-text-gray"
                   }`}
                 >
                   {user.name
                     .split(" ")
-                    .map((word) => word.charAt(0))
+                    .map((n) => n[0])
                     .join("")
                     .toUpperCase()}
                 </div>
-                <div className="flex flex-col grow pl-1">
-                  <div className="flex justify-between mb-0 pb-0">
+
+                {/* Chat Info */}
+                <div className="flex-1 pl-1">
+                  <div className="flex justify-between">
                     <p
-                      className={`text-sm mb-0 pb-0 ${
-                        user.awaitingResponse
+                      className={`text-sm max-w-[60%] truncate ${
+                        user.unread_count > 0
                           ? "text-custom-blue"
                           : "text-black"
                       }`}
                     >
                       {user.name}
                     </p>
-                    <p className="text-[12px] m-0 p-0 mr-2">12 дек 12:40</p>
+                    <span className="text-[12px] text-custom-text-gray mr-2">
+                      {new Date(user.lastActive).toLocaleDateString("ru-RU", {
+                        day: "numeric",
+                        month: "short",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </span>
                   </div>
-                  <div className="flex justify-between m-0 p-0">
-                    <p className=" m-0 p-0 text-[13px] text-custom-text-gray">
-                      please help me find...
-                    </p>
-                    <div className=" m-0 p-0 flex items-center justify-between mr-2">
-                      {user.unreadMessagesCount > 0 && (
-                        <span className="bg-blue-500 flex w-4 h-4 items-center justify-center text-white rounded-full text-xs font-bold">
-                          {user.unreadMessagesCount}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                  {user.vacanciesInProcess && (
-                    <div className="flex flex-row gap-1 mt-1 mb-1">
-                      <div className="flex flex-row m-0 border border-custom-gray-filter-light rounded">
-                        <div className="px-1 text-custom-gray-dark text-[13px]">
-                          {" "}
-                          {user.vacanciesInProcess[0].role}
-                        </div>
 
-                        <div className="border-l px-1 text-custom-text-gray text-[13px] border-custom-gray-filter-light">
-                          {user.vacanciesInProcess[0].company}
+                  <div className="flex justify-between">
+                    <p className="text-[13px] text-custom-text-gray">
+                      {user.last_message_text || "please help me find..."}
+                    </p>
+                    {user.unread_count > 0 && (
+                      <span className="bg-blue-500 text-white rounded-full w-4 h-4 flex items-center justify-center text-xs">
+                        {user.unread_count}
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Vacancies - parse inline */}
+                  {vacancies.length > 0 && (
+                    <div className="flex gap-1 my-1">
+                      <div className="border flex flex-row overflow-hidden text-[13px] border-[#94A3B8] rounded">
+                        <div className="flex px-1 items-center text-custom-gray-dark text-[13px]">
+                          {vacancies[0].name}
                         </div>
+                        {vacancies[0].Employer_name && (
+                          <div className="border-l items-center flex px-1 bg-clip-padding text-[13px] bg-[#f9f9f9] text-custom-gray-filter">
+                            {vacancies[0].Employer_name}
+                          </div>
+                        )}
                       </div>
-                      <Popover
-                        open={!!popovers[index]}
-                        handler={() => handlePopoverToggle(index)}
-                      >
-                        <PopoverHandler {...triggers(index)}>
-                          <div className="border border-custom-gray-filter-light px-1 rounded">
-                            +{user.vacanciesInProcess.length - 1}
-                          </div>
-                        </PopoverHandler>
-                        <PopoverContent {...triggers(index)} className="z-50">
-                          <div className="flex flex-col">
-                            <div className="text-custom-gray-filter">
-                              В работе по {user.vacanciesInProcess.length}{" "}
-                              вакансиям:
-                              <hr className="my-1" />
+
+                      {vacancies.length > 1 && (
+                        <Popover
+                          open={activePopoverIndex === index}
+                          handler={(isOpen) =>
+                            setActivePopoverIndex(isOpen ? index : null)
+                          }
+                        >
+                          <PopoverHandler
+                            onMouseEnter={() => setActivePopoverIndex(index)}
+                            onMouseLeave={() => setActivePopoverIndex(null)}
+                          >
+                            <div className="border border-custom-gray-filter-light text-[#858B97] font-normal px-1 rounded">
+                              +{vacancies?.length - 1 || 0}
                             </div>
+                          </PopoverHandler>
+                          <PopoverContent
+                            className="z-50"
+                            onMouseEnter={() => setActivePopoverIndex(index)}
+                            onMouseLeave={() => setActivePopoverIndex(null)}
+                          >
                             <div className="flex flex-col">
-                              {user.vacanciesInProcess.slice().map((v, i) => (
-                                <div
-                                  className="border flex flex-row overflow-hidden border-[#94A3B8] rounded-lg my-1 w-fit"
-                                  key={`${user.id}-${i}`}
-                                >
-                                  <div className="p-1 text-custom-gray-dark">
-                                    {v.role}
+                              <div className="text-custom-gray-filter">
+                                В работе по {vacancies?.length || 0} вакансиям:
+                                <hr className="my-1" />
+                              </div>
+                              <div className="flex flex-col">
+                                {vacancies?.map((vacancy, i) => (
+                                  <div
+                                    key={`${user.id}-${i}`}
+                                    className="border flex flex-row overflow-hidden border-[#94A3B8] rounded-lg my-1 w-fit"
+                                  >
+                                    <div className="p-1 text-custom-gray-dark">
+                                      {vacancy.name}
+                                    </div>
+                                    {vacancy.Employer_name && (
+                                      <div className="border-l p-1 bg-clip-padding bg-[#f9f9f9] text-custom-gray-filter">
+                                        {vacancy.Employer_name}
+                                      </div>
+                                    )}
                                   </div>
-                                  <div className="border-l p-1 bg-clip-padding bg-[#f9f9f9] text-custom-gray-filter">
-                                    {v.company}
-                                  </div>
-                                </div>
-                              ))}
+                                ))}
+                              </div>
                             </div>
-                          </div>
-                        </PopoverContent>
-                      </Popover>
+                          </PopoverContent>
+                        </Popover>
+                      )}
                     </div>
                   )}
                 </div>
               </div>
-            ))}
+            );
+          })}
+        </div>
+      </CustomScrollbar>
+      <div>{renderSearchedCandidate()}</div>
+      <div className="mt-auto pt-4 pb-2">
+        <LogoutForm />
       </div>
-      {appliedFilters > 0 &&
-        filteredChats
-          .filter((user) => !showAwaitingResponse || user.awaitingResponse)
-          .map((user) => (
-            <div
-              key={user.id}
-              className={`flex items-center p-2 rounded-md hover:bg-gray-50 cursor-pointer ${
-                selectedChat?.id === user.id ? "bg-gray-100" : ""
-              }`}
-              onClick={() => dispatch(selectChat(user))} // Use Redux action
-            >
-              <div
-                className={`w-10 h-10 mr-4 bg-${user.avatarColor} text-white flex items-center justify-center rounded-full uppercase font-semibold`}
-              >
-                {user.name.slice(0, 2)}
-              </div>
-              <div>
-                <p
-                  className={`font-medium ${
-                    user.awaitingResponse ? "text-blue-500" : ""
-                  }`}
-                >
-                  {user.name}
-                </p>
-                <p className="text-sm text-gray-600">Please help me find...</p>
-              </div>
-              <div className="ml-auto">
-                {user.unreadMessagesCount > 0 && (
-                  <span className="bg-blue-500 text-white px-2 py-1 rounded-full text-xs font-bold">
-                    {user.unreadMessagesCount}
-                  </span>
-                )}
-              </div>
-            </div>
-          ))}
     </div>
   );
 }
+
+// Minimal parsing helper only where absolutely needed
+const tryParse = (str) => {
+  try {
+    return str ? JSON.parse(str) : [];
+  } catch {
+    return [];
+  }
+};

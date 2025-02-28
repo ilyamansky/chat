@@ -4,7 +4,7 @@ import TextareaAutosize from "react-textarea-autosize";
 import { LinearProgress } from "@mui/material";
 import FileIcon from "../ui/icons/FileIcon";
 import { useSelector, useDispatch } from "react-redux";
-import { addMessage, setReplyingTo, createMessage } from "../redux/chatSlice";
+import { addMessage, setReplyingTo } from "../redux/chatSlice";
 import { getIconSrc } from "../utils/functions";
 import ChatInputCrossIcon from "../ui/icons/ChatInputCrossIcon";
 import ReplyToIcon from "../ui/icons/ReplyToIcon";
@@ -19,70 +19,23 @@ import {
   PopoverContent,
 } from "@material-tailwind/react";
 
-const parseContacts = (contactsInput) => {
-  try {
-    let parsedContacts;
-    if (typeof contactsInput === "string") {
-      parsedContacts = JSON.parse(contactsInput);
-    } else if (typeof contactsInput === "object") {
-      parsedContacts = contactsInput;
-    } else {
-      return {};
-    }
-
-    return Object.entries(parsedContacts).reduce(
-      (result, [contactType, contactList]) => {
-        const normalizedType = contactType.toLowerCase();
-        const contactsArray = Array.isArray(contactList)
-          ? contactList
-          : [contactList];
-
-        result[normalizedType] = contactsArray
-          .map((contact) => {
-            let content;
-            switch (normalizedType) {
-              case "phone":
-              case "whatsapp":
-                content = contact.phone;
-                break;
-              case "email":
-                content = contact.email;
-                break;
-              case "telegram":
-                content = contact.user_id || contact.phone || "";
-                break;
-              default:
-                content = "";
-            }
-            return { content: content?.toString() || "", isPrimary: false };
-          })
-          .filter((contact) => contact.content);
-
-        return result;
-      },
-      {}
-    );
-  } catch (error) {
-    console.error("Error parsing contacts:", error);
-    return {};
-  }
-};
-
 const ChatInput = () => {
   const dispatch = useDispatch();
+  //const { selectedChat } = useSelector((state) => state.chat);
+  //const contacts = selectedChat?.contacts || {};
   const {
     chats,
     selectedChat: selectedChatState,
     messages,
-    replyingTo,
   } = useSelector((state) => state.chat);
-
   const selectedChat = chats.find((chat) => chat.id === selectedChatState?.id);
-  const rawContacts = selectedChat?.contacts || {};
-  const contacts = parseContacts(rawContacts);
+  const contacts = selectedChat?.contacts;
   const chatMessages = messages[selectedChat?.id] || [];
-
-  const [selectedTab, setSelectedTab] = useState(null);
+  //const messanger = chatMessages[id];
+  //console.log(messanger, "messanger");
+  console.log("messages", messages);
+  const { replyingTo } = useSelector((state) => state.chat);
+  const [selectedTab, setSelectedTab] = useState("Email");
   const [message, setMessage] = useState("");
   const [subject, setSubject] = useState("");
   const [file, setFile] = useState(null);
@@ -93,54 +46,45 @@ const ChatInput = () => {
 
   const validateMessenger = () => {
     if (!selectedChat) return false;
+
+    // Extract base contact type without number
     const baseType = selectedTab.replace(/\s\d+$/, "");
-    return Array.isArray(contacts[baseType]) && contacts[baseType].length > 0;
-  };
+    const hasContacts = contacts[baseType]?.length > 0;
 
-  useEffect(() => {
-    const firstTab = Object.entries(contacts)
-      .filter(([_, group]) => group.length > 0)
-      .flatMap(([type, group]) =>
-        group.map((_, index) => ({
-          displayName: group.length > 1 ? `${type} ${index + 1}` : type,
-        }))
-      )[0]?.displayName;
-
-    // Set first contact as default selected if no selection exists
-    if (firstTab && !selectedTab) {
-      setSelectedTab(firstTab);
+    if (!hasContacts) {
+      alert(
+        `Нет доступных контактов для ${baseType}. Добавьте контакт сначала!`
+      );
+      return false;
     }
-  }, [contacts]);
-
+    return true;
+  };
   useEffect(() => {
     if (replyingTo) {
       const originalMessenger = replyingTo.messanger;
-      if (!contacts[originalMessenger]?.length) {
+      const isValid = selectedChat?.contacts[originalMessenger]?.length > 0;
+
+      if (!isValid) {
         alert("Контакт для ответа был удален!");
         dispatch(setReplyingTo(null));
         return;
       }
+
       setSelectedTab(
         originalMessenger.charAt(0).toUpperCase() + originalMessenger.slice(1)
       );
     }
-  }, [replyingTo, contacts, dispatch]);
-
-  useEffect(() => {
-    if (replyingTo) {
-      const messenger = replyingTo.messanger.toLowerCase();
-      setSelectedTab(messenger.charAt(0).toUpperCase() + messenger.slice(1));
-    }
-  }, [replyingTo]);
+  }, [replyingTo, selectedChat]);
 
   useEffect(() => {
     if (replyingTo && !selectedTab.startsWith(replyingTo.messanger)) {
       dispatch(setReplyingTo(null));
     }
-  }, [selectedTab, dispatch, replyingTo]);
+  }, [selectedTab]);
 
   useEffect(() => {
     if (replyingTo) {
+      // Find original message in all chats
       const originalMessage = chats
         .flatMap((chat) => messages[chat.id] || [])
         .find((msg) => msg.id === replyingTo.id);
@@ -149,10 +93,32 @@ const ChatInput = () => {
         setSubject(originalMessage.subject?.replace("Тема: ", "") || "");
       }
     } else {
-      setSubject("");
+      setSubject(""); // Reset subject when reply is canceled
     }
   }, [replyingTo, chats, messages]);
 
+  useEffect(() => {
+    if (replyingTo) {
+      const originalMessage = chats
+        .flatMap((chat) => chatMessages[chat.id] || [])
+        .find((msg) => msg.id === replyingTo.id);
+
+      if (originalMessage) {
+        setSelectedTab(
+          originalMessage.messanger.charAt(0).toUpperCase() +
+            originalMessage.messanger.slice(1)
+        );
+      }
+    }
+  }, [replyingTo]);
+
+  const handleOpen = (contactType) => {
+    setOpenPopover(contactType);
+  };
+
+  const hasContent = !!message.trim() || !!file;
+
+  // In ChatInput.js - Update file handling
   const handleFileChange = (event) => {
     const selectedFile = event.target.files[0];
     if (selectedFile) {
@@ -160,166 +126,145 @@ const ChatInput = () => {
       setAttachmentProgress(0);
       setUploadStatus("");
 
+      // Simulate upload progress
       const interval = setInterval(() => {
-        setAttachmentProgress((prev) => (prev >= 95 ? 95 : prev + 5));
+        setAttachmentProgress((prev) => {
+          if (prev >= 95) {
+            // Stop at 95% for realistic simulation
+            clearInterval(interval);
+            return 95;
+          }
+          return prev + 5;
+        });
       }, 100);
 
+      // Complete simulation after 2 seconds
       setTimeout(() => {
         clearInterval(interval);
         setAttachmentProgress(100);
         setIsAttaching(false);
-        setFile(selectedFile);
+        setFile(selectedFile); // This was missing - actually set the file
         setUploadStatus(`Файл ${selectedFile.name} успешно загружен!`);
       }, 2000);
     }
   };
 
-  // ChatInput.jsx
-  // ... остальной код
-
+  // In ChatInput.js - modify handleSubmit
   const handleSubmit = async (event) => {
     event.preventDefault();
-    if (!validateMessenger() || (!message.trim() && !file) || !selectedChat)
-      return;
 
-    try {
-      // Формируем данные для отправки
-      const messageData = {
-        candidate_chat: selectedChat.id,
-        text: message,
-        "subject-tema": subject || undefined,
-        file: file || undefined,
-      };
+    if (!validateMessenger()) return;
 
-      // Добавляем reply_on_message
-      if (replyingTo) {
-        messageData.reply_on_message = JSON.stringify({
-          id: replyingTo.id,
-          text: replyingTo.text,
-          channel_name: replyingTo.messanger,
-        });
-      }
+    //if (!message.trim() || !selectedChat) return;
+    if ((!message.trim() && !file) || !selectedChat) return;
 
-      // Добавляем used_contact
-      const [contactType] = selectedTab.split(" ");
-      const contactGroup = contacts[contactType];
-      const contactIndex = parseInt(selectedTab.match(/\d+$/)?.[0] || 1);
-      const contact = contactGroup[contactIndex - 1]?.content;
+    const newMessage = {
+      id: Date.now(),
+      subject:
+        selectedTab === "Email" && subject
+          ? `Тема: ${subject}`
+          : "Тема не задана",
+      text: message,
+      //selectedTab === "Email" && subject
+      //? `Тема: ${subject}\n${message}`
+      //: message,
+      replyTo: replyingTo?.id,
+      sender: "Дарья Зовулькина",
+      timestamp: new Date().toISOString(),
+      isUnread: false,
+      senderRole: "recruiter",
+      //messanger: selectedTab,
+      messanger: selectedTab.replace(/\s\d+$/, ""), // Store base type without number
+      // Add file metadata
+      attachments: file
+        ? [
+            {
+              name: file.name,
+              size: file.size,
+              type: file.type,
+              preview: URL.createObjectURL(file), // Create preview URL
+            },
+          ]
+        : [],
+    };
 
-      messageData.used_contact = JSON.stringify({
-        channel_name: contactType.toLowerCase(),
-        contact:
-          typeof contact === "string"
-            ? contact
-            : contact?.phone || contact?.channel_name,
-      });
+    dispatch(
+      addMessage({
+        chatId: selectedChat.id,
+        message: newMessage,
+      })
+    );
 
-      // Отправляем через Redux
-      await dispatch(createMessage(messageData)).unwrap();
-
-      // Обновляем локальное состояние
-      setMessage("");
-      setSubject("");
-      setFile(null);
-      dispatch(setReplyingTo(null));
-      dispatch(fetchChats()); // Обновляем список чатов
-
-      alert("Сообщение успешно отправлено!");
-    } catch (error) {
-      console.error("Error sending message:", error);
-      alert(`Ошибка отправки сообщения: ${error}`);
-    }
+    setMessage("");
+    setSubject("");
+    setFile(null);
   };
-
-  // ... остальной рендеринг
-
-  const hasContent = !!message.trim() || !!file;
 
   return (
     <form
       onSubmit={handleSubmit}
-      className="bg-white mt-1 rounded overflow-hidden"
+      className="bg-white mt-1 rounded overflow-hidden "
     >
-      {/*} {replyingTo && (
+      {replyingTo && (
         <div
-          className="bg-[#F1F5F9] hover:bg-gray-200 p-2 flex justify-between items-start"
           onClick={() => {
             const messageElement = document.getElementById(
               `message-${replyingTo.id}`
             );
-            messageElement?.scrollIntoView({
-              behavior: "smooth",
-              block: "center",
-            });
+            if (messageElement) {
+              messageElement.scrollIntoView({
+                behavior: "smooth",
+                block: "center",
+              });
+            }
           }}
+          className="bg-[#F1F5F9] hover:bg-gray-200 p-2  flex justify-between items-start"
         >
+          {" "}
           <div className="flex">
             <div className="ml-0 relative">
               <ReplyToIcon />
-              <div className="absolute top-5 bottom-0 left-2.5 border-l border-[#4766FF]" />
+              <div className="absolute  top-5 bottom-0 left-2.5 border-l border-[#4766FF]" />
             </div>
+
             <div className="text-sm ml-2 text-[#4766FF]">
               Ответ на: "{replyingTo.messanger}"
               <div className="text-black">
                 {replyingTo.text.length > 80
-                  ? `${replyingTo.text.substring(0, 77)}...`
+                  ? replyingTo.text.substring(0, 77) + "..."
                   : replyingTo.text}
               </div>
             </div>
           </div>
           <button
             onClick={() => dispatch(setReplyingTo(null))}
-            className="mr-1 mt-1"
+            className="text-red-500 hover:text-red-700"
           >
-            <ChatInputCrossIcon />
-          </button>
-        </div>
-      )} */}
-      {replyingTo && (
-        <div className="bg-[#F1F5F9] hover:bg-gray-200 p-2 flex justify-between items-start">
-          <div className="flex">
-            <div className="ml-0 relative">
-              <ReplyToIcon />
-              <div className="absolute top-5 bottom-0 left-2.5 border-l border-[#4766FF]" />
+            {" "}
+            <div className="mr-1 mt-1">
+              <ChatInputCrossIcon />
             </div>
-            <div className="text-sm ml-2 text-[#4766FF]">
-              Ответ на сообщение через {replyingTo.messanger}
-              <div className="text-black">
-                {replyingTo.author.name}: {replyingTo.text.substring(0, 50)}...
-              </div>
-            </div>
-          </div>
-          <button
-            onClick={() => dispatch(setReplyingTo(null))}
-            className="mr-1 mt-1"
-          >
-            <ChatInputCrossIcon />
           </button>
         </div>
       )}
-
+      {/* Contact tabs */}
       <div className="border-[#9E6D2D] border rounded">
-        <ul className="flex pl-1 space-x-4 mb-1 rounded bg-[#FCF8EC]">
+        <ul className="flex pl-1 space-x-4 mb-1 rounded  bg-[#FCF8EC]">
           {Object.entries(contacts)
             .filter(([_, group]) => group.length > 0)
             .flatMap(([contactType, contactGroup]) =>
-              contactGroup.map((contact, index) => {
-                const displayName =
+              contactGroup.map((contact, index) => ({
+                type: contactType,
+                contact,
+                displayName:
                   contactGroup.length > 1
                     ? `${contactType} ${index + 1}`
-                    : contactType;
-
-                return {
-                  type: contactType,
-                  contact,
-                  displayName,
-                  index,
-                };
-              })
+                    : contactType,
+              }))
             )
-            .map(({ type, displayName, contact, index }) => (
+            .map(({ type, displayName, contact }) => (
               <li
-                key={`${type}-${index}`}
+                key={`${type}-${contact.content}`}
                 className={clsx(
                   "py-2 px-1 text-sm rounded-md cursor-pointer",
                   selectedTab === displayName
@@ -331,6 +276,7 @@ const ChatInput = () => {
                   open={openPopover === displayName}
                   handler={setOpenPopover}
                   placement="top"
+                  dismiss={{ enabled: false }} // Disable auto-dismiss
                 >
                   <PopoverHandler
                     onMouseEnter={() => setOpenPopover(displayName)}
@@ -355,43 +301,30 @@ const ChatInput = () => {
                         width={18}
                         height={18}
                       />
-                      <span className="text-sm">{contact.content}</span>
+                      <span>{contact.content}</span>
                     </div>
                   </PopoverContent>
                 </Popover>
               </li>
             ))}
         </ul>
-
-        {/*{selectedTab.toLowerCase() === "email" &&
-          contacts.email?.length > 0 && (
-            <div className="flex flex-row items-center">
-              <div className="pl-2 text-[15px]">Тема:</div>
+        {/* Email subject field */}
+        {selectedTab === "Email" && contacts.Email?.length > 0 && (
+          <div className="flex flex-row items-center">
+            <div className="pl-2 text-[15px]">Тема:</div>
+            <div>
               <input
                 type="text"
                 value={subject}
                 onChange={(e) => setSubject(e.target.value)}
                 placeholder="Не задано"
                 className="w-full p-2 text-[15px] rounded-md focus:outline-none"
-                readOnly={!!replyingTo}
+                readOnly={replyingTo?.messanger === "Email"} // Add readOnly for replies
               />
             </div>
-          )} */}
-        {selectedTab?.toLowerCase().startsWith("email") &&
-          contacts.email?.length > 0 && (
-            <div className="flex flex-row items-center">
-              <div className="pl-2 text-[15px]">Тема:</div>
-              <input
-                type="text"
-                value={subject}
-                onChange={(e) => setSubject(e.target.value)}
-                placeholder="Не задано"
-                className="w-full p-2 text-[15px] rounded-md focus:outline-none"
-                readOnly={!!replyingTo}
-              />
-            </div>
-          )}
-
+          </div>
+        )}
+        {/* Message input */}
         <div className="mb-0 mt-0">
           <TextareaAutosize
             value={message}
@@ -402,7 +335,7 @@ const ChatInput = () => {
             maxRows={10}
           />
         </div>
-
+        {/* File upload status */}
         {isAttaching && (
           <div className="pr-2 mb-1">
             <div className="flex items-center justify-between">
@@ -429,7 +362,7 @@ const ChatInput = () => {
             <p>{uploadStatus}</p>
           </div>
         )}
-
+        {/* Attached file display */}
         {file && !isAttaching && (
           <div className="pr-0 mb-1">
             <div className="text-[13px] text-[#858585] pl-2">
@@ -448,7 +381,7 @@ const ChatInput = () => {
             </div>
           </div>
         )}
-
+        {/* File attachment and submit section */}
         <div className="flex px-2 items-center mt-0 pt-0">
           <label className="cursor-pointer flex items-center">
             <FileAttachIcon />
@@ -456,14 +389,19 @@ const ChatInput = () => {
               type="file"
               onChange={handleFileChange}
               className="hidden"
-              key={file ? "file-selected" : "no-file"}
+              key={file ? "file-selected" : "no-file"} // Force re-render
             />
             <span className="ml-2 text-[#939393] text-[13px]">
               Прикрепить файл
             </span>
           </label>
+
           <button type="submit" className="ml-auto" disabled={!hasContent}>
-            {hasContent ? <ArrowSendEnabled /> : <ArrowSendDisabled />}
+            {hasContent ? (
+              <ArrowSendEnabled className="text-white hover:text-black" />
+            ) : (
+              <ArrowSendDisabled />
+            )}
           </button>
         </div>
       </div>

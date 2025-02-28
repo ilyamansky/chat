@@ -431,3 +431,14 @@ export default ChatsFilter;
   ))}
 
 
+
+  <div className="border border-custom-gray-filter-light rounded">
+                        <span className="px-1 text-custom-gray-dark text-[13px]">
+                          {vacancies[0].name}
+                        </span>
+                        <span className="border-l px-1 text-custom-text-gray text-[13px]">
+                          {vacancies[0].Employer_name}
+                        </span>
+                      </div>
+
+
