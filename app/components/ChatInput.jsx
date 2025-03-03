@@ -49,7 +49,7 @@ const parseContacts = (contactsInput) => {
                 content = contact.email;
                 break;
               case "telegram":
-                content = contact.user_id || contact.phone || "";
+                content = contact.user_id || contact.user_name || "";
                 break;
               default:
                 content = "";
@@ -121,23 +121,29 @@ const ChatInput = () => {
         return;
       }
       setSelectedTab(
-        originalMessenger.charAt(0).toUpperCase() + originalMessenger.slice(1)
+        //originalMessenger.charAt(0).toUpperCase() + originalMessenger.slice(1)
+        originalMessenger
       );
+      console.log("replyingTo", replyingTo);
     }
   }, [replyingTo, contacts, dispatch]);
 
-  useEffect(() => {
+  {
+    /*useEffect(() => {
     if (replyingTo) {
       const messenger = replyingTo.messanger.toLowerCase();
       setSelectedTab(messenger.charAt(0).toUpperCase() + messenger.slice(1));
     }
-  }, [replyingTo]);
+  }, [replyingTo]);*/
+  }
 
-  useEffect(() => {
+  {
+    /*useEffect(() => {
     if (replyingTo && !selectedTab.startsWith(replyingTo.messanger)) {
       dispatch(setReplyingTo(null));
     }
-  }, [selectedTab, dispatch, replyingTo]);
+  }, [selectedTab, dispatch, replyingTo]);*/
+  }
 
   useEffect(() => {
     if (replyingTo) {
@@ -177,7 +183,8 @@ const ChatInput = () => {
   // ChatInput.jsx
   // ... остальной код
 
-  const handleSubmit = async (event) => {
+  {
+    /*const handleSubmit = async (event) => {
     event.preventDefault();
     if (!validateMessenger() || (!message.trim() && !file) || !selectedChat)
       return;
@@ -187,8 +194,8 @@ const ChatInput = () => {
       const messageData = {
         candidate_chat: selectedChat.id,
         text: message,
-        "subject-tema": subject || undefined,
-        file: file || undefined,
+        "subject-tema": subject || "",
+        file: file || null,
       };
 
       // Добавляем reply_on_message
@@ -200,19 +207,22 @@ const ChatInput = () => {
         });
       }
 
-      // Добавляем used_contact
+       Добавляем used_contact
       const [contactType] = selectedTab.split(" ");
       const contactGroup = contacts[contactType];
       const contactIndex = parseInt(selectedTab.match(/\d+$/)?.[0] || 1);
       const contact = contactGroup[contactIndex - 1]?.content;
 
-      messageData.used_contact = JSON.stringify({
-        channel_name: contactType.toLowerCase(),
-        contact:
-          typeof contact === "string"
-            ? contact
-            : contact?.phone || contact?.channel_name,
-      });
+      //messageData.used_contact = JSON.stringify({
+        //channel_name: contactType.toLowerCase(),
+        //contact:
+         // typeof contact === "string"
+           // ? contact
+           // : contact?.user_id || contact?.user_name,
+      //});
+      messageData.contacts = {
+
+      }
 
       // Отправляем через Redux
       await dispatch(createMessage(messageData)).unwrap();
@@ -228,6 +238,95 @@ const ChatInput = () => {
     } catch (error) {
       console.error("Error sending message:", error);
       alert(`Ошибка отправки сообщения: ${error}`);
+    }
+  }; */
+  } // prev version
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    if (!validateMessenger() || (!message.trim() && !file) || !selectedChat)
+      return;
+
+    try {
+      // Формируем контакты
+      const getContactData = () => {
+        if (!selectedTab || !selectedChat?.contacts) return null;
+
+        const [contactType] = selectedTab.split(" "); // Получаем тип (email, phone и т.д.)
+        const contactIndex = Number(selectedTab.replace(/\D/g, "")) - 1 || 0;
+        const contactGroup = selectedChat.contacts[contactType];
+        const contact = contactGroup?.[contactIndex];
+
+        if (!contact) return null;
+
+        // Формируем объект согласно требованиям API
+        switch (contactType.toLowerCase()) {
+          case "email":
+            return {
+              email: contact.content,
+              channel_name: "email",
+            };
+
+          case "phone":
+            return {
+              phone: contact.content,
+              channel_name: "phone",
+            };
+
+          case "whatsapp":
+            return {
+              phone: contact.content,
+              channel_name: "whatsapp",
+            };
+
+          case "telegram":
+            return {
+              user_id: contact.content, // Или user_name в зависимости от данных
+              user_name: contact.content,
+              channel_name: "telegram",
+            };
+
+          default:
+            return null;
+        }
+      };
+
+      // Формируем данные для отправки
+      const messageData = {
+        candidate_chat: selectedChat.id,
+        text: message,
+        "subject-tema": subject || undefined,
+        file: file || null,
+        reply_on_message: "",
+        //used_contact: getContactData(), // Сериализуем контакт
+      };
+
+      messageData.used_contact = JSON.stringify({
+        user_id: "468592027",
+        channel_name: "telegram",
+      });
+
+      // Добавляем reply_on_message
+      if (replyingTo) {
+        messageData.reply_on_message = JSON.stringify({
+          id: replyingTo.id,
+          text: replyingTo.text,
+          channel_name: replyingTo.messanger,
+        });
+      }
+
+      // Отправляем через Redux
+      await dispatch(createMessage(messageData)).unwrap();
+
+      // Обновляем локальное состояние
+      setMessage("");
+      setSubject("");
+      setFile(null);
+      dispatch(setReplyingTo(null));
+      dispatch(fetchChats());
+    } catch (error) {
+      console.error("Error sending message:", error);
+      alert(`Ошибка отправки сообщения: ${error.message}`);
     }
   };
 

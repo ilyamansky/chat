@@ -14,11 +14,14 @@ import FilterIcon from "../ui/icons/FilterIcon";
 import SearchIconChatList from "../ui/icons/SearchIconChatList";
 import LogoutForm from "./LogoutForm";
 import CustomScrollbar from "../ui/CustomScrollbar";
+import TestSocket from "./TestSocket";
+//import SocketManager from "./SocketManager";
 import {
   Popover,
   PopoverHandler,
   PopoverContent,
 } from "@material-tailwind/react";
+import SocketManager from "./SocketManager";
 
 export default function ChatList() {
   const dispatch = useDispatch();
@@ -350,8 +353,10 @@ export default function ChatList() {
         </div>
       </CustomScrollbar>
       <div>{renderSearchedCandidate()}</div>
+
       <div className="mt-auto pt-4 pb-2">
         <LogoutForm />
+        <SocketManager />
       </div>
     </div>
   );

@@ -386,12 +386,44 @@ const chatSlice = createSlice({
     setFilters(state, action) {
       state.selectedFilters = { ...state.selectedFilters, ...action.payload };
     },
-    addMessage(state, action) {
+    //addMessage(state, action) {
+    //const { chatId, message } = action.payload;
+    //if (!state.messages[chatId]) {
+    //state.messages[chatId] = [];
+    //}
+    // state.messages[chatId].push(message);
+    //},
+    addMessage: (state, action) => {
       const { chatId, message } = action.payload;
-      if (!state.messages[chatId]) {
-        state.messages[chatId] = [];
+      console.log(action.payload, "actionPayload");
+
+      // Create array if not exists
+      // if (!state.messages[chatId]) {
+      // state.messages[chatId] = [];
+      // }
+
+      // Check for duplicates using unique ID
+      const messageExists = state.messages[chatId]?.some(
+        (m) => m.id === message.id
+      );
+
+      if (!messageExists) {
+        state.messages[chatId]?.push({
+          ...message,
+          senderRole:
+            message.author.role === "candidate" ? "candidate" : "recruiter",
+          messanger: message.messanger || "telegram",
+          attachments: [],
+        });
+
+        // Auto-increment unread count if not active chat
+        //if (state.selectedChat?.id !== chatId) {
+        //const chatIndex = state.chats.findIndex(c => c.id === chatId);
+        //if (chatIndex > -1) {
+        //state.chats[chatIndex].unread_count += 1;
+        // }
+        //}
       }
-      state.messages[chatId].push(message);
     },
     resetUnreadCount(state, action) {
       const { chatId } = action.payload;

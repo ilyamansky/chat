@@ -14,8 +14,8 @@ export default function TestSocket() {
       console.log("Connected with ID:", newSocket.id);
     });
 
-    newSocket.on("test", (data) => {
-      console.log("Received:", data);
+    newSocket.on("telegram_received", (data) => {
+      console.log("Telegram sent event:", data);
     });
 
     return () => newSocket.disconnect();

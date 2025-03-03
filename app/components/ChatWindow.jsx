@@ -302,7 +302,7 @@ export default function ChatWindow() {
                 <div className="font-medium">
                   Ответ на сообщение через {message.replyTo.channel_name}
                 </div>
-                <div>{message.replyTo.text.substring(0, 50)}...</div>
+                <div>{message.replyTo?.text?.substring(0, 50)}...</div>
               </div>
             )}
 

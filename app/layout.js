@@ -3,6 +3,7 @@
 //import { ChatProvider } from "./chatState";
 import { Provider } from "react-redux";
 import AuthProvider from "./components/AuthProvider";
+import SocketManager from "./components/SocketManager";
 import store from "./store";
 
 import { inter } from "./ui/font";
