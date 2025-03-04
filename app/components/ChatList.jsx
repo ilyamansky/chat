@@ -85,28 +85,34 @@ export default function ChatList() {
     if (!searchedCandidate) return null;
 
     return (
-      <div className="flex p-1 mb-2 rounded-md hover:bg-white cursor-pointer">
-        <div className="w-8 h-8 m-[3px] flex items-center justify-center rounded-full border border-custom-blue bg-custom-gray-md">
-          {searchedCandidate.name.slice(0, 2).toUpperCase()}
+      <div className="flex p-1 mb-2 rounded-md cursor-pointer">
+        <div className="w-8 h-8 m-[3px] flex items-center justify-center rounded-full border border-[#8B9CBE] bg-custom-bg-gray">
+          {searchedCandidate.name
+            .split(" ")
+            .map((n) => n[0])
+            .join("")
+            .toUpperCase()}
         </div>
 
         <div className="flex-1 pl-1">
           <div className="flex justify-between items-center">
-            <p className="text-sm text-custom-blue">{searchedCandidate.name}</p>
+            <p className="text-sm text-black max-w-[60%] truncate">
+              {searchedCandidate.name}
+            </p>
             <button
               onClick={async () => {
                 try {
                   await dispatch(
                     addCandidate(searchedCandidate.candidate_id)
                   ).unwrap();
-                  alert("Кандидат успешно добавлен!");
+                  //alert("Кандидат успешно добавлен!");
                   dispatch(fetchChats());
                   setSearchInput("");
                 } catch (error) {
-                  alert(`Ошибка: ${error.message}`);
+                  alert(`Ошибка: ${error}`);
                 }
               }}
-              className="ml-2 bg-custom-blue text-white px-2 py-1 rounded text-sm hover:bg-blue-600"
+              className="ml-2  px-2 py-1 rounded text-sm border-[#CACACA] hover:bg-gray-50 flex text-custom-gray-details"
             >
               Добавить
             </button>
@@ -219,6 +225,7 @@ export default function ChatList() {
           )}
         </button>
       </div>
+      <div>{renderSearchedCandidate()}</div>
 
       {/* Chat List */}
       <CustomScrollbar>
@@ -285,14 +292,46 @@ export default function ChatList() {
                   </div>
 
                   {/* Vacancies - parse inline */}
-                  {vacancies.length > 0 && (
+                  {/*{vacancies.length > 0 && (
                     <div className="flex gap-1 my-1">
                       <div className="border flex flex-row overflow-hidden text-[13px] border-[#94A3B8] rounded">
-                        <div className="flex px-1 items-center text-custom-gray-dark text-[13px]">
+                        <div className="flex px-1 items-center whitespace-nowrap truncate max-w-[200px] text-custom-gray-dark text-[13px]">
                           {vacancies[0].name}
                         </div>
                         {vacancies[0].Employer_name && (
                           <div className="border-l items-center flex px-1 bg-clip-padding text-[13px] bg-[#f9f9f9] text-custom-gray-filter">
+                            {vacancies[0].Employer_name}
+                          </div>
+                        )}
+                      </div> */}
+                  {/*{vacancies.length > 0 && (
+                    <div className="my-1 grid grid-cols-[1fr_auto] gap-1 items-center">
+                      
+                      <div className="flex min-w-0 border border-[#94A3B8] rounded overflow-hidden">
+                        
+                        <div className="flex-1 min-w-0 truncate px-1 py-0.5 text-[13px] text-custom-gray-dark">
+                          {vacancies[0].name}
+                        </div>
+
+                      
+                        {vacancies[0].Employer_name && (
+                          <div className="flex-1 min-w-0 truncate border-l px-1 py-0.5 text-[13px] bg-[#f9f9f9] text-custom-gray-filter">
+                            {vacancies[0].Employer_name}
+                          </div>
+                        )}
+                      </div>*/}
+
+                  {vacancies.length > 0 && (
+                    <div className="my-1 flex gap-1">
+                      <div className="flex border border-[#94A3B8] rounded overflow-hidden max-w-[240px]">
+                        {/* Вакансия */}
+                        <div className="px-1 py-0.5 text-[13px] text-custom-gray-dark truncate max-w-[120px]">
+                          {vacancies[0].name}
+                        </div>
+
+                        {/* Компания */}
+                        {vacancies[0].Employer_name && (
+                          <div className="border-l px-1 py-0.5 text-[13px] bg-[#f9f9f9] text-custom-gray-filter truncate max-w-[120px]">
                             {vacancies[0].Employer_name}
                           </div>
                         )}
@@ -309,7 +348,7 @@ export default function ChatList() {
                             onMouseEnter={() => setActivePopoverIndex(index)}
                             onMouseLeave={() => setActivePopoverIndex(null)}
                           >
-                            <div className="border border-custom-gray-filter-light text-[#858B97] font-normal px-1 rounded">
+                            <div className="flex items-center border border-custom-gray-filter-light text-[#858B97] text-[13px] font-normal px-1 rounded">
                               +{vacancies?.length - 1 || 0}
                             </div>
                           </PopoverHandler>
@@ -352,9 +391,8 @@ export default function ChatList() {
           })}
         </div>
       </CustomScrollbar>
-      <div>{renderSearchedCandidate()}</div>
 
-      <div className="mt-auto pt-4 pb-2">
+      <div className="mt-auto pt-4 pb-1">
         <LogoutForm />
         <SocketManager />
       </div>

@@ -242,18 +242,25 @@ const ChatInput = () => {
   }; */
   } // prev version
 
-  const handleSubmit = async (event) => {
+  {
+    /*const handleSubmit = async (event) => {
     event.preventDefault();
+    //console.log(contacts[selectedTab], "Wooow");
     if (!validateMessenger() || (!message.trim() && !file) || !selectedChat)
       return;
-
+    const typeofcontact = selectedTab;
+    const index = Number([typeofcontact]);
+    //const [contactType] = selectedTab; // Получаем тип (email, phone и т.д.)
+    //const contactIndex = Number(selectedTab);
+    //const contactGroup = selectedChat.contacts[contactType];
+    //const contact = contactGroup?.[contactIndex];
     try {
       // Формируем контакты
       const getContactData = () => {
         if (!selectedTab || !selectedChat?.contacts) return null;
 
-        const [contactType] = selectedTab.split(" "); // Получаем тип (email, phone и т.д.)
-        const contactIndex = Number(selectedTab.replace(/\D/g, "")) - 1 || 0;
+        const [contactType] = selectedTab; // Получаем тип (email, phone и т.д.)
+        const contactIndex = Number(selectedTab);
         const contactGroup = selectedChat.contacts[contactType];
         const contact = contactGroup?.[contactIndex];
 
@@ -302,7 +309,7 @@ const ChatInput = () => {
       };
 
       messageData.used_contact = JSON.stringify({
-        user_id: "468592027",
+        user_id: "5605060378",
         channel_name: "telegram",
       });
 
@@ -322,11 +329,88 @@ const ChatInput = () => {
       setMessage("");
       setSubject("");
       setFile(null);
+      //console.log("wooow", selectedTab);
       dispatch(setReplyingTo(null));
       dispatch(fetchChats());
     } catch (error) {
+      console.log(index, "wooow", contacts[typeofcontact][0].content);
       console.error("Error sending message:", error);
       alert(`Ошибка отправки сообщения: ${error.message}`);
+    }
+  }; */
+  }
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    if (!validateMessenger() || (!message.trim() && !file) || !selectedChat)
+      return;
+
+    // Clear form state
+    setMessage("");
+    setSubject("");
+    setFile(null);
+    dispatch(setReplyingTo(null));
+
+    try {
+      // Parse contact type and index from selectedTab
+      const parts = selectedTab.split(" ");
+      const contactType = parts[0].toLowerCase();
+      const contactIndex = parts.length > 1 ? parseInt(parts[1], 10) : 1;
+
+      // Get contact group and validate
+      const contactGroup = contacts[contactType];
+      if (!contactGroup || contactGroup.length < contactIndex) {
+        throw new Error(`Invalid contact: ${selectedTab}`);
+      }
+
+      // Get actual contact info
+      const contactInfo = contactGroup[contactIndex - 1].content;
+
+      // Prepare used_contact payload
+      let usedContact;
+      switch (contactType) {
+        case "email":
+          usedContact = { email: contactInfo, channel_name: "email" };
+          break;
+        case "phone":
+        case "whatsapp":
+          usedContact = { phone: contactInfo, channel_name: contactType };
+          break;
+        case "telegram":
+          usedContact = {
+            user_id: contactInfo,
+            user_name: contactInfo,
+            channel_name: "telegram",
+          };
+          break;
+        default:
+          throw new Error(`Unsupported contact type: ${contactType}`);
+      }
+
+      // Prepare message data
+      const messageData = {
+        candidate_chat: selectedChat.id,
+        text: message,
+        "subject-tema": subject || undefined,
+        file: file || null,
+        used_contact: JSON.stringify(usedContact),
+        reply_on_message: "",
+      };
+
+      // Add reply metadata if needed
+      if (replyingTo) {
+        messageData.reply_on_message = JSON.stringify({
+          id: replyingTo.id,
+          text: replyingTo.text,
+          channel_name: replyingTo.messanger,
+        });
+      }
+
+      // Dispatch message creation
+      await dispatch(createMessage(messageData)).unwrap();
+    } catch (error) {
+      console.error("Error sending message:", error);
+      alert(`Ошибка отправки: ${error}`);
     }
   };
 

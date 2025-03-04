@@ -418,11 +418,6 @@ export default function ChatDetails() {
           Добавить
         </button>
       )}
-      <button
-        onClick={() => {
-          console.log(contacts);
-        }}
-      ></button>
     </div>
   );
 }

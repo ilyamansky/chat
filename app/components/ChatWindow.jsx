@@ -133,7 +133,7 @@ export default function ChatWindow() {
   console.log(selectedChat.contacts, "contacts!!!!!");
 
   return (
-    <div className="flex max-w-[900px] flex-col flex-grow overflow-x-hidden relative p-6 pl-0 pr-0 pt-1 items-center h-screen bg-white">
+    <div className="flex max-w-[900px] flex-col flex-grow overflow-x-hidden relative p-6 pl-0 pr-0 pt-1 pb-3 items-center h-screen bg-white">
       <div className="w-full">
         <div className="relative bg-[#F1F5F9] p-1 mx-2 flex flex-row mb-4 rounded justify-between items-center">
           <div className="flex flex-row gap-2 items-center flex-1">
@@ -279,13 +279,6 @@ export default function ChatWindow() {
                     </span>
                   )}{" "}
                 </div>
-                <button
-                  onClick={() => {
-                    console.log(message.messanger);
-                  }}
-                >
-                  HIIIII
-                </button>
               </div>
             </div>
             {/* Vertical Line */}
@@ -297,12 +290,12 @@ export default function ChatWindow() {
               </div>
             )}*/}
 
-            {message.replyTo && (
+            {message.replyTo && Object.keys(message.replyTo).length > 0 && (
               <div className="mt-1 ml-10 p-2 bg-[#F1F5F9] rounded text-sm text-gray-600 border-l-4 border-blue-500">
                 <div className="font-medium">
-                  Ответ на сообщение через {message.replyTo.channel_name}
+                  Ответ на сообщение через {message.messanger}
                 </div>
-                <div>{message.replyTo?.text?.substring(0, 50)}...</div>
+                <div>{message.replyTo.text?.substring(0, 50)}...</div>
               </div>
             )}
 
@@ -374,7 +367,7 @@ export default function ChatWindow() {
 
         <div ref={messagesEndRef}></div>
       </div>
-      <div className=" mt-auto w-full mb-0 bottom-0 bg-white chat-input-container ref={chatInputRef}">
+      <div className="mt-auto w-full mb-0 bottom-0 bg-white chat-input-container ref={chatInputRef}">
         <div className="mx-2">{<ChatInput />}</div>
       </div>
     </div>

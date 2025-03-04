@@ -1,16 +1,36 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 
-function safeJsonParse(jsonString) {
-  if (jsonString !== undefined && jsonString !== typeof Object) {
+{
+  /*function safeJsonParse(jsonString) {
+  if (jsonString !== undefined) {
     try {
       console.log(jsonString, "6");
-      return JSON.parse(jsonString) || null;
+      return JSON.parse(jsonString) || {};
       //return jsonString; // Возвращаем значение по умолчанию
     } catch (error) {
       console.error("Ошибка при парсинге JSON:", error);
       return null; // Возвращаем null или значения по умолчанию
     }
   }
+}*/
+}
+
+function safeJsonParse(jsonString) {
+  if (jsonString !== undefined && jsonString !== null) {
+    try {
+      // Проверяем, что строка не пустая
+      if (jsonString.trim() === "") {
+        return {}; // Возвращаем объект по умолчанию
+      }
+
+      // Пытаемся распарсить строку
+      return JSON.parse(jsonString);
+    } catch (error) {
+      console.error("Ошибка при парсинге JSON:", jsonString);
+      return null; // Возвращаем null или значения по умолчанию
+    }
+  }
+  return null; // Возвращаем null, если jsonString не определен или равен null
 }
 
 export const fetchChats = createAsyncThunk("chat/fetchChats", async () => {
@@ -98,7 +118,7 @@ export const fetchMessages = createAsyncThunk(
             sender: msg.user_id ? "Recruiter" : "Candidate",
             senderRole: msg.user_id ? "recruiter" : "candidate",
             messanger:
-              JSON.parse(msg.used_contact)?.channel_name ||
+              safeJsonParse(msg.used_contact)?.channel_name ||
               "Неизвестный мессенджер",
             subject: msg.subject_tema,
             attachments: [],
@@ -107,7 +127,7 @@ export const fetchMessages = createAsyncThunk(
               name: "Неизвестный автор",
               role: "unknown",
             },
-            reply: msg?.reply_on_message, // Можно добавить это поле, если нужно
+            replyTo: safeJsonParse(msg.reply_on_message), // Можно добавить это поле, если нужно
           };
         }),
       };
@@ -118,7 +138,8 @@ export const fetchMessages = createAsyncThunk(
   }
 );
 
-export const getCandidateByUrl = createAsyncThunk(
+{
+  /*export const getCandidateByUrl = createAsyncThunk(
   "chat/getCandidateByUrl",
   async (candidateUrl, { getState }) => {
     const token = getState().auth.token || localStorage.getItem("jwtToken");
@@ -132,6 +153,85 @@ export const getCandidateByUrl = createAsyncThunk(
     );
     if (!response.ok) throw new Error("Candidate not found");
     return await response.json();
+  }
+); */
+}
+{
+  /*export const getCandidateByUrl = createAsyncThunk(
+  "chat/getCandidateByUrl",
+  async (candidateUrl, { getState }) => {
+    try {
+      const token = getState().auth.token || localStorage.getItem("jwtToken");
+      const response = await fetch(
+        `https://prokrinilik.beget.app/webhook/get_candidate_by_url?candidate_url=${encodeURIComponent(
+          candidateUrl
+        )}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Candidate not found");
+      }
+      return await response.json();
+    } catch (error) {
+      alert("Error:", error);
+      // Можно добавить дополнительную обработку ошибок
+      //throw error; // Пробрасываем ошибку дальше для обработки в редюсере
+    }
+  }
+);*/
+}
+
+export const getCandidateByUrl = createAsyncThunk(
+  "chat/getCandidateByUrl",
+  async (candidateUrl, { getState }) => {
+    try {
+      const token = getState().auth.token || localStorage.getItem("jwtToken");
+      const response = await fetch(
+        `https://prokrinilik.beget.app/webhook/get_candidate_by_url?candidate_url=${encodeURIComponent(
+          candidateUrl
+        )}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      if (!response.ok) {
+        let errorMessage = "Произошла ошибка";
+
+        // Особый случай для 409 ошибки
+        if (response.status === 409) {
+          errorMessage = "Кандидат уже существует в базе";
+
+          // Пытаемся получить кастомное сообщение от сервера
+          try {
+            const errorData = await response.json();
+            errorMessage = errorData.message || errorMessage;
+          } catch (e) {
+            // Если не получилось распарсить JSON, используем дефолтное сообщение
+          }
+        }
+        // Для остальных ошибок
+        else {
+          try {
+            const errorData = await response.json();
+            errorMessage = errorData.message || `Ошибка: ${response.status}`;
+          } catch (e) {
+            errorMessage = `Ошибка ${response.status}: ${response.statusText}`;
+          }
+        }
+
+        throw new Error(errorMessage);
+      }
+
+      return await response.json();
+    } catch (error) {
+      //console.error("Error in getCandidateByUrl:", error.message);
+      alert(error.message);
+      //throw error;
+    }
   }
 );
 
@@ -314,7 +414,7 @@ export const createMessage = createAsyncThunk(
         throw new Error(error.message || "Failed to send message");
       }
 
-      return await response.json();
+      //return await response.json();
     } catch (error) {
       return rejectWithValue(error.message);
     }
@@ -412,7 +512,7 @@ const chatSlice = createSlice({
           ...message,
           senderRole:
             message.author.role === "candidate" ? "candidate" : "recruiter",
-          messanger: message.messanger || "telegram",
+          messanger: message.messanger,
           attachments: [],
         });
 
