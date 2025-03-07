@@ -39,3 +39,25 @@ export default function Home() {
 //text: "Оригинальное сообщение из Redux",
 //channel_name: "email",
 //}),
+
+
+applyFilters(state) {
+  {
+    /*const { vacancies, recruiters, clients } = action.payload;
+  state.filteredChats = state.chats.filter((chat) => {
+    const matchesVacancy = vacancies.length
+      ? vacancies.includes(chat.vacancy)
+      : true;
+    const matchesRecruiter = recruiters.length
+      ? recruiters.includes(chat.recruiter)
+      : true;
+    const matchesClients = clients.length
+      ? clients.some((client) => chat.clients?.includes(client))
+      : true;
+    return matchesVacancy && matchesRecruiter && matchesClients;
+  }); 
+  }
+  state.appliedFilters = Object.values(state.selectedFilters).filter(
+    (arr) => arr.length > 0
+  ).length;
+},

@@ -487,3 +487,8 @@ messages: {
     },
   ],
 },
+
+resetFilters(state) {
+  state.selectedFilters = { vacancies: [], recruiters: [], clients: [] };
+  state.appliedFilters = 0;
+},

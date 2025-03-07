@@ -281,7 +281,7 @@ export default function ChatList() {
                   </div>
 
                   <div className="flex justify-between">
-                    <p className="text-[13px] text-custom-text-gray">
+                    <p className="text-[13px] text-custom-text-gray truncate max-w-[220px]">
                       {user.last_message_text || "please help me find..."}
                     </p>
                     {user.unread_count > 0 && (
@@ -290,36 +290,6 @@ export default function ChatList() {
                       </span>
                     )}
                   </div>
-
-                  {/* Vacancies - parse inline */}
-                  {/*{vacancies.length > 0 && (
-                    <div className="flex gap-1 my-1">
-                      <div className="border flex flex-row overflow-hidden text-[13px] border-[#94A3B8] rounded">
-                        <div className="flex px-1 items-center whitespace-nowrap truncate max-w-[200px] text-custom-gray-dark text-[13px]">
-                          {vacancies[0].name}
-                        </div>
-                        {vacancies[0].Employer_name && (
-                          <div className="border-l items-center flex px-1 bg-clip-padding text-[13px] bg-[#f9f9f9] text-custom-gray-filter">
-                            {vacancies[0].Employer_name}
-                          </div>
-                        )}
-                      </div> */}
-                  {/*{vacancies.length > 0 && (
-                    <div className="my-1 grid grid-cols-[1fr_auto] gap-1 items-center">
-                      
-                      <div className="flex min-w-0 border border-[#94A3B8] rounded overflow-hidden">
-                        
-                        <div className="flex-1 min-w-0 truncate px-1 py-0.5 text-[13px] text-custom-gray-dark">
-                          {vacancies[0].name}
-                        </div>
-
-                      
-                        {vacancies[0].Employer_name && (
-                          <div className="flex-1 min-w-0 truncate border-l px-1 py-0.5 text-[13px] bg-[#f9f9f9] text-custom-gray-filter">
-                            {vacancies[0].Employer_name}
-                          </div>
-                        )}
-                      </div>*/}
 
                   {vacancies.length > 0 && (
                     <div className="my-1 flex gap-1">

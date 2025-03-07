@@ -1,6 +1,12 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { useSelector, useDispatch } from "react-redux"; // Import Redux hooks
-import { setFilters, applyFilters, resetFilters } from "../redux/chatSlice"; // Import Redux actions
+import {
+  setFilters,
+  applyFilters,
+  resetFilters,
+  setMessageFilters,
+  resetMessageFilters,
+} from "../redux/chatSlice"; // Import Redux actions
 import CrossIconFilter from "../ui/icons/CrossIconFilter";
 import FilterIcon from "../ui/icons/FilterIcon";
 import Select from "react-select";
@@ -58,11 +64,51 @@ const Option = (props) => {
 
 export default function MessagesFilter({ onClose }) {
   const dispatch = useDispatch();
-  const { selectedFilters } = useSelector((state) => state.chat); // Access Redux state
+  //const { selectedFilters } = useSelector((state) => state.chat); // Access Redux state
+  const { messageFilters, selectedChat, messages } = useSelector(
+    (state) => state.chat
+  );
+  const channelOptions = useSelector((state) => state.chat.knownChannels);
 
   const handleFilterChange = (filterType) => (selectedOptions) => {
     dispatch(setFilters({ [filterType]: selectedOptions || [] })); // Use Redux action
   };
+
+  const handleApply = (e) => {
+    e.preventDefault();
+    onClose();
+  };
+
+  const handleReset = () => {
+    dispatch(resetMessageFilters());
+    onClose();
+  };
+
+  const handleChannelChange = (selectedChannels) => {
+    dispatch(setMessageFilters({ channels: selectedChannels }));
+  };
+
+  const handleAuthorChange = (selectedAuthors) => {
+    dispatch(setMessageFilters({ authors: selectedAuthors }));
+  };
+
+  // Get unique authors from current chat's messages
+  const authorOptions = useMemo(() => {
+    if (!selectedChat?.id || !messages[selectedChat.id]) return [];
+
+    const uniqueAuthors = new Map();
+
+    messages[selectedChat.id].forEach((message) => {
+      if (message.author?.id) {
+        uniqueAuthors.set(message.author.id, {
+          value: message.author.id,
+          label: `${message.author.name} (${message.author.role})`,
+        });
+      }
+    });
+
+    return Array.from(uniqueAuthors.values());
+  }, [selectedChat?.id, messages]);
 
   const filterRef = useRef(null);
 
@@ -81,7 +127,8 @@ export default function MessagesFilter({ onClose }) {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [onClose]);
-  const applyFiltersHandler = (e) => {
+  {
+    /*const applyFiltersHandler = (e) => {
     e.preventDefault();
     dispatch(
       applyFilters({
@@ -93,7 +140,8 @@ export default function MessagesFilter({ onClose }) {
 
   const resetFiltersHandler = () => {
     dispatch(resetFilters()); // Use Redux action
-  };
+  }; */
+  }
 
   return (
     <div ref={filterRef} className="flex flex-row justify-between  p-4">
@@ -111,9 +159,13 @@ export default function MessagesFilter({ onClose }) {
             </div>
             <Select
               isMulti
-              options={nameOptions}
-              value={selectedFilters.authors}
-              onChange={handleFilterChange("authors")}
+              options={authorOptions}
+              value={messageFilters.authors}
+              //onChange={handleFilterChange("authors")}
+              //onChange={(selected) =>
+              //dispatch(setMessageFilters({ authors: selected }))
+              //}
+              onChange={handleAuthorChange}
               placeholder="Введите имя автора"
               isClearable={false}
               closeMenuOnSelect={false}
@@ -128,9 +180,13 @@ export default function MessagesFilter({ onClose }) {
             </div>
             <Select
               isMulti
-              options={clientOptions}
-              value={selectedFilters.channels}
-              onChange={handleFilterChange("channels")}
+              options={channelOptions}
+              value={messageFilters.channels}
+              //onChange={handleFilterChange("channels")}
+              //onChange={(selected) =>
+              //dispatch(setMessageFilters({ channels: selected }))
+              //}
+              onChange={handleChannelChange}
               placeholder="Введите название канала"
               isClearable={false}
               closeMenuOnSelect={false}
@@ -142,7 +198,7 @@ export default function MessagesFilter({ onClose }) {
           <hr className="my-4" />
           <div className="space-x-2">
             <button
-              //onClick={applyFiltersHandler}
+              //onClick={handleApply}
               onClick={onClose}
               className="px-4 py-2 bg-custom-gray-filter-dark text-sm border border-custom-gray-filter-dark text-white rounded"
             >
@@ -150,7 +206,7 @@ export default function MessagesFilter({ onClose }) {
             </button>
             <button
               type="button"
-              //onClick={resetFiltersHandler}
+              onClick={handleReset}
               className="px-4 py-2 text-sm text-custom-gray-filter-light border border-custom-gray-filter-light rounded"
             >
               Сбросить фильтры

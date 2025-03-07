@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, use } from "react";
+import { useState, useEffect, useRef, useMemo, use } from "react";
 import { useSelector, useDispatch } from "react-redux"; // Import Redux hooks
 import {
   resetUnreadCount,
@@ -31,7 +31,7 @@ import TestSocket from "./TestSocket";
 
 export default function ChatWindow() {
   const dispatch = useDispatch();
-  const { selectedChat, messages, replyingTo } = useSelector(
+  const { selectedChat, messages, replyingTo, messageFilters } = useSelector(
     (state) => state.chat
   ); // Access Redux state
   const chat = selectedChat;
@@ -41,6 +41,7 @@ export default function ChatWindow() {
   const [isSearching, setIsSearching] = useState(false);
   const [filter, setFilter] = useState("");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [localSearch, setLocalSearch] = useState("");
 
   // Add scroll ref
   const messagesEndRef = useRef(null);
@@ -116,9 +117,74 @@ export default function ChatWindow() {
   }
   console.log(selectedChat?.messages, "messagesLength");
 
-  const filteredMessages = chatMessages.filter((message) =>
+  {
+    /*const filteredMessages = chatMessages.filter((message) =>
     message?.text?.toLowerCase().includes(filter.toLowerCase())
-  );
+  );*/
+  }
+
+  {
+    /*const filteredMessages = useMemo(() => {
+    return chatMessages.filter((message) => {
+      // 1. Text search filter
+      const searchMatch = message.text
+        ?.toLowerCase()
+        .includes(localSearch.toLowerCase());
+
+      // 2. Channel filter
+      const channelMatch =
+        messageFilters.channels?.length === 0 ||
+        messageFilters.channels?.some((c) => c.value === message.messanger);
+
+      // 3. Author filter
+      const authorMatch =
+        messageFilters.authors.length === 0 ||
+        messageFilters.authors.some((a) => a.value === message.author?.id);
+
+      return searchMatch && channelMatch && authorMatch;
+    });
+  }, [chatMessages, localSearch, messageFilters]); */
+  }
+
+  {
+    /*const filteredMessages = useMemo(() => {
+    return chatMessages.filter((message) => {
+      // Channel check
+      const channelMatch =
+        messageFilters.channels.length === 0 ||
+        messageFilters.channels.some((c) => c.value === message.messanger);
+
+      // Author check
+      const authorMatch =
+        messageFilters.authors.length === 0 ||
+        messageFilters.authors.some((a) => a.value === message.author?.id);
+
+      return channelMatch && authorMatch;
+    });
+  }, [chatMessages, messageFilters]); // Re-run when filters change */
+  }
+
+  const filteredMessages = useMemo(() => {
+    return chatMessages.filter((message) => {
+      // 1. Text search filter
+      const searchMatch = message.text
+        ?.toLowerCase()
+        .includes(localSearch.toLowerCase());
+
+      // 2. Channel filter
+      const channelMatch =
+        messageFilters.channels.length === 0 ||
+        messageFilters.channels.some((c) => c.value === message.messanger);
+
+      // 3. Author filter
+      const authorMatch =
+        messageFilters.authors.length === 0 ||
+        messageFilters.authors.some((a) => a.value === message.author?.id);
+
+      // All filters must match (AND logic)
+      return searchMatch && channelMatch && authorMatch;
+    });
+  }, [chatMessages, localSearch, messageFilters]); // Add localSearch to dependencies
 
   if (!chat) {
     return (
@@ -152,8 +218,10 @@ export default function ChatWindow() {
                     type="text"
                     placeholder="Введите строку для поиска"
                     className="bg-white w-full flex p-2 rounded-md focus:outline-none pr-8"
-                    value={filter}
-                    onChange={(e) => setFilter(e.target.value)}
+                    value={localSearch}
+                    onChange={(e) => setLocalSearch(e.target.value)}
+                    //value={filter}
+                    //onChange={(e) => setFilter(e.target.value)}
                   />
                   <div
                     className="absolute right-1 top-1/2 -translate-y-1/2 cursor-pointer pr-0"

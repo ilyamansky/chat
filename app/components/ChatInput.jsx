@@ -151,7 +151,7 @@ const ChatInput = () => {
         .flatMap((chat) => messages[chat.id] || [])
         .find((msg) => msg.id === replyingTo.id);
 
-      if (originalMessage?.messanger === "Email") {
+      if (originalMessage?.messanger === "email") {
         setSubject(originalMessage.subject?.replace("Тема: ", "") || "");
       }
     } else {

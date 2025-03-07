@@ -138,52 +138,6 @@ export const fetchMessages = createAsyncThunk(
   }
 );
 
-{
-  /*export const getCandidateByUrl = createAsyncThunk(
-  "chat/getCandidateByUrl",
-  async (candidateUrl, { getState }) => {
-    const token = getState().auth.token || localStorage.getItem("jwtToken");
-    const response = await fetch(
-      `https://prokrinilik.beget.app/webhook/get_candidate_by_url?candidate_url=${encodeURIComponent(
-        candidateUrl
-      )}`,
-      {
-        headers: { Authorization: `Bearer ${token}` },
-      }
-    );
-    if (!response.ok) throw new Error("Candidate not found");
-    return await response.json();
-  }
-); */
-}
-{
-  /*export const getCandidateByUrl = createAsyncThunk(
-  "chat/getCandidateByUrl",
-  async (candidateUrl, { getState }) => {
-    try {
-      const token = getState().auth.token || localStorage.getItem("jwtToken");
-      const response = await fetch(
-        `https://prokrinilik.beget.app/webhook/get_candidate_by_url?candidate_url=${encodeURIComponent(
-          candidateUrl
-        )}`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error("Candidate not found");
-      }
-      return await response.json();
-    } catch (error) {
-      alert("Error:", error);
-      // Можно добавить дополнительную обработку ошибок
-      //throw error; // Пробрасываем ошибку дальше для обработки в редюсере
-    }
-  }
-);*/
-}
-
 export const getCandidateByUrl = createAsyncThunk(
   "chat/getCandidateByUrl",
   async (candidateUrl, { getState }) => {
@@ -262,7 +216,7 @@ export const fetchUsers = createAsyncThunk(
   async (_, { getState }) => {
     const token = getState().auth.token;
     const response = await fetch(
-      "https://prokrinilik.beget.app/webhook-test/get_users",
+      "https://prokrinilik.beget.app/webhook/get_users",
       {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -276,51 +230,42 @@ export const fetchUsers = createAsyncThunk(
     return data[0].users;
   }
 );
-
-// chatSlice.js
-// chatSlice.js
-export const sendHardcodedMessage = createAsyncThunk(
-  "chat/sendHardcodedMessage",
-  async (_, { rejectWithValue }) => {
-    try {
-      // Хардкодные данные
-      const hardcodedData = {
-        candidate_chat: "86",
-        text: "Тестовое сообщение из Redux",
-
-        used_contact: {
-          user_id: "5605060378",
-          user_name: "ilya_nn_mm",
-          channel_name: "telegram",
-        },
-      };
-
-      const token =
-        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiMiIsImV4cCI6MTgyNjQwNjAyOCwiaWF0IjoxNzQwMDA2MDI4fQ.7_NyQj5R-lgESKV1V50h0IK5Iw0KHjmDBPUBUFnkQVs";
-
-      const response = await fetch(
-        "https://prokrinilik.beget.app/webhook/create_message",
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(hardcodedData),
-        }
-      );
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || "Ошибка сервера");
-      }
-
-      return await response.json();
-    } catch (error) {
-      return rejectWithValue(error.message);
-    }
+export const fetchCompanies = createAsyncThunk(
+  "chat/fetchCompanies",
+  async (_, { getState }) => {
+    //const token = getState().auth.token || localStorage.getItem("jwtToken");
+    const token =
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiMiIsImV4cCI6MTgyNjQwNjAyOCwiaWF0IjoxNzQwMDA2MDI4fQ.7_NyQj5R-lgESKV1V50h0IK5Iw0KHjmDBPUBUFnkQVs";
+    const response = await fetch(
+      "https://prokrinilik.beget.app/webhook/get_companies",
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    if (!response.ok) throw new Error("Failed to fetch companies");
+    const data = await response.json();
+    return data; // Assuming response is array of { customerid, name, ... }
   }
 );
+export const fetchVacancies = createAsyncThunk(
+  "chat/fetchVacancies",
+  async (customerIds, { getState }) => {
+    //const token = getState().auth.token || localStorage.getItem("jwtToken");
+    const token =
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiMiIsImV4cCI6MTgyNjQwNjAyOCwiaWF0IjoxNzQwMDA2MDI4fQ.7_NyQj5R-lgESKV1V50h0IK5Iw0KHjmDBPUBUFnkQVs";
+    const params = new URLSearchParams();
+    customerIds.forEach((id) => params.append("customerid", id));
+
+    const response = await fetch(
+      `https://prokrinilik.beget.app/webhook/get_vacancies?${params.toString()}`,
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    if (!response.ok) throw new Error("Failed to fetch vacancies");
+    const data = await response.json();
+    return data; // Assuming response is array of { id, name, customerid, ... }
+  }
+);
+
+// chatSlice.js
+// chatSlice.js
 
 export const resetUnreadCountMessages = createAsyncThunk(
   "chat/resetUnreadCountMessages",
@@ -379,6 +324,51 @@ export const updateContactsAPI = createAsyncThunk(
     } catch (error) {
       return rejectWithValue(error.response.data);
     }
+  }
+);
+
+export const fetchFilteredChats = createAsyncThunk(
+  "chat/fetchFilteredChats",
+  async (filters, { getState }) => {
+    //const token = getState().auth.token;
+    const token =
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiMiIsImV4cCI6MTgyNjQwNjAyOCwiaWF0IjoxNzQwMDA2MDI4fQ.7_NyQj5R-lgESKV1V50h0IK5Iw0KHjmDBPUBUFnkQVs";
+
+    const params = new URLSearchParams({
+      vacancy_ids: JSON.stringify(filters.vacancyIds || []),
+      user_ids: JSON.stringify(filters.userIds || []),
+      employers_ids: JSON.stringify(filters.employerIds || []),
+    });
+
+    const response = await fetch(
+      `https://prokrinilik.beget.app/webhook/get_chats?${params.toString()}`,
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    if (!response.ok) throw new Error("Failed to fetch filtered chats");
+    return response.json();
+  }
+);
+
+export const applyFilters = createAsyncThunk(
+  "chat/applyFilters",
+  async (_, { getState, dispatch }) => {
+    const { selectedFilters } = getState().chat;
+    const filters = {
+      employerIds: selectedFilters.clients.map((c) => c.value),
+      vacancyIds: selectedFilters.vacancies.map((v) => v.value),
+      userIds: selectedFilters.recruiters.map((r) => r.value),
+    };
+
+    await dispatch(fetchFilteredChats(filters));
+    return filters;
+  }
+);
+
+export const resetFilters = createAsyncThunk(
+  "chat/resetFilters",
+  async (_, { dispatch }) => {
+    await dispatch(fetchChats());
+    return null;
   }
 );
 
@@ -441,6 +431,16 @@ const initialState = {
   appliedFilters: 0,
   showAwaitingResponse: false,
   selectedChat: null,
+  messageFilters: {
+    channels: [],
+    authors: [],
+  },
+  knownChannels: [
+    { value: "telegram", label: "Telegram" },
+    { value: "email", label: "Email" },
+    { value: "whatsapp", label: "WhatsApp" },
+    { value: "phone", label: "Phone" },
+  ],
 };
 
 const chatSlice = createSlice({
@@ -450,26 +450,43 @@ const chatSlice = createSlice({
     toggleIsOpen(state) {
       state.isOpen = !state.isOpen;
     },
-    applyFilters(state) {
-      {
-        /*const { vacancies, recruiters, clients } = action.payload;
-      state.filteredChats = state.chats.filter((chat) => {
-        const matchesVacancy = vacancies.length
-          ? vacancies.includes(chat.vacancy)
-          : true;
-        const matchesRecruiter = recruiters.length
-          ? recruiters.includes(chat.recruiter)
-          : true;
-        const matchesClients = clients.length
-          ? clients.some((client) => chat.clients?.includes(client))
-          : true;
-        return matchesVacancy && matchesRecruiter && matchesClients;
-      }); */
-      }
-      state.appliedFilters = Object.values(state.selectedFilters).filter(
-        (arr) => arr.length > 0
-      ).length;
+
+    setMessageFilters: (state, action) => {
+      state.messageFilters = {
+        ...state.messageFilters, // Keep existing filters
+        ...action.payload, // Merge with new filters
+      };
     },
+    resetMessageFilters: (state) => {
+      state.messageFilters = initialState.messageFilters;
+    },
+    //resetMessageFilters: (state) => {
+    //state.messageFilters = { channels: [], authors: [] };
+    //},
+
+    /*
+    applyFilters: (state) => {
+      const { vacancies, recruiters, clients } = state.selectedFilters;
+      const vacancyIds = vacancies.map((v) => v.value);
+      const userIds = recruiters.map((r) => r.value);
+      const employerIds = clients.map((c) => c.value);
+
+      // Dispatch the filtered fetch
+      dispatch(fetchFilteredChats({ vacancyIds, userIds, employerIds }));
+
+      // Optional: Update local state if needed
+      state.appliedFilters = [vacancies, recruiters, clients].filter(
+        (arr) => arr.length
+      ).length;
+      console.log("filtersLength", state.appliedFilters);
+    }, */
+
+    /*resetFilters: (state) => {
+      state.selectedFilters = { vacancies: [], recruiters: [], clients: [] };
+      state.appliedFilters = 0;
+      dispatch(fetchChats()); // Refetch original chats
+    }, */
+
     toggleFilter(state) {
       state.showAwaitingResponse = !state.showAwaitingResponse;
     },
@@ -479,10 +496,7 @@ const chatSlice = createSlice({
     selectChat(state, action) {
       state.selectedChat = action.payload;
     },
-    resetFilters(state) {
-      state.selectedFilters = { vacancies: [], recruiters: [], clients: [] };
-      state.appliedFilters = 0;
-    },
+
     setFilters(state, action) {
       state.selectedFilters = { ...state.selectedFilters, ...action.payload };
     },
@@ -584,6 +598,11 @@ const chatSlice = createSlice({
         state.status = "failed";
         state.error = action.error.message;
       })
+      .addCase(fetchFilteredChats.fulfilled, (state, action) => {
+        state.filteredChats = action.payload.chats; // Make sure payload structure matches
+        state.meta.awaiting_response =
+          action.payload.meta?.awaiting_response || 0;
+      })
       .addCase(updateContactsAPI.pending, (state) => {
         state.status = "loading";
       })
@@ -655,6 +674,17 @@ const chatSlice = createSlice({
           }
         });
       })
+      .addCase(applyFilters.fulfilled, (state, action) => {
+        console.log(action, "stateFilters");
+        state.appliedFilters = [
+          action.payload.employerIds,
+          action.payload.vacancyIds,
+          action.payload.userIds,
+        ].filter((arr) => arr?.length).length;
+      })
+      .addCase(resetFilters.fulfilled, (state) => {
+        state.appliedFilters = 0;
+      })
       .addCase(fetchUsers.fulfilled, (state, action) => {
         state.users = action.payload;
       });
@@ -675,17 +705,19 @@ const chatSlice = createSlice({
 
 export const {
   toggleIsOpen,
-  applyFilters,
+  //applyFilters,
   toggleFilter,
   setShowAwaitingResponse,
   selectChat,
-  resetFilters,
+  //resetFilters,
   setFilters,
   addMessage,
   resetUnreadCount,
   addContact,
   removeContact,
   setReplyingTo,
+  setMessageFilters,
+  resetMessageFilters,
 } = chatSlice.actions;
 
 export default chatSlice.reducer;
