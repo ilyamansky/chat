@@ -21,53 +21,6 @@ import clsx from "clsx";
 import CustomScrollbar from "../ui/CustomScrollbar";
 import MenuList from "../ui/MenuList";
 
-// Options for selectors
-const clientOptions = [
-  {
-    value: "sberbank",
-    label: "Сбер",
-    description: "Крупнейший банк России, отделения по всей стране",
-  },
-  {
-    value: "alfabank",
-    label: "Альфа Банк",
-    description: "Топ 6 банков Росии по собственному капиталу",
-  },
-  {
-    value: "tbank",
-    label: "Т-банк",
-    description: "Мы - инновационная финтех компания Росиии",
-  },
-  {
-    value: "vtb",
-    label: "ВТБ Банк",
-    description: "Крупнейший банк России, отделения по всей стране",
-  },
-  {
-    value: "rosbank",
-    label: "Росбанк",
-    description: "Крупнейший банк России, отделения по всей стране",
-  },
-];
-
-const vacancyOptions = [
-  { value: "developer", label: "Developer" },
-  { value: "designer", label: "Designer" },
-  { value: "manager", label: "Manager" },
-  { value: "devOps", label: "Devops" },
-  { value: "seniorFrontend", label: "Senior Frontender" },
-  { value: "juniorBackend", label: "Junior Backender" },
-  { value: "intern", label: "intern" },
-];
-
-const recruiterOptions = [
-  { value: "ivanov", label: "Иванов И.И." },
-  { value: "petrov", label: "Петров П.П." },
-  { value: "you", label: "Вы" },
-  { value: "zovulkina", label: "Зовулькина Дарья" },
-  { value: "nemov", label: "Михаил Немов" },
-];
-
 const MultiValueRemove = (props) => {
   return (
     <div className="m-0 p-0" {...props.innerProps}>
@@ -122,39 +75,27 @@ const ChatsFilter = ({ onClose }) => {
 
   const filterRef1 = useRef(null);
 
-  {
-    /*const loadCompanies = async (inputValue) => {
-    const { payload } = await dispatch(fetchCompanies());
-    console.log(payload, "payload");
-    return payload
-      .map((company) => ({
-        value: company.customerid,
-        label: company.name,
-        description: company.description,
-      }))
-      .filter((i) => i.label.toLowerCase().includes(inputValue.toLowerCase()));
-  };*/
-  }
   const loadCompanies = async (inputValue) => {
     try {
       // Fetch companies from API
       const { payload } = await dispatch(fetchCompanies());
-      console.log(payload, "CompaniesPaylod");
 
       // Check if payload contains clients array
       if (!payload?.clients) return [];
 
       // Transform API response to react-select options
-      return payload.clients.map((company) => ({
-        value: company.customerId, // Note the capital D in customerId
-        label: company.name,
-        description: company.description || "", // Handle null descriptions
-        // Add additional fields if needed:
-        region: company.region?.name,
-        contacts: company.contacts,
-      }));
-      //.filter(company =>
-      //company.label.toLowerCase().includes(inputValue.toLowerCase()) ||
+      return payload.clients
+        .map((company) => ({
+          value: company.customerId, // Note the capital D in customerId
+          label: company.name,
+          description: company.description || "", // Handle null descriptions
+          // Add additional fields if needed:
+          region: company.region?.name,
+          contacts: company.contacts,
+        }))
+        .filter((company) =>
+          company.label.toLowerCase().includes(inputValue.toLowerCase())
+        );
       //(company.description && company.description.toLowerCase().includes(inputValue.toLowerCase()))
     } catch (error) {
       console.error("Error loading companies:", error);
@@ -162,58 +103,12 @@ const ChatsFilter = ({ onClose }) => {
     }
   };
 
-  {
-    /*const loadVacancies = async (inputValue) => {
-    console.log(inputValue);
-    const selectedCompanies = selectedFilters.clients.map((c) => c.value);
-    if (selectedCompanies.length === 0) return [];
-
-    const { payload } = await dispatch(fetchVacancies(selectedCompanies));
-    console.log(payload[0].items, "payloadVacancies");
-    const x = payload[0].items
-      .map((vacancy) => ({
-        value: vacancy.id,
-        label: vacancy.name,
-      }))
-      .filter((i) => i.label.toLowerCase().includes(inputValue.toLowerCase()));
-    console.log(x, "x");
-  };*/
-  }
-  {
-    /*const loadVacancies = async (inputValue) => {
-    const selectedCompanies = selectedFilters.clients.map((c) => c.value);
-    if (selectedCompanies.length === 0) return [];
-
-    try {
-      const { payload } = await dispatch(fetchVacancies(selectedCompanies));
-
-      // Handle API response structure
-      if (!payload || !payload[0]?.items) return [];
-
-      return payload[0].items
-        .filter(
-          (vacancy) =>
-            vacancy.name.toLowerCase().includes(inputValue.toLowerCase()) &&
-            selectedCompanies.includes(vacancy.customerId)
-        )
-        .map((vacancy) => ({
-          value: vacancy.jobId, // Using jobId instead of id based on response
-          label: vacancy.name,
-          customerId: vacancy.customerId,
-          description: vacancy.description,
-        }));
-    } catch (error) {
-      console.error("Error loading vacancies:", error);
-      return [];
-    }
-  };*/
-  }
   const loadVacancies = async (inputValue) => {
-    const selectedCompanies = selectedFilters.clients.map((c) => c.value);
-    if (selectedCompanies.length === 0) return [];
+    const selectedCompanies = selectedFilters.clients[0]?.value;
+    if (!selectedCompanies) return [];
 
     try {
-      const { payload } = await dispatch(fetchVacancies(selectedCompanies));
+      const { payload } = await dispatch(fetchVacancies([selectedCompanies]));
 
       if (!payload || !payload[0]?.items) return [];
 
@@ -227,7 +122,7 @@ const ChatsFilter = ({ onClose }) => {
         .map((vacancy) => ({
           value: vacancy.jobId,
           label: vacancy.name,
-          description: vacancy.description,
+          //description: vacancy.description,
         }));
     } catch (error) {
       console.error("Error loading vacancies:", error);
@@ -245,34 +140,12 @@ const ChatsFilter = ({ onClose }) => {
       .filter((i) => i.label.toLowerCase().includes(inputValue.toLowerCase()));
   };
 
-  {
-    /*useEffect(() => {
-    //dispatch(fetchClients());
-    dispatch(fetchUsers()).then((result) => {
-      console.log(result);
-      if (result.meta.requestStatus === "fulfilled") {
-        console.log("Users data:", result.payload);
-      }
-    });
-  }, [dispatch]); */
-  }
-
-  {
-    /*useEffect(() => {
-    const loadInitialVacancies = async () => {
-      const selectedCompanyIds = selectedFilters.clients.map((c) => c.value);
-      if (selectedCompanyIds.length > 0) {
-        await dispatch(fetchVacancies(selectedCompanyIds));
-      }
-    };
-    loadInitialVacancies();
-  }, [selectedFilters.clients, dispatch]);*/
-  }
   useEffect(() => {
     const loadVacanciesForSelectedCompanies = async () => {
-      const selectedCompanyIds = selectedFilters.clients.map((c) => c.value);
-      if (selectedCompanyIds.length > 0) {
-        await dispatch(fetchVacancies(selectedCompanyIds));
+      //const selectedCompanyIds = selectedFilters.clients.map((c) => c.value);
+      const selectedCompanyIds = selectedFilters.clients[0]?.value;
+      if (selectedCompanyIds) {
+        await dispatch(fetchVacancies([selectedCompanyIds]));
       }
     };
 
@@ -295,8 +168,10 @@ const ChatsFilter = ({ onClose }) => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [onClose]);
 
-  useEffect(() => {
-    const currentCompanyIds = selectedFilters.clients.map((c) => c.value);
+  {
+    /*useEffect(() => {
+    //const currentCompanyIds = selectedFilters.clients.map((c) => c.value);
+    const currentCompanyIds = selectedFilters.clients[0]?.value;
     const filteredVacancies = selectedFilters.vacancies.filter((v) =>
       currentCompanyIds.includes(v.customerId)
     );
@@ -304,39 +179,20 @@ const ChatsFilter = ({ onClose }) => {
     if (filteredVacancies.length !== selectedFilters.vacancies.length) {
       dispatch(setFilters({ vacancies: filteredVacancies }));
     }
+  }, [selectedFilters.clients, dispatch]); */
+  }
+  useEffect(() => {
+    const selectedCompanyId = selectedFilters.clients[0]?.value;
+    const filteredVacancies = selectedCompanyId
+      ? selectedFilters.vacancies.filter(
+          (v) => v.customerId === selectedCompanyId
+        )
+      : [];
+
+    if (filteredVacancies.length !== selectedFilters.vacancies.length) {
+      dispatch(setFilters({ vacancies: filteredVacancies }));
+    }
   }, [selectedFilters.clients, dispatch]);
-
-  //const applyFiltersHandler = (e) => {
-  //e.preventDefault();
-  //dispatch(applyFilters()); // Use Redux action
-  //onClose();
-  //dispatch(
-  {
-    /*applyFilters({
-        clients: selectedFilters.clients.map((option) => option.value),
-        vacancies: selectedFilters.vacancies.map((option) => option.value),
-        recruiters: selectedFilters.recruiters.map((option) => option.value),
-      })*/
-  }
-
-  // ); // Use Redux action
-  //};
-  {
-    /*const applyFiltersHandler = (e) => {
-    e.preventDefault();
-    const { clients, vacancies, recruiters } = selectedFilters;
-
-    const filters = {
-      employerIds: clients.map((c) => c.value),
-      vacancyIds: vacancies.map((v) => v.value),
-      userIds: recruiters.map((r) => r.value),
-    };
-    console.log(applyFilters(filters));
-
-    dispatch(fetchFilteredChats(filters));
-    onClose();
-  };*/
-  }
 
   const applyFiltersHandler = (e) => {
     e.preventDefault();
@@ -358,6 +214,10 @@ const ChatsFilter = ({ onClose }) => {
     dispatch(toggleIsOpen()); // Use Redux action
   };
 
+  useEffect(() => {
+    dispatch(fetchCompanies()); // Initial load on mount
+  }, [dispatch]); // Add to component
+
   return (
     <form ref={filterRef1} className="space-y-2 flex flex-col">
       <div className="flex flex-row items-center justify-between">
@@ -374,7 +234,7 @@ const ChatsFilter = ({ onClose }) => {
         </div>
         <div className="relative w-full">
           <button
-            className="w-full min-h-10 flex flex-wrap p-1 rounded bg-white border border-[#E3E3E3] hover:border-[#94A3B8]"
+            className="w-full min-h-10 flex flex-wrap p-1 rounded bg-white border border-[#CACACA] hover:border-[#94A3B8]"
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
@@ -382,7 +242,7 @@ const ChatsFilter = ({ onClose }) => {
                 // Close immediately if already open
                 if (prev) return false;
                 // Open and load companies only when opening
-                dispatch(fetchCompanies());
+                //dispatch(fetchCompanies());
                 (prev) => !prev;
                 return true;
               });
@@ -392,30 +252,38 @@ const ChatsFilter = ({ onClose }) => {
               selectedFilters.clients.map((client) => (
                 <div
                   key={client.value}
-                  className="flex items-center m-1 px-2 py-1 bg-gray-100 rounded text-sm text-[#64748B]"
+                  //className="flex items-center m-1 px-2 py-1 bg-gray-100 rounded text-sm text-[#64748B]"
+                  className="flex flex-row overflow-hidden flex-start ml-1 my-1 items-center text-[#64748B] text-[13px] border border-custom-bg-gray rounded"
                 >
-                  {client.label}
+                  <div className="p-[1px] px-1">{client.label}</div>
                   <div
                     onClick={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
                       dispatch(
+                        //setFilters({
+                        //clients: selectedFilters.clients.filter(
+                        //(c) => c.value !== client.value
+                        //),
+                        //})
                         setFilters({
-                          clients: selectedFilters.clients.filter(
-                            (c) => c.value !== client.value
-                          ),
+                          clients: [],
+                          vacancies: [], // Clear vacancies when removing company
                         })
                       );
                       //setIsOpen(false);
                     }}
-                    className="ml-2 text-[#94A3B8] hover:text-[#64748B]"
+                    //className="ml-2 text-[#94A3B8] hover:text-[#64748B]"
+                    className="cursor-pointer border-l border-[#94A3B8] py-[2px] bg-[#f9f9f9]"
                   >
-                    ×
+                    <CrossIconSelect />
                   </div>
                 </div>
               ))
             ) : (
-              <span className="text-[#CACACA] pl-1">Все по умолчанию</span>
+              <span className="text-left pl-1 py-1 text-[#CACACA] text-[15px]">
+                Все по умолчанию
+              </span>
             )}
           </button>
 
@@ -423,12 +291,22 @@ const ChatsFilter = ({ onClose }) => {
             <div className="absolute top-full left-0 right-0 z-10 mt-1">
               <AsyncSelect
                 autoFocus
-                isMulti
-                defaultOptions
+                //isMulti
+                defaultOptions={true} // This is crucial for initial load
+                cacheOptions={true} // Enable caching
                 loadOptions={loadCompanies}
-                value={selectedFilters.clients}
+                value={selectedFilters.clients[0] || null}
+                // onChange={(selected) => {
+                //dispatch(setFilters({ clients: selected || [] }));
+                // setIsOpen(false);
+                //}}
                 onChange={(selected) => {
-                  dispatch(setFilters({ clients: selected || [] }));
+                  dispatch(
+                    setFilters({
+                      clients: selected ? [selected] : [],
+                      vacancies: [], // Clear vacancies when changing company
+                    })
+                  );
                   setIsOpen(false);
                 }}
                 //onMenuClose={() => setIsOpen(false)}
@@ -437,7 +315,7 @@ const ChatsFilter = ({ onClose }) => {
                   //Control: CustomControl,
                   Option,
                   MenuList,
-                  MultiValue: () => null,
+                  SingleValue: () => null,
                   DropdownIndicator: null,
                   IndicatorSeparator: null,
                 }}
@@ -470,22 +348,12 @@ const ChatsFilter = ({ onClose }) => {
         <div className="text-[13px] mb-1 text-custom-gray-filter">
           Фильтрация по вакансиям
         </div>
-        {/*<Select
-          isMulti
-          options={vacancyOptions}
-          value={selectedFilters.vacancies}
-          onChange={handleFilterChange("vacancies")}
-          placeholder="Активные по умолчанию"
-          isClearable={false}
-          closeMenuOnSelect={false}
-          hideSelectedOptions={false}
-          components={{ Option, MultiValueRemove, MenuList }}
-          styles={customSelectStyles}
-        />*/}
+
         <AsyncSelect
-          key={selectedFilters.clients.map((c) => c.value).join(",")}
+          //key={selectedFilters.clients.map((c) => c.value).join(",")}
+          key={selectedFilters.clients[0]?.value || "empty"} // Single key
           isMulti
-          cacheOptions
+          cacheOptions={true}
           defaultOptions={true} // This is crucial for initial load
           loadOptions={loadVacancies}
           value={selectedFilters.vacancies}
@@ -515,22 +383,10 @@ const ChatsFilter = ({ onClose }) => {
         <div className="text-[13px] mb-1 text-custom-gray-filter">
           Фильтрация по рекрутерам
         </div>
-        {/*<Select
-          isMulti
-          options={recruiterOptions}
-          value={selectedFilters.recruiters}
-          onChange={handleFilterChange("recruiters")}
-          placeholder=" "
-          isClearable={false}
-          closeMenuOnSelect={false}
-          hideSelectedOptions={false}
-          components={{ Option, MultiValueRemove, MenuList }}
-          styles={customSelectStyles}
-        />*/}
         <AsyncSelect
           isMulti
-          cacheOptions
-          defaultOptions
+          cacheOptions={true}
+          defaultOptions={true} // This is crucial for initial load
           loadOptions={loadRecruiters}
           value={selectedFilters.recruiters}
           onChange={handleFilterChange("recruiters")}
