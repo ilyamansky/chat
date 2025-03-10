@@ -83,10 +83,10 @@ export default function SocketManager() {
         );
         dispatch(
           updateChatState({
-            chatId: messageData.candidate_id,
+            chatId: messageData.candidate_id?.toString(),
             unreadCount: messageData.unread_count,
             lastMessage: formattedMessage.text,
-            lastMessageDate: formattedMessage.timestamp,
+            timestamp: formattedMessage.timestamp,
           })
         );
       } catch (error) {
