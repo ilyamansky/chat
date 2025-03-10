@@ -8,6 +8,7 @@ import {
   fetchChats,
   getCandidateByUrl,
   addCandidate,
+  updateChatState,
 } from "../redux/chatSlice";
 import ChatsFilter from "./ChatsFilter";
 import FilterIcon from "../ui/icons/FilterIcon";
@@ -33,6 +34,7 @@ export default function ChatList() {
     selectedChat,
     searchedCandidate,
   } = useSelector((state) => state.chat);
+  //const { chats } = useSelector((state) => state.chat.chats);
   const { awaiting_response } = useSelector((state) => state.chat.meta);
 
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -48,15 +50,6 @@ export default function ChatList() {
     return chats.filter((user) => user.name.toLowerCase().includes(searchTerm));
   };
 
-  {
-    /*const displayedChats = filteredBySearch(
-    (appliedFilters ? filteredChats : chats).filter(
-      (user) =>
-        !showAwaitingResponse ||
-        (user.unread_messages && parseInt(user.unread_messages) > 0)
-    )
-  ); */
-  }
   const displayedChats = filteredBySearch(
     (appliedFilters ? filteredChats : chats).filter((user) => {
       if (!showAwaitingResponse) return true; // Все чаты
@@ -149,6 +142,11 @@ export default function ChatList() {
     dispatch(fetchChats());
   }, [dispatch]);
 
+  useEffect(() => {
+    console.log("Current chats:", chats);
+    //console.log("Current meta:", meta);
+  }, [chats]); // Логировать при каждом изменении
+
   // Directly use backend fields without transformation
   //const displayedChats = (appliedFilters ? filteredChats : chats).filter(
   //(user) =>
@@ -156,7 +154,7 @@ export default function ChatList() {
   //(user.unread_messages && parseInt(user.unread_messages) > 0)
   //);
 
-  console.log(displayedChats?.meta, "displayed");
+  //console.log(displayedChats?.meta, "displayed");
 
   return (
     <div className="w-[320px] flex flex-col h-screen border-r relative overflow-hidden border-gray-200">
@@ -233,7 +231,8 @@ export default function ChatList() {
           {displayedChats.map((user, index) => {
             // Inline parsing only where needed
             const vacancies = user.vacancies;
-            const unreadCount = parseInt(user.unread_messages) || 0;
+            //const unreadCount = parseInt(user.unread_messages) || 0;
+            //const unreadCount = user.unread_count || 0;
 
             return (
               <div
@@ -284,9 +283,9 @@ export default function ChatList() {
                     <p className="text-[13px] text-custom-text-gray truncate max-w-[220px]">
                       {user.last_message_text || "please help me find..."}
                     </p>
-                    {user.unread_count > 0 && (
+                    {Number(user.unread_count) > 0 && (
                       <span className="bg-blue-500 text-white rounded-full w-4 h-4 flex items-center justify-center text-xs">
-                        {user.unread_count}
+                        {Number(user.unread_count)}
                       </span>
                     )}
                   </div>

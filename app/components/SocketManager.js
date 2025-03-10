@@ -2,7 +2,7 @@
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { initSocket } from "../lib/socket";
-import { addMessage } from "../redux/chatSlice";
+import { addMessage, updateChatState } from "../redux/chatSlice";
 
 export default function SocketManager() {
   function safeJsonParse(jsonString) {
@@ -48,6 +48,9 @@ export default function SocketManager() {
         //return;
         //}
 
+        // const unreadCount = messageData.unread_count;
+        //console.log("unread_count:", unreadCount);
+        console.log("Message received:", messageData);
         const formattedMessage = {
           id: messageData.id?.toString(),
           candidate_id: messageData.candidate_id?.toString(),
@@ -70,11 +73,20 @@ export default function SocketManager() {
             ? "outgoing"
             : "incoming",
         };
+        //console.log("unreadCount from messageData:", messageData);
 
         dispatch(
           addMessage({
             chatId: messageData.candidate_id?.toString(),
             message: formattedMessage,
+          })
+        );
+        dispatch(
+          updateChatState({
+            chatId: messageData.candidate_id,
+            unreadCount: messageData.unread_count,
+            lastMessage: formattedMessage.text,
+            lastMessageDate: formattedMessage.timestamp,
           })
         );
       } catch (error) {

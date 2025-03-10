@@ -450,6 +450,36 @@ const chatSlice = createSlice({
     toggleIsOpen(state) {
       state.isOpen = !state.isOpen;
     },
+    updateChatState: (state, action) => {
+      const { chatId, unreadCount, lastMessage, lastMessageDate } =
+        action.payload;
+
+      console.log("[Redux] UpdateChatState payload:", action.payload);
+
+      const chatIndex = state.chats.findIndex((c) => c.id === chatId);
+      //if (chatIndex === -1) return;
+      console.log("[Redux] UpdateChatState chatIndex:", chatIndex);
+
+      state.chats[chatIndex] = {
+        ...state.chats[chatIndex],
+        unread_count: Number(unreadCount),
+        last_message_text: lastMessage,
+        last_message_date: lastMessageDate,
+        //status:
+        //state.chats[chatIndex]?.last_message?.author?.role === "candidate"
+        //? "unanswered"
+        //: "answered",
+      };
+      // Пересчитываем общий счетчик
+      state.meta.awaiting_response = state.chats.filter(
+        (chat) => chat.unread_count > 0
+      ).length;
+      //console.log(state, "statechats");
+      console.log("New state after update:", {
+        updatedChat: { ...state.chats[chatIndex] }, // Копия обновленного чата
+        awaitingResponse: state.meta.awaiting_response, // Новое значение счетчика
+      });
+    },
 
     setMessageFilters: (state, action) => {
       state.messageFilters = {
@@ -718,6 +748,7 @@ export const {
   setReplyingTo,
   setMessageFilters,
   resetMessageFilters,
+  updateChatState,
 } = chatSlice.actions;
 
 export default chatSlice.reducer;
