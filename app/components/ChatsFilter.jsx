@@ -255,28 +255,30 @@ const ChatsFilter = ({ onClose }) => {
                   //className="flex items-center m-1 px-2 py-1 bg-gray-100 rounded text-sm text-[#64748B]"
                   className="flex flex-row overflow-hidden flex-start ml-1 my-1 items-center text-[#64748B] text-[13px] border border-custom-bg-gray rounded"
                 >
-                  <div className="p-[1px] px-1">{client.label}</div>
-                  <div
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      dispatch(
-                        //setFilters({
-                        //clients: selectedFilters.clients.filter(
-                        //(c) => c.value !== client.value
-                        //),
-                        //})
-                        setFilters({
-                          clients: [],
-                          vacancies: [], // Clear vacancies when removing company
-                        })
-                      );
-                      //setIsOpen(false);
-                    }}
-                    //className="ml-2 text-[#94A3B8] hover:text-[#64748B]"
-                    className="cursor-pointer border-l border-[#94A3B8] py-[2px] bg-[#f9f9f9]"
-                  >
-                    <CrossIconSelect />
+                  <div className="flex items-center rounded overflow-hidden border border-[#94A3B8]">
+                    <div className=" px-1 ">{client.label}</div>
+                    <div
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        dispatch(
+                          //setFilters({
+                          //clients: selectedFilters.clients.filter(
+                          //(c) => c.value !== client.value
+                          //),
+                          //})
+                          setFilters({
+                            clients: [],
+                            vacancies: [], // Clear vacancies when removing company
+                          })
+                        );
+                        //setIsOpen(false);
+                      }}
+                      //className="ml-2 text-[#94A3B8] hover:text-[#64748B]"
+                      className="cursor-pointer border-l border-[#94A3B8]  bg-[#f9f9f9]"
+                    >
+                      <CrossIconSelect />
+                    </div>
                   </div>
                 </div>
               ))
@@ -328,14 +330,19 @@ const ChatsFilter = ({ onClose }) => {
                   }),
                   menu: (provided) => ({
                     ...provided,
-                    marginTop: 0,
+                    marginTop: "2px",
                     borderRadius: "6px",
                     border: "1px solid #94A3B8",
                   }),
                   input: (provided) => ({
                     ...provided,
-                    padding: "8px",
+                    //marginBottom: "8px",
+                    padding: "0 0 0 2px",
                     color: "#64748B",
+                    height: "24px",
+                    textAlign: "center",
+
+                    //fontSize: "9px",
                   }),
                 }}
                 placeholder="Поиск компаний..."
@@ -352,6 +359,7 @@ const ChatsFilter = ({ onClose }) => {
         <AsyncSelect
           //key={selectedFilters.clients.map((c) => c.value).join(",")}
           key={selectedFilters.clients[0]?.value || "empty"} // Single key
+          isClearable={false}
           isMulti
           cacheOptions={true}
           defaultOptions={true} // This is crucial for initial load
@@ -385,6 +393,7 @@ const ChatsFilter = ({ onClose }) => {
         </div>
         <AsyncSelect
           isMulti
+          isClearable={false}
           cacheOptions={true}
           defaultOptions={true} // This is crucial for initial load
           loadOptions={loadRecruiters}

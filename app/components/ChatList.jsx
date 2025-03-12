@@ -59,8 +59,6 @@ export default function ChatList() {
     })
   );
 
-  console.log(awaiting_response, "awaiting_response");
-
   // Обработчик изменения поиска
   const handleSearchChange = (e) => {
     const value = e.target.value;
@@ -98,7 +96,6 @@ export default function ChatList() {
                   await dispatch(
                     addCandidate(searchedCandidate.candidate_id)
                   ).unwrap();
-                  //alert("Кандидат успешно добавлен!");
                   dispatch(fetchChats());
                   setSearchInput("");
                 } catch (error) {
@@ -117,14 +114,6 @@ export default function ChatList() {
       </div>
     );
   };
-  const handleFilterToggle = (e) => {
-    e.stopPropagation();
-    setIsDropdownOpen((prevState) => !prevState);
-  };
-
-  const handleFilterClose = () => {
-    setIsDropdownOpen(false);
-  };
 
   const handlePopoverToggle = (index) => {
     setPopovers({
@@ -142,25 +131,10 @@ export default function ChatList() {
     dispatch(fetchChats());
   }, [dispatch]);
 
-  useEffect(() => {
-    console.log("Current chats:", chats);
-    //console.log("Current meta:", meta);
-  }, [chats]); // Логировать при каждом изменении
-
-  // Directly use backend fields without transformation
-  //const displayedChats = (appliedFilters ? filteredChats : chats).filter(
-  //(user) =>
-  //!showAwaitingResponse ||
-  //(user.unread_messages && parseInt(user.unread_messages) > 0)
-  //);
-
-  //console.log(displayedChats?.meta, "displayed");
-
   return (
     <div className="w-[320px] flex flex-col h-screen border-r relative overflow-hidden border-gray-200">
       {/* Header and Filter Section */}
       <div className="mb-2 flex flex-col px-2">
-        {/* ... (keep existing header code) */}
         <div className="mb-1 flex flex-row justify-between items-center relative">
           <h2 className="text-[13px] font-bold inline-block mt-2 mr-2">Чаты</h2>
           <button
@@ -188,7 +162,6 @@ export default function ChatList() {
 
       {/* Search Bar */}
       <div className="flex border rounded px-3 py-2 mx-2 border-custom-placeholder-gray items-center gap-1 bg-white">
-        {/* ... (keep existing search bar code) */}
         <SearchIconChatList />
         <input
           type="text"
@@ -229,10 +202,7 @@ export default function ChatList() {
       <CustomScrollbar>
         <div className="flex flex-col ml-2 mr-2">
           {displayedChats.map((user, index) => {
-            // Inline parsing only where needed
             const vacancies = user.vacancies;
-            //const unreadCount = parseInt(user.unread_messages) || 0;
-            //const unreadCount = user.unread_count || 0;
 
             return (
               <div
@@ -242,7 +212,6 @@ export default function ChatList() {
                 }`}
                 onClick={() => dispatch(selectChat(user))}
               >
-                {/* Avatar */}
                 <div
                   className={`w-8 h-8 m-[3px] flex items-center justify-center rounded-full border ${
                     user.unread_count > 0
@@ -368,12 +337,3 @@ export default function ChatList() {
     </div>
   );
 }
-
-// Minimal parsing helper only where absolutely needed
-const tryParse = (str) => {
-  try {
-    return str ? JSON.parse(str) : [];
-  } catch {
-    return [];
-  }
-};

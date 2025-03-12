@@ -48,22 +48,138 @@ export default function ChatWindow() {
   const scrollContainerRef = useRef(null);
   const chatInputRef = useRef(null);
 
+  const parseContacts = (contactsInput) => {
+    try {
+      let parsedContacts;
+      if (typeof contactsInput === "string") {
+        parsedContacts = JSON.parse(contactsInput);
+      } else if (typeof contactsInput === "object") {
+        parsedContacts = contactsInput;
+      } else {
+        return {};
+      }
+
+      return Object.entries(parsedContacts).reduce(
+        (result, [contactType, contactList]) => {
+          const normalizedType = contactType.toLowerCase();
+          const contactsArray = Array.isArray(contactList)
+            ? contactList
+            : [contactList];
+
+          result[normalizedType] = contactsArray
+            .map((contact) => {
+              let content;
+              switch (normalizedType) {
+                case "phone":
+                case "whatsapp":
+                  content = contact.phone;
+                  break;
+                case "email":
+                  content = contact.email;
+                  break;
+                case "telegram":
+                  content = contact.user_id || contact.user_name || "";
+                  break;
+                default:
+                  content = "";
+              }
+              return { content: content?.toString() || "", isPrimary: false };
+            })
+            .filter((contact) => contact.content);
+
+          return result;
+        },
+        {}
+      );
+    } catch (error) {
+      console.error("Error parsing contacts:", error);
+      return {};
+    }
+  };
+
+  // Helper function to get display name from usedContact
+  {
+    /*const getContactDisplayName = (usedContact, rawContacts) => {
+    if (!usedContact) return usedContact?.channel_name || "unknown";
+    const parsedContacts = parseContacts(rawContacts);
+    const channel = usedContact.channel_name;
+    const contacts = parsedContacts[channel] || [];
+
+    const contactIndex = contacts.findIndex((contact) => {
+      switch (channel) {
+        case "email":
+          return contact.content === usedContact.email;
+        case "phone":
+        case "whatsapp":
+          return contact.content === usedContact.phone;
+        case "telegram":
+          return (
+            contact.content === (usedContact.user_id || usedContact.user_name)
+          );
+        default:
+          return false;
+      }
+    });
+
+    if (contactIndex === -1) return channel;
+    return contacts.length > 1 ? `${channel} ${contactIndex + 1}` : channel;
+  };*/
+  }
+  // В ChatWindow.jsx
+  {
+    /*const getContactDisplayName = (usedContact, rawContacts) => {
+    if (!usedContact?.channel_name) return "unknown";
+
+    const parsedContacts = parseContacts(rawContacts);
+    const channel = usedContact.channel_name.toLowerCase();
+    const contacts = parsedContacts[channel] || [];
+
+    // Поиск по всем возможным полям
+    const contactIndex = contacts.findIndex((c) => {
+      switch (channel) {
+        case "email":
+          return c.content === usedContact.email;
+        //case "phone":
+        case "whatsapp":
+          return c.content === usedContact.phone;
+        case "telegram":
+          return c.content === (usedContact.user_id || usedContact.user_name);
+        default:
+          return false;
+      }
+    });
+
+    return contactIndex >= 0 ? `${channel} ${contactIndex + 1}` : channel;
+  }; */
+  }
+  const getContactDisplayName = (usedContact, rawContacts) => {
+    if (!usedContact?.channel_name) return "unknown";
+
+    const parsedContacts = parseContacts(rawContacts);
+    const channel = usedContact.channel_name.toLowerCase();
+    const contacts = parsedContacts[channel] || [];
+
+    // Находим точное значение контакта из сообщения
+    const contactValue = {
+      telegram: usedContact.user_id || usedContact.user_name,
+      email: usedContact.email,
+      whatsapp: usedContact.phone,
+      phone: usedContact.phone,
+    }[channel];
+
+    // Ищем совпадение в контактах чата
+    const contactIndex = contacts.findIndex((c) => c.content === contactValue);
+
+    return contactIndex >= 0
+      ? contacts.length > 1
+        ? `${channel} ${contactIndex + 1}`
+        : channel
+      : channel;
+  };
+
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
-
-  //useEffect(() => {
-  //dispatch(sendHardcodedMessage());
-  // }, []);
-
-  {
-    /*useEffect(() => {
-    if (selectedChat?.id) {
-      dispatch(fetchMessages(selectedChat.id));
-      dispatch(resetUnreadCount({ chatId: selectedChat.id }));
-    }
-  }, [selectedChat?.id, dispatch]); */
-  }
 
   useEffect(() => {
     if (selectedChat?.id) {
@@ -73,11 +189,6 @@ export default function ChatWindow() {
       dispatch(resetUnreadCountMessages(selectedChat.id));
     }
   }, [selectedChat?.id, dispatch]);
-
-  // Add scroll effect
-  //useEffect(() => {
-  //scrollToBottom();
-  //}, [selectedChat, messages]); // Scroll when chat or messages change
 
   useEffect(() => {
     if (replyingTo) {
@@ -115,54 +226,6 @@ export default function ChatWindow() {
       </div>
     );
   }
-  console.log(selectedChat?.messages, "messagesLength");
-
-  {
-    /*const filteredMessages = chatMessages.filter((message) =>
-    message?.text?.toLowerCase().includes(filter.toLowerCase())
-  );*/
-  }
-
-  {
-    /*const filteredMessages = useMemo(() => {
-    return chatMessages.filter((message) => {
-      // 1. Text search filter
-      const searchMatch = message.text
-        ?.toLowerCase()
-        .includes(localSearch.toLowerCase());
-
-      // 2. Channel filter
-      const channelMatch =
-        messageFilters.channels?.length === 0 ||
-        messageFilters.channels?.some((c) => c.value === message.messanger);
-
-      // 3. Author filter
-      const authorMatch =
-        messageFilters.authors.length === 0 ||
-        messageFilters.authors.some((a) => a.value === message.author?.id);
-
-      return searchMatch && channelMatch && authorMatch;
-    });
-  }, [chatMessages, localSearch, messageFilters]); */
-  }
-
-  {
-    /*const filteredMessages = useMemo(() => {
-    return chatMessages.filter((message) => {
-      // Channel check
-      const channelMatch =
-        messageFilters.channels.length === 0 ||
-        messageFilters.channels.some((c) => c.value === message.messanger);
-
-      // Author check
-      const authorMatch =
-        messageFilters.authors.length === 0 ||
-        messageFilters.authors.some((a) => a.value === message.author?.id);
-
-      return channelMatch && authorMatch;
-    });
-  }, [chatMessages, messageFilters]); // Re-run when filters change */
-  }
 
   const filteredMessages = useMemo(() => {
     return chatMessages.filter((message) => {
@@ -196,8 +259,6 @@ export default function ChatWindow() {
     );
   }
 
-  console.log(selectedChat.contacts, "contacts!!!!!");
-
   return (
     <div className="flex max-w-[900px] flex-col flex-grow overflow-x-hidden relative p-6 pl-0 pr-0 pt-1 pb-3 items-center h-screen bg-white">
       <div className="w-full">
@@ -220,8 +281,6 @@ export default function ChatWindow() {
                     className="bg-white w-full flex p-2 rounded-md focus:outline-none pr-8"
                     value={localSearch}
                     onChange={(e) => setLocalSearch(e.target.value)}
-                    //value={filter}
-                    //onChange={(e) => setFilter(e.target.value)}
                   />
                   <div
                     className="absolute right-1 top-1/2 -translate-y-1/2 cursor-pointer pr-0"
@@ -260,7 +319,9 @@ export default function ChatWindow() {
                   className="filter-toggle-button"
                   onClick={handleFilterToggle}
                 >
-                  <FilterIcon />
+                  <div className="ml-1">
+                    <FilterIcon />
+                  </div>
                 </button>
                 <div>
                   <InfoIcon />
@@ -277,12 +338,6 @@ export default function ChatWindow() {
           </div>
         </div>
       )}
-
-      {/* Chat Messages */}
-      {/*<CustomScrollbar
-        className="border border-blue-600 w-[608px] overflow-x-hidden"
-        style={{ width: "calc(100% - 1rem)" }}
-      >*/}
 
       <div
         ref={scrollContainerRef}
@@ -351,12 +406,6 @@ export default function ChatWindow() {
             </div>
             {/* Vertical Line */}
             <div className="absolute top-9 bottom-0 left-[18px] border-l border-gray-300" />
-            {/*{message.replyTo && (
-              <div className="mt-1 ml-10 p-2 bg-[#F1F5F9] rounded text-sm text-gray-600 border-l-4 border-blue-500">
-                <div className="font-medium">{replyingTo?.sender}</div>
-                {chatMessages.find((m) => m.id === message.replyTo)?.text}
-              </div>
-            )}*/}
 
             {message.replyTo && Object.keys(message.replyTo).length > 0 && (
               <div className="mt-1 ml-10 p-2 bg-[#F1F5F9] rounded text-sm text-gray-600 border-l-4 border-blue-500">
@@ -382,37 +431,85 @@ export default function ChatWindow() {
                 </div>
               )}
               <div className="py-1">{message.text}</div>
-              {message.attachments?.map((attachment, idx) => (
-                <div
-                  key={idx}
-                  className="mt-2 p-2 bg-gray-100 rounded flex items-center"
-                >
-                  <FileIcon className="w-4 h-4" />
-                  <span className="ml-2 text-sm">
-                    {attachment.name} ({(attachment.size / 1024).toFixed(1)}KB)
+              {/*{message.attachment_name && <div>
+                {message.attachment_name}</div>}
+              <a
+                href={message.attachment_id}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block" // Убираем стандартные стили тега <a>
+              >
+                <div className="p-4 border rounded cursor-pointer hover:bg-gray-100 transition">
+                  <span className="text-blue-600 hover:underline">
+                    {message.attachment_name || "Скачать файл"}
                   </span>
+                </div>
+              </a>*/}
+              {message.attachment_name && message.attachment_id && (
+                <div
+                  // key={idx}
+                  className="mt-2 p-2 bg-gray-100 rounded flex items-center justify-between"
+                >
+                  <div className="flex">
+                    <FileIcon className="w-4 h-4" />
+                    <span className="ml-2 text-sm">
+                      {message.attachment_name}{" "}
+                      {/*({(attachment.size / 1024).toFixed(1)}KB)*/}
+                    </span>
+                  </div>
                   <a
-                    href={attachment.preview}
+                    href={`https://prokrinilik.beget.app/webhook/download_file?attachement_id=${encodeURIComponent(
+                      message.attachment_id
+                    )}`}
+                    rel="noopener noreferrer"
                     download
-                    className="ml-2 hover:underline text-sm"
+                    className="ml-2 border border-custom-gray-filter-light rounded p-1 py-[2px] text-custom-text-gray hover:bg-gray-50"
                   >
                     Скачать
                   </a>
                 </div>
-              ))}
+              )}
             </div>
 
             {/* Reply Button */}
             <button
-              //onClick={() => dispatch(setReplyingTo(message))} // Replace with your send logic
               onClick={() => {
+                console.log(message.id, "attachment_name");
+                //const contactDisplayName = getContactDisplayName(
+                //message.usedContact,
+                //</div>chat.contacts
+                //);
                 dispatch(
+                  //setReplyingTo({
+                  //...message,
+                  //contactDisplayName,
+                  //usedContact: message.usedContact, // Добавляем исходные данные
+                  //...message,
+                  //usedContact: message.usedContact, // Важно передать исходные данные
+                  //contactDisplayName: getContactDisplayName(
+                  //message.usedContact,
+                  //chat.contacts
+                  //),
+                  // })
+                  //setReplyingTo({
+                  //...message,
+                  //usedContact: message.usedContact,
+                  // Remove contactDisplayName from here
+                  //})
+
                   setReplyingTo({
-                    id: message.id,
-                    text: message.text,
-                    messanger: message.messanger,
-                    author: message.author,
-                    timestamp: message.timestamp,
+                    ...message,
+                    usedContact: message.usedContact,
+                    // Добавляем идентификатор контакта
+                    contactIdentifier: {
+                      channel: message.usedContact.channel_name,
+                      value: {
+                        telegram: message.usedContact.user_id,
+                        email: message.usedContact.email,
+                        whatsapp: message.usedContact.phone,
+                        phone: message.usedContact.phone,
+                      }[message.usedContact.channel_name],
+                    },
                   })
                 );
 

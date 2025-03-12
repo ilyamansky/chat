@@ -37,6 +37,27 @@ const parseContacts = (contactsInput) => {
           ? contactList
           : [contactList];
 
+        {
+          /*result[normalizedType] = contactsArray
+          .map((contact) => {
+            let content;
+            switch (normalizedType) {
+              case "phone":
+              case "whatsapp":
+                content = contact.phone;
+                break;
+              case "email":
+                content = contact.email || contact.content;
+                break;
+              case "telegram":
+                content = contact.user_id || contact.user_name || "";
+                break;
+              default:
+                content = "";
+            }
+            return { content: content?.toString() || "", isPrimary: false };
+          }) */
+        }
         result[normalizedType] = contactsArray
           .map((contact) => {
             let content;
@@ -46,7 +67,7 @@ const parseContacts = (contactsInput) => {
                 content = contact.phone;
                 break;
               case "email":
-                content = contact.email;
+                content = contact.email; // Remove fallback to .content
                 break;
               case "telegram":
                 content = contact.user_id || contact.user_name || "";
@@ -112,7 +133,8 @@ const ChatInput = () => {
     }
   }, [contacts]);
 
-  useEffect(() => {
+  {
+    /*useEffect(() => {
     if (replyingTo) {
       const originalMessenger = replyingTo.messanger;
       if (!contacts[originalMessenger]?.length) {
@@ -126,23 +148,146 @@ const ChatInput = () => {
       );
       console.log("replyingTo", replyingTo);
     }
+  }, [replyingTo, contacts, dispatch]); */
+  }
+
+  // В ChatInput.jsx замените текущий useEffect для replyingTo на:
+  {
+    /*useEffect(() => {
+    if (replyingTo?.usedContact) {
+      const channel = replyingTo.usedContact.channel_name?.toLowerCase();
+      const targetValue = {
+        telegram:
+          replyingTo.usedContact.user_id || replyingTo.usedContact.user_name,
+        email: replyingTo.usedContact.email,
+        whatsapp: replyingTo.usedContact.phone,
+        phone: replyingTo.usedContact.phone,
+      }[channel];
+
+      // 1. Проверка существования канала
+      const contactGroup = contacts[channel] || [];
+      if (contactGroup.length === 0) {
+        alert("Контакт для ответа был удален!");
+        dispatch(setReplyingTo(null));
+        return;
+      }
+
+      // 2. Поиск конкретного контакта
+      const contactIndex = contactGroup.findIndex(
+        (c) => c.content === targetValue
+      );
+
+      if (contactIndex === -1) {
+        alert("Контакт для ответа был изменен!");
+        dispatch(setReplyingTo(null));
+        return;
+      }
+
+      // 3. Установка таба
+      const displayName =
+        contactGroup.length > 1 ? `${channel} ${contactIndex + 1}` : channel;
+
+      setSelectedTab(displayName);
+    }
+  }, [replyingTo, contacts, dispatch]); */
+  }
+  {
+    /* last version useEffect(() => {
+    if (replyingTo?.contactIdentifier) {
+      const { channel, value } = replyingTo.contactIdentifier;
+      const contactGroup = contacts[channel] || [];
+
+      // Ищем контакт по значению
+      const contactExists = contactGroup.some((c) => c.content === value);
+
+      if (!contactExists) {
+        alert("Контакт для ответа был удален или изменен!");
+        dispatch(setReplyingTo(null));
+        return;
+      }
+
+      // Всегда используем актуальный индекс
+      const contactIndex = contactGroup.findIndex((c) => c.content === value);
+      const displayName =
+        contactGroup.length > 1 ? `${channel} ${contactIndex + 1}` : channel;
+
+      setSelectedTab(displayName);
+    }
+  }, [replyingTo, contacts, dispatch]); */
+  }
+  useEffect(() => {
+    if (replyingTo?.contactIdentifier) {
+      const { channel, value } = replyingTo.contactIdentifier;
+
+      // Debug: Выводим искомые значения
+      console.log("[DEBUG] Searching contact:", {
+        channel,
+        storedValue: value,
+        currentTime: new Date().toISOString(),
+      });
+
+      const contactGroup = contacts[channel] || [];
+
+      // Debug: Показываем текущие контакты
+      console.log("[DEBUG] Current contacts in channel:", {
+        channel,
+        contacts: contactGroup.map((c) => c.content),
+        contactCount: contactGroup.length,
+      });
+
+      const contactExists = contactGroup.some((c) => {
+        const isMatch = c.content === value;
+
+        // Debug: Проверка каждого элемента
+        console.log(
+          `[DEBUG] Checking contact: ${c.content} = ${value} → ${isMatch}`
+        );
+
+        return isMatch;
+      });
+
+      if (!contactExists) {
+        // Debug: Детали ошибки
+        console.error("[ERROR] Contact mismatch!", {
+          reason: "Value not found in contacts",
+          storedValue: value,
+          existingValues: contactGroup.map((c) => c.content),
+          contactGroupJSON: JSON.stringify(contactGroup),
+        });
+
+        alert("Контакт для ответа был удален или изменен!");
+        dispatch(setReplyingTo(null));
+        return;
+      }
+
+      const contactIndex = contactGroup.findIndex((c) => c.content === value);
+
+      // Debug: Результаты поиска
+      console.log("[DEBUG] Contact found at index:", contactIndex + 1);
+
+      const displayName =
+        contactGroup.length > 1 ? `${channel} ${contactIndex + 1}` : channel;
+
+      setSelectedTab(displayName);
+    }
   }, [replyingTo, contacts, dispatch]);
 
   {
     /*useEffect(() => {
     if (replyingTo) {
-      const messenger = replyingTo.messanger.toLowerCase();
-      setSelectedTab(messenger.charAt(0).toUpperCase() + messenger.slice(1));
-    }
-  }, [replyingTo]);*/
-  }
+      const originalDisplayName = replyingTo.contactDisplayName;
+      const contactType = originalDisplayName?.split(" ")[0].toLowerCase();
 
-  {
-    /*useEffect(() => {
-    if (replyingTo && !selectedTab.startsWith(replyingTo.messanger)) {
-      dispatch(setReplyingTo(null));
+      // Check if contact exists
+      if (!contacts[contactType]?.length) {
+        alert("Contact for reply was removed!");
+        dispatch(setReplyingTo(null));
+        return;
+      }
+
+      setSelectedTab(originalDisplayName);
     }
-  }, [selectedTab, dispatch, replyingTo]);*/
+  }, [replyingTo, contacts, dispatch]); */
   }
 
   useEffect(() => {
@@ -158,6 +303,91 @@ const ChatInput = () => {
       setSubject("");
     }
   }, [replyingTo, chats, messages]);
+
+  /*useEffect(() => {
+    if (replyingTo?.usedContact) {
+      const channel = replyingTo.usedContact.channel_name?.toLowerCase();
+      const contactsList = contacts[channel] || [];
+
+      // Ищем точное совпадение контакта
+      const contactIndex = contactsList.findIndex((c) => {
+        switch (channel) {
+          case "telegram":
+            return c.content === replyingTo.usedContact.user_id;
+          case "email":
+            return c.content === replyingTo.usedContact.email;
+          case "whatsapp":
+          case "phone":
+            return c.content === replyingTo.usedContact.phone;
+          default:
+            return false;
+        }
+      });
+
+      if (contactIndex === -1) return;
+
+      const displayName =
+        contactsList.length > 1 ? `${channel} ${contactIndex + 1}` : channel;
+
+      setSelectedTab(displayName);
+    }
+  }, [replyingTo, contacts, dispatch]); */
+
+  {
+    /*useEffect(() => {
+    if (replyingTo?.usedContact) {
+      const channel = replyingTo.usedContact.channel_name?.toLowerCase();
+      const targetValue = {
+        telegram: replyingTo.usedContact.user_id,
+        email: replyingTo.usedContact.email,
+        whatsapp: replyingTo.usedContact.phone,
+        phone: replyingTo.usedContact.phone,
+      }[channel];
+
+      const contactGroup = contacts[channel] || [];
+
+      // Находим индекс по точному совпадению
+      const contactIndex = contactGroup.findIndex(
+        (c) => c.content === targetValue
+      );
+
+      const displayName =
+        contactIndex >= 0
+          ? contactGroup.length > 1
+            ? `${channel} ${contactIndex + 1}`
+            : channel
+          : channel;
+
+      setSelectedTab(displayName);
+    }
+  }, [replyingTo, contacts]);*/
+  }
+  useEffect(() => {
+    if (replyingTo?.usedContact) {
+      const channel = replyingTo.usedContact.channel_name?.toLowerCase();
+      const targetValue = {
+        telegram:
+          replyingTo.usedContact.user_id || replyingTo.usedContact.user_name,
+        email: replyingTo.usedContact.email,
+        whatsapp: replyingTo.usedContact.phone,
+        phone: replyingTo.usedContact.phone,
+      }[channel];
+
+      const contactGroup = contacts[channel] || [];
+      const contactIndex = contactGroup.findIndex(
+        (c) => c.content === targetValue
+      );
+
+      const displayName =
+        contactIndex >= 0
+          ? contactGroup.length > 1
+            ? `${channel} ${contactIndex + 1}`
+            : channel
+          : channel;
+
+      setSelectedTab(displayName);
+    }
+  }, [replyingTo, contacts]);
 
   const handleFileChange = (event) => {
     const selectedFile = event.target.files[0];
@@ -179,166 +409,6 @@ const ChatInput = () => {
       }, 2000);
     }
   };
-
-  // ChatInput.jsx
-  // ... остальной код
-
-  {
-    /*const handleSubmit = async (event) => {
-    event.preventDefault();
-    if (!validateMessenger() || (!message.trim() && !file) || !selectedChat)
-      return;
-
-    try {
-      // Формируем данные для отправки
-      const messageData = {
-        candidate_chat: selectedChat.id,
-        text: message,
-        "subject-tema": subject || "",
-        file: file || null,
-      };
-
-      // Добавляем reply_on_message
-      if (replyingTo) {
-        messageData.reply_on_message = JSON.stringify({
-          id: replyingTo.id,
-          text: replyingTo.text,
-          channel_name: replyingTo.messanger,
-        });
-      }
-
-       Добавляем used_contact
-      const [contactType] = selectedTab.split(" ");
-      const contactGroup = contacts[contactType];
-      const contactIndex = parseInt(selectedTab.match(/\d+$/)?.[0] || 1);
-      const contact = contactGroup[contactIndex - 1]?.content;
-
-      //messageData.used_contact = JSON.stringify({
-        //channel_name: contactType.toLowerCase(),
-        //contact:
-         // typeof contact === "string"
-           // ? contact
-           // : contact?.user_id || contact?.user_name,
-      //});
-      messageData.contacts = {
-
-      }
-
-      // Отправляем через Redux
-      await dispatch(createMessage(messageData)).unwrap();
-
-      // Обновляем локальное состояние
-      setMessage("");
-      setSubject("");
-      setFile(null);
-      dispatch(setReplyingTo(null));
-      dispatch(fetchChats()); // Обновляем список чатов
-
-      alert("Сообщение успешно отправлено!");
-    } catch (error) {
-      console.error("Error sending message:", error);
-      alert(`Ошибка отправки сообщения: ${error}`);
-    }
-  }; */
-  } // prev version
-
-  {
-    /*const handleSubmit = async (event) => {
-    event.preventDefault();
-    //console.log(contacts[selectedTab], "Wooow");
-    if (!validateMessenger() || (!message.trim() && !file) || !selectedChat)
-      return;
-    const typeofcontact = selectedTab;
-    const index = Number([typeofcontact]);
-    //const [contactType] = selectedTab; // Получаем тип (email, phone и т.д.)
-    //const contactIndex = Number(selectedTab);
-    //const contactGroup = selectedChat.contacts[contactType];
-    //const contact = contactGroup?.[contactIndex];
-    try {
-      // Формируем контакты
-      const getContactData = () => {
-        if (!selectedTab || !selectedChat?.contacts) return null;
-
-        const [contactType] = selectedTab; // Получаем тип (email, phone и т.д.)
-        const contactIndex = Number(selectedTab);
-        const contactGroup = selectedChat.contacts[contactType];
-        const contact = contactGroup?.[contactIndex];
-
-        if (!contact) return null;
-
-        // Формируем объект согласно требованиям API
-        switch (contactType.toLowerCase()) {
-          case "email":
-            return {
-              email: contact.content,
-              channel_name: "email",
-            };
-
-          case "phone":
-            return {
-              phone: contact.content,
-              channel_name: "phone",
-            };
-
-          case "whatsapp":
-            return {
-              phone: contact.content,
-              channel_name: "whatsapp",
-            };
-
-          case "telegram":
-            return {
-              user_id: contact.content, // Или user_name в зависимости от данных
-              user_name: contact.content,
-              channel_name: "telegram",
-            };
-
-          default:
-            return null;
-        }
-      };
-
-      // Формируем данные для отправки
-      const messageData = {
-        candidate_chat: selectedChat.id,
-        text: message,
-        "subject-tema": subject || undefined,
-        file: file || null,
-        reply_on_message: "",
-        //used_contact: getContactData(), // Сериализуем контакт
-      };
-
-      messageData.used_contact = JSON.stringify({
-        user_id: "5605060378",
-        channel_name: "telegram",
-      });
-
-      // Добавляем reply_on_message
-      if (replyingTo) {
-        messageData.reply_on_message = JSON.stringify({
-          id: replyingTo.id,
-          text: replyingTo.text,
-          channel_name: replyingTo.messanger,
-        });
-      }
-
-      // Отправляем через Redux
-      await dispatch(createMessage(messageData)).unwrap();
-
-      // Обновляем локальное состояние
-      setMessage("");
-      setSubject("");
-      setFile(null);
-      //console.log("wooow", selectedTab);
-      dispatch(setReplyingTo(null));
-      dispatch(fetchChats());
-    } catch (error) {
-      console.log(index, "wooow", contacts[typeofcontact][0].content);
-      console.error("Error sending message:", error);
-      alert(`Ошибка отправки сообщения: ${error.message}`);
-    }
-  }; */
-  }
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -423,41 +493,6 @@ const ChatInput = () => {
       onSubmit={handleSubmit}
       className="bg-white mt-1 rounded overflow-hidden"
     >
-      {/*} {replyingTo && (
-        <div
-          className="bg-[#F1F5F9] hover:bg-gray-200 p-2 flex justify-between items-start"
-          onClick={() => {
-            const messageElement = document.getElementById(
-              `message-${replyingTo.id}`
-            );
-            messageElement?.scrollIntoView({
-              behavior: "smooth",
-              block: "center",
-            });
-          }}
-        >
-          <div className="flex">
-            <div className="ml-0 relative">
-              <ReplyToIcon />
-              <div className="absolute top-5 bottom-0 left-2.5 border-l border-[#4766FF]" />
-            </div>
-            <div className="text-sm ml-2 text-[#4766FF]">
-              Ответ на: "{replyingTo.messanger}"
-              <div className="text-black">
-                {replyingTo.text.length > 80
-                  ? `${replyingTo.text.substring(0, 77)}...`
-                  : replyingTo.text}
-              </div>
-            </div>
-          </div>
-          <button
-            onClick={() => dispatch(setReplyingTo(null))}
-            className="mr-1 mt-1"
-          >
-            <ChatInputCrossIcon />
-          </button>
-        </div>
-      )} */}
       {replyingTo && (
         <div className="bg-[#F1F5F9] hover:bg-gray-200 p-2 flex justify-between items-start">
           <div className="flex">
@@ -497,6 +532,35 @@ const ChatInput = () => {
                   contact,
                   displayName,
                   index,
+                  // Добавляем уникальный идентификатор
+                  uniqueKey: `${contactType}-${contact.content}`,
+                };
+              })
+            )
+            .map(({ type, displayName, contact, index, uniqueKey }) => (
+              <li
+                key={uniqueKey}
+                className={clsx(
+                  "py-2 px-1 text-sm rounded-md cursor-pointer",
+                  selectedTab?.toLowerCase() === displayName.toLowerCase()
+                    ? "underline text-[#B67E34]"
+                    : "text-[#858B97]"
+                )}
+              >
+                {/*{Object.entries(contacts)
+            .filter(([_, group]) => group.length > 0)
+            .flatMap(([contactType, contactGroup]) =>
+              contactGroup.map((contact, index) => {
+                const displayName =
+                  contactGroup.length > 1
+                    ? `${contactType} ${index + 1}`
+                    : contactType;
+
+                return {
+                  type: contactType,
+                  contact,
+                  displayName,
+                  index,
                 };
               })
             )
@@ -505,11 +569,22 @@ const ChatInput = () => {
                 key={`${type}-${index}`}
                 className={clsx(
                   "py-2 px-1 text-sm rounded-md cursor-pointer",
-                  selectedTab === displayName
+                  selectedTab?.replace(/\s/g, "").toLowerCase() ===
+                    displayName.replace(/\s/g, "").toLowerCase()
                     ? "underline text-[#B67E34]"
                     : "text-[#858B97]"
                 )}
               >
+                {/*<li
+                key={`${type}-${index}`}
+                className={clsx(
+                  "py-2 px-1 text-sm rounded-md cursor-pointer",
+                  selectedTab === displayName
+                    ? "underline text-[#B67E34]"
+                    : "text-[#858B97]"
+                )}
+              >*/}
+
                 <Popover
                   open={openPopover === displayName}
                   handler={setOpenPopover}

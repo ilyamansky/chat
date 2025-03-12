@@ -168,7 +168,7 @@ export default function MessagesFilter({ onClose }) {
               onChange={handleAuthorChange}
               placeholder="Введите имя автора"
               isClearable={false}
-              closeMenuOnSelect={false}
+              //closeMenuOnSelect={false}
               hideSelectedOptions={false}
               components={{ Option, MultiValueRemove }}
               styles={customSelectStyles}
@@ -189,7 +189,7 @@ export default function MessagesFilter({ onClose }) {
               onChange={handleChannelChange}
               placeholder="Введите название канала"
               isClearable={false}
-              closeMenuOnSelect={false}
+              //closeMenuOnSelect={false}
               hideSelectedOptions={false}
               components={{ Option, MultiValueRemove }}
               styles={customSelectStyles}

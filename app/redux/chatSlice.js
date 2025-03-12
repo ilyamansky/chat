@@ -1,20 +1,5 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 
-{
-  /*function safeJsonParse(jsonString) {
-  if (jsonString !== undefined) {
-    try {
-      console.log(jsonString, "6");
-      return JSON.parse(jsonString) || {};
-      //return jsonString; // Возвращаем значение по умолчанию
-    } catch (error) {
-      console.error("Ошибка при парсинге JSON:", error);
-      return null; // Возвращаем null или значения по умолчанию
-    }
-  }
-}*/
-}
-
 function safeJsonParse(jsonString) {
   if (jsonString !== undefined && jsonString !== null) {
     try {
@@ -33,58 +18,39 @@ function safeJsonParse(jsonString) {
   return null; // Возвращаем null, если jsonString не определен или равен null
 }
 
-export const fetchChats = createAsyncThunk("chat/fetchChats", async () => {
-  // { getState }
-  //const token = getState().auth.token;
-  //const token = localStorage.getItem("jwtToken");
-  const token =
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiMiIsImV4cCI6MTgyNjQwNjAyOCwiaWF0IjoxNzQwMDA2MDI4fQ.7_NyQj5R-lgESKV1V50h0IK5Iw0KHjmDBPUBUFnkQVs";
+export const fetchChats = createAsyncThunk(
+  "chat/fetchChats",
+  async (_, { getState }) => {
+    const token = getState().auth.token || localStorage.getItem("jwtToken");
+    //const token = localStorage.getItem("jwtToken");
+    const baseUrl = "https://prokrinilik.beget.app/webhook/get_chats";
 
-  const baseUrl = "https://prokrinilik.beget.app/webhook/get_chats";
-  //const vacancyIds = ["2222", "3333"];
-  //const userIds = ["4444", "5555"];
-  const vacancyIds = [];
-  const userIds = [];
+    const vacancyIds = [];
+    const userIds = [];
 
-  // Формирование параметров запроса
+    // Формирование параметров запроса
 
-  const params = new URLSearchParams({
-    vacancy_ids: JSON.stringify(vacancyIds),
-    user_ids: JSON.stringify(userIds),
-  });
+    const params = new URLSearchParams({
+      vacancy_ids: JSON.stringify(vacancyIds),
+      user_ids: JSON.stringify(userIds),
+    });
 
-  // Формирование полного URL
-  const url = `${baseUrl}?${params.toString()}`;
-  //const urlParams = new URLSearchParams();
-  //const url =
-  //"https://prokrinilik.beget.app/webhook/get_vacancies?customerid=83174";
-  //const url = "https://prokrinilik.beget.app/webhook/get_users";
-  //const url = "https://prokrinilik.beget.app/webhook/get_companies";
-  //const url = "https://prokrinilik.beget.app/webhook/get_companies";
-  //const url = "https://prokrinilik.beget.app/webhook/get_vacancies";
-  //const url =
-  //"https://prokrinilik.beget.app/webhook/get_messages?candidate_id=5";
-  //const url = "https://prokrinilik.beget.app/webhook/get_chats";
+    // Формирование полного URL
+    const url = `${baseUrl}?${params.toString()}`;
 
-  //const url =
-  // "https://prokrinilik.beget.app/webhook/get_chats?vacancy_ids=%5B%22222%22%2C%22333%22%5D&user_ids=%5B%22444%22%2C%22555%22%5D";
-  console.log("token", token);
+    const response = await fetch(url, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
 
-  const response = await fetch(url, {
-    method: "GET",
-    headers: {
-      Authorization: `Bearer ${token}`,
-      //"Content-Type": "text/plain",
-      //"Content-Type": "application/json",
-    },
-    //body: JSON.stringify(filters),
-  });
-
-  if (!response.ok) throw new Error("Ошибка загрузки чатов");
-  const data = await response.json();
-  console.log("data", data.chats);
-  return data;
-});
+    if (!response.ok) throw new Error("Ошибка загрузки чатов");
+    const data = await response.json();
+    //console.log("data", data.chats);
+    return data;
+  }
+);
 
 export const fetchMessages = createAsyncThunk(
   "chat/fetchMessages",
@@ -120,8 +86,14 @@ export const fetchMessages = createAsyncThunk(
             messanger:
               safeJsonParse(msg.used_contact)?.channel_name ||
               "Неизвестный мессенджер",
+            usedContact: safeJsonParse(msg.used_contact),
             subject: msg.subject_tema,
-            attachments: [],
+            //attachements: safeJsonParse(msg.attachments),
+            //attachment_name: msg.attachements?.attachments[0]?.name,
+            attachment_name: safeJsonParse(msg.attachments)?.attachments?.[0]
+              ?.name,
+            attachment_id: safeJsonParse(msg.attachments)?.attachments?.[0]
+              ?.attachment_id,
             author: safeJsonParse(msg.author) || {
               id: null,
               name: "Неизвестный автор",
@@ -182,9 +154,7 @@ export const getCandidateByUrl = createAsyncThunk(
 
       return await response.json();
     } catch (error) {
-      //console.error("Error in getCandidateByUrl:", error.message);
       alert(error.message);
-      //throw error;
     }
   }
 );
@@ -233,9 +203,8 @@ export const fetchUsers = createAsyncThunk(
 export const fetchCompanies = createAsyncThunk(
   "chat/fetchCompanies",
   async (_, { getState }) => {
-    //const token = getState().auth.token || localStorage.getItem("jwtToken");
-    const token =
-      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiMiIsImV4cCI6MTgyNjQwNjAyOCwiaWF0IjoxNzQwMDA2MDI4fQ.7_NyQj5R-lgESKV1V50h0IK5Iw0KHjmDBPUBUFnkQVs";
+    const token = getState().auth.token || localStorage.getItem("jwtToken");
+
     const response = await fetch(
       "https://prokrinilik.beget.app/webhook/get_companies",
       { headers: { Authorization: `Bearer ${token}` } }
@@ -248,9 +217,8 @@ export const fetchCompanies = createAsyncThunk(
 export const fetchVacancies = createAsyncThunk(
   "chat/fetchVacancies",
   async (customerIds, { getState }) => {
-    //const token = getState().auth.token || localStorage.getItem("jwtToken");
-    const token =
-      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiMiIsImV4cCI6MTgyNjQwNjAyOCwiaWF0IjoxNzQwMDA2MDI4fQ.7_NyQj5R-lgESKV1V50h0IK5Iw0KHjmDBPUBUFnkQVs";
+    const token = getState().auth.token || localStorage.getItem("jwtToken");
+
     const params = new URLSearchParams();
     customerIds.forEach((id) => params.append("customerid", id));
 
@@ -264,16 +232,11 @@ export const fetchVacancies = createAsyncThunk(
   }
 );
 
-// chatSlice.js
-// chatSlice.js
-
 export const resetUnreadCountMessages = createAsyncThunk(
   "chat/resetUnreadCountMessages",
   async (chatId, { getState, rejectWithValue }) => {
     try {
-      //const token = getState().auth.token;
-      const token =
-        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiMiIsImV4cCI6MTgyNjQwNjAyOCwiaWF0IjoxNzQwMDA2MDI4fQ.7_NyQj5R-lgESKV1V50h0IK5Iw0KHjmDBPUBUFnkQVs";
+      const token = getState().auth.token || localStorage.getItem("jwtToken");
 
       const response = await fetch(
         `https://prokrinilik.beget.app/webhook/reset_list_of_unread`,
@@ -297,10 +260,9 @@ export const resetUnreadCountMessages = createAsyncThunk(
 
 export const updateContactsAPI = createAsyncThunk(
   "chat/updateContacts",
-  async ({ candidateId, contacts }, { rejectWithValue }) => {
+  async ({ candidateId, contacts }, { getState, rejectWithValue }) => {
     try {
-      const token =
-        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiMiIsImV4cCI6MTgyNjQwNjAyOCwiaWF0IjoxNzQwMDA2MDI4fQ.7_NyQj5R-lgESKV1V50h0IK5Iw0KHjmDBPUBUFnkQVs";
+      const token = getState().auth.token || localStorage.getItem("jwtToken");
       const formData = new FormData();
       formData.append("candidate_id", candidateId);
       formData.append("updated_contact", JSON.stringify(contacts));
@@ -330,9 +292,7 @@ export const updateContactsAPI = createAsyncThunk(
 export const fetchFilteredChats = createAsyncThunk(
   "chat/fetchFilteredChats",
   async (filters, { getState }) => {
-    //const token = getState().auth.token;
-    const token =
-      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiMiIsImV4cCI6MTgyNjQwNjAyOCwiaWF0IjoxNzQwMDA2MDI4fQ.7_NyQj5R-lgESKV1V50h0IK5Iw0KHjmDBPUBUFnkQVs";
+    const token = getState().auth.token || localStorage.getItem("jwtToken");
 
     const params = new URLSearchParams({
       vacancy_ids: JSON.stringify(filters.vacancyIds || []),
@@ -382,7 +342,7 @@ export const createMessage = createAsyncThunk(
       // Добавляем основные поля
       Object.entries(messageData).forEach(([key, value]) => {
         if (key === "file" && value) {
-          formData.append("attachement", value);
+          formData.append("attachments", value);
         } else if (value !== null && value !== undefined) {
           formData.append(key, value);
         }
@@ -453,7 +413,7 @@ const chatSlice = createSlice({
     updateChatState: (state, action) => {
       const { chatId, unreadCount, lastMessage, timestamp } = action.payload;
 
-      console.log("[Redux] UpdateChatState payload:", action.payload);
+      //console.log("[Redux] UpdateChatState payload:", action.payload);
 
       //const chatIndex = state.chats.findIndex((c) => c.chatId === chatId);
       const chatIndex = state.chats.findIndex((c) => {
@@ -478,11 +438,6 @@ const chatSlice = createSlice({
       state.meta.awaiting_response = state.chats.filter(
         (chat) => chat.unread_count > 0
       ).length;
-      //console.log(state, "statechats");
-      console.log("New state after update:", {
-        updatedChat: { ...state.chats[chatIndex] }, // Копия обновленного чата
-        awaitingResponse: state.meta.awaiting_response, // Новое значение счетчика
-      });
     },
 
     setMessageFilters: (state, action) => {
@@ -494,32 +449,6 @@ const chatSlice = createSlice({
     resetMessageFilters: (state) => {
       state.messageFilters = initialState.messageFilters;
     },
-    //resetMessageFilters: (state) => {
-    //state.messageFilters = { channels: [], authors: [] };
-    //},
-
-    /*
-    applyFilters: (state) => {
-      const { vacancies, recruiters, clients } = state.selectedFilters;
-      const vacancyIds = vacancies.map((v) => v.value);
-      const userIds = recruiters.map((r) => r.value);
-      const employerIds = clients.map((c) => c.value);
-
-      // Dispatch the filtered fetch
-      dispatch(fetchFilteredChats({ vacancyIds, userIds, employerIds }));
-
-      // Optional: Update local state if needed
-      state.appliedFilters = [vacancies, recruiters, clients].filter(
-        (arr) => arr.length
-      ).length;
-      console.log("filtersLength", state.appliedFilters);
-    }, */
-
-    /*resetFilters: (state) => {
-      state.selectedFilters = { vacancies: [], recruiters: [], clients: [] };
-      state.appliedFilters = 0;
-      dispatch(fetchChats()); // Refetch original chats
-    }, */
 
     toggleFilter(state) {
       state.showAwaitingResponse = !state.showAwaitingResponse;
@@ -534,23 +463,11 @@ const chatSlice = createSlice({
     setFilters(state, action) {
       state.selectedFilters = { ...state.selectedFilters, ...action.payload };
     },
-    //addMessage(state, action) {
-    //const { chatId, message } = action.payload;
-    //if (!state.messages[chatId]) {
-    //state.messages[chatId] = [];
-    //}
-    // state.messages[chatId].push(message);
-    //},
+
     addMessage: (state, action) => {
       const { chatId, message } = action.payload;
-      console.log(action.payload, "actionPayload");
+      //console.log(action.payload, "actionPayload");
 
-      // Create array if not exists
-      // if (!state.messages[chatId]) {
-      // state.messages[chatId] = [];
-      // }
-
-      // Check for duplicates using unique ID
       const messageExists = state.messages[chatId]?.some(
         (m) => m.id === message.id
       );
@@ -563,14 +480,6 @@ const chatSlice = createSlice({
           messanger: message.messanger,
           attachments: [],
         });
-
-        // Auto-increment unread count if not active chat
-        //if (state.selectedChat?.id !== chatId) {
-        //const chatIndex = state.chats.findIndex(c => c.id === chatId);
-        //if (chatIndex > -1) {
-        //state.chats[chatIndex].unread_count += 1;
-        // }
-        //}
       }
     },
     resetUnreadCount(state, action) {
@@ -607,14 +516,28 @@ const chatSlice = createSlice({
         chat.contacts[contactType].splice(contactIndex, 1);
       }
     },
+    /*setReplyingTo: (state, action) => {
+      state.replyingTo = action.payload
+        ? {
+            ...action.payload,
+            // Сохраняем все возможные поля контакта
+            usedContact: {
+              channel_name: action.payload.usedContact?.channel_name,
+              phone: action.payload.usedContact?.phone,
+              email: action.payload.usedContact?.email,
+              user_id: action.payload.usedContact?.user_id,
+              user_name: action.payload.usedContact?.user_name,
+            },
+          }
+        : null;
+    }, */
     setReplyingTo: (state, action) => {
-      state.replyingTo = action.payload;
-      // Автоматически выбираем соответствующий мессенджер
-      if (action.payload) {
-        const messenger = action.payload.messanger.toLowerCase();
-        state.selectedTab =
-          messenger.charAt(0).toUpperCase() + messenger.slice(1);
-      }
+      state.replyingTo = action.payload
+        ? {
+            ...action.payload,
+            contactIdentifier: action.payload.contactIdentifier,
+          }
+        : null;
     },
   },
   extraReducers: (builder) => {
@@ -626,7 +549,7 @@ const chatSlice = createSlice({
         state.status = "succeeded";
         state.chats = action.payload.chats;
         state.meta.awaiting_response = action.payload.meta.awaiting_response;
-        console.log(action.payload);
+        //console.log(action.payload);
       })
       .addCase(fetchChats.rejected, (state, action) => {
         state.status = "failed";
@@ -722,28 +645,14 @@ const chatSlice = createSlice({
       .addCase(fetchUsers.fulfilled, (state, action) => {
         state.users = action.payload;
       });
-
-    {
-      /*}.addCase(fetchClients.fulfilled, (state, action) => {
-        state.clients = action.payload;
-      })
-      .addCase(fetchVacancies.fulfilled, (state, action) => {
-        state.vacancies = action.payload;
-      })
-      .addCase(fetchUsers.fulfilled, (state, action) => {
-        state.users = action.payload;
-      }); */
-    }
   },
 });
 
 export const {
   toggleIsOpen,
-  //applyFilters,
   toggleFilter,
   setShowAwaitingResponse,
   selectChat,
-  //resetFilters,
   setFilters,
   addMessage,
   resetUnreadCount,

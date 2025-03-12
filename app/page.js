@@ -6,7 +6,6 @@ import Head from "next/head";
 import ChatList from "./components/ChatList";
 import ChatWindow from "./components/ChatWindow";
 import ChatDetails from "./components/ChatDetails";
-import SearchableDropdown from "./components/DropDown";
 import LoginForm from "./components/LoginForm";
 import TestSocket from "./components/TestSocket";
 

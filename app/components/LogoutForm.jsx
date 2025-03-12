@@ -18,7 +18,7 @@ export default function LogoutForm() {
       dispatch(logout());
 
       // Redirect to login page
-      router.push("/login");
+      router.push("/");
     } catch (error) {
       console.error("Logout failed:", error);
     }
@@ -26,7 +26,7 @@ export default function LogoutForm() {
 
   return (
     <button onClick={handleLogout} className="text-[#64748B] py-2 ml-2 rounded">
-      <div className="flex items-center">
+      <div className="flex items-center hover:bg-gray-50 p-1 rounded">
         <LogoutIcon />
         <div className="pl-1">Выйти</div>
       </div>

@@ -78,18 +78,11 @@ export default function ChatDetails() {
   const selectedChat = chats?.find((chat) => chat.id === selectedChatState?.id);
   const rawContacts = selectedChat?.contacts || {};
   const contacts = parseContacts(rawContacts);
-  //const contacts = rawContacts;
 
   const [isOpen, setIsOpen] = useState(false);
   const [selectedOption, setSelectedOption] = useState(null);
   const [inputValue, setInputValue] = useState("");
   if (!contacts) return null;
-  useEffect(() => {
-    if (contacts) {
-      console.log("Updated Contacts:", contacts);
-      console.log("ChatDetails, chatId", selectedChat?.id);
-    }
-  }, [contacts]);
 
   const handleAddClick = () => {
     setIsOpen(true);
@@ -116,43 +109,6 @@ export default function ChatDetails() {
       });
       return acc;
     }, {});
-  };
-
-  const handleSaveContacts = async () => {
-    if (selectedChat) {
-      try {
-        // Convert contacts to backend format
-        const backendContacts = Object.entries(contacts).reduce(
-          (acc, [type, items]) => {
-            acc[type] = items.map((item) => {
-              // Convert back to original API format
-              switch (type) {
-                case "phone":
-                case "whatsapp":
-                  return { phone: item.content, channel_name: type };
-                case "email":
-                  return { email: item.content, channel_name: type };
-                case "telegram":
-                  return { user_id: item.content, channel_name: type };
-                default:
-                  return { [type]: item.content, channel_name: type };
-              }
-            });
-            return acc;
-          },
-          {}
-        );
-
-        await dispatch(
-          updateContactsAPI({
-            candidateId: selectedChat.id,
-            contacts: backendContacts,
-          })
-        ).unwrap();
-      } catch (error) {
-        console.error("Failed to save contacts:", error);
-      }
-    }
   };
 
   const handleAddContact = async () => {
@@ -194,7 +150,7 @@ export default function ChatDetails() {
       setInputValue("");
       handleClose();
     } catch (error) {
-      console.error("Ошибка добавления:", error);
+      alert("Ошибка добавления:", error);
     }
   };
 
@@ -204,7 +160,6 @@ export default function ChatDetails() {
     try {
       // 1. Получить текущие контакты из Redux
       const currentContacts = contacts;
-      console.log("Current Contacts:", currentContacts);
 
       // 2. Создать обновленные контакты (без лишних копий)
       const updatedContacts = {
@@ -231,8 +186,7 @@ export default function ChatDetails() {
         },
       });
     } catch (error) {
-      console.error("Ошибка удаления:", error);
-      // Можно добавить уведомление/алерт
+      alert("Ошибка удаления:", error);
     }
   };
 
