@@ -260,7 +260,7 @@ export default function ChatWindow() {
   }
 
   return (
-    <div className="flex max-w-[900px] flex-col flex-grow overflow-x-hidden relative p-6 pl-0 pr-0 pt-1 pb-3 items-center h-screen bg-white">
+    <div className="flex w-full max-w-full md:max-w-[900px] flex-col flex-grow overflow-x-hidden relative p-6 pl-0 pr-0 pt-1 pb-3 items-center h-screen bg-white">
       <div className="w-full">
         <div className="relative bg-[#F1F5F9] p-1 mx-2 flex flex-row mb-4 rounded justify-between items-center">
           <div className="flex flex-row gap-2 items-center flex-1">

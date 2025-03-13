@@ -707,7 +707,7 @@ const ChatInput = () => {
           </div>
         )}
 
-        <div className="flex px-2 items-center mt-0 pt-0">
+        <div className="flex px-2 items-center pb-2 mt-0 pt-0">
           <label className="cursor-pointer flex items-center">
             <FileAttachIcon />
             <input

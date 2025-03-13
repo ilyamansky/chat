@@ -64,6 +64,7 @@ export default function SocketManager() {
             user_id: messageData.used_contact?.user_id,
             user_name: usedContact?.user_name,
           },
+          unreadCount: messageData.unread_count,
           attachments: messageData.attachments,
           attachment_name: messageData.attachments?.attachments?.[0]?.name,
           attachment_id:

@@ -411,6 +411,53 @@ const chatSlice = createSlice({
       state.isOpen = !state.isOpen;
     },
     updateChatState: (state, action) => {
+      const {
+        chatId,
+        unreadCount,
+        lastMessage,
+        timestamp,
+        isCandidateMessage,
+      } = action.payload;
+
+      const chatIndex = state.chats.findIndex((c) => c.id == chatId);
+      if (chatIndex === -1) return;
+
+      // Track previous unread count
+      const previousUnread = state.chats[chatIndex].unread_count;
+      const newUnread = Number(unreadCount);
+
+      // Update the chat
+      const updatedChat = {
+        ...state.chats[chatIndex],
+        unread_count: newUnread,
+        last_message_text: lastMessage,
+        lastActive: timestamp,
+      };
+
+      // Update awaiting_response counter
+      {
+        /*if (isCandidateMessage) {
+        if (previousUnread === 0 && newUnread > 0) {
+          state.meta.awaiting_response += 1;
+        } else if (previousUnread > 0 && newUnread === 0) {
+          state.meta.awaiting_response -= 1;
+        }
+      }*/
+      }
+      if (previousUnread === 0 && newUnread > 0) {
+        state.meta.awaiting_response += 1;
+      } else if (previousUnread > 0 && newUnread === 0) {
+        state.meta.awaiting_response -= 1;
+      }
+
+      // Create a new sorted array
+      const newChats = state.chats
+        .map((chat, index) => (index === chatIndex ? updatedChat : chat))
+        .sort((a, b) => new Date(b.lastActive) - new Date(a.lastActive));
+
+      state.chats = newChats;
+    },
+    /*updateChatState: (state, action) => {
       const { chatId, unreadCount, lastMessage, timestamp } = action.payload;
 
       //console.log("[Redux] UpdateChatState payload:", action.payload);
@@ -438,7 +485,7 @@ const chatSlice = createSlice({
       state.meta.awaiting_response = state.chats.filter(
         (chat) => chat.unread_count > 0
       ).length;
-    },
+    },*/
 
     setMessageFilters: (state, action) => {
       state.messageFilters = {

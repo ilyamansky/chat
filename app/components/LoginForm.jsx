@@ -41,7 +41,7 @@ export default function LoginPage() {
         localStorage.setItem("jwtToken", token);
         const decoded = jwtDecode(token);
         const name = decoded.user_id;
-        router.push(`/users/${name}`);
+        router.push(`/users/${[name]}`);
       } else {
         throw new Error(response.statusText);
       }
