@@ -332,7 +332,7 @@ export const resetFilters = createAsyncThunk(
   }
 );
 
-export const createMessage = createAsyncThunk(
+/*export const createMessage = createAsyncThunk(
   "chat/createMessage",
   async (messageData, { getState, rejectWithValue }) => {
     try {
@@ -355,7 +355,7 @@ export const createMessage = createAsyncThunk(
           headers: {
             Authorization: `Bearer ${token}`,
           },
-          body: formData,
+          body: JSON.stringify(formData),
         }
       );
 
@@ -365,6 +365,48 @@ export const createMessage = createAsyncThunk(
       }
 
       //return await response.json();
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
+  }
+); */
+export const createMessage = createAsyncThunk(
+  "chat/createMessage",
+  async (messageData, { getState, rejectWithValue }) => {
+    try {
+      const token = getState().auth.token || localStorage.getItem("jwtToken");
+      const formData = new FormData();
+
+      // Обрабатываем поля и экранируем только поле text
+      Object.entries(messageData).forEach(([key, value]) => {
+        if (key === "file" && value) {
+          formData.append("attachments", value);
+          /*} else if (key === "text" && value !== null && value !== undefined) {
+          // Экранируем текст
+          const escapedText = JSON.stringify(value);
+          formData.append(key, escapedText);*/
+        } else if (value !== null && value !== undefined) {
+          formData.append(key, value);
+        }
+      });
+
+      const response = await fetch(
+        "https://prokrinilik.beget.app/webhook/create_message",
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          body: formData, // Передаем formData напрямую, не нужно JSON.stringify
+        }
+      );
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || "Failed to send message");
+      }
+
+      // return await response.json();
     } catch (error) {
       return rejectWithValue(error.message);
     }
