@@ -67,7 +67,7 @@ const parseContacts = (contactsInput) => {
                 content = contact.phone;
                 break;
               case "email":
-                content = contact.email; // Remove fallback to .content
+                content = contact.email;
                 break;
               case "telegram":
                 content = contact.user_id || contact.user_name || "";

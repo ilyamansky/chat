@@ -418,12 +418,15 @@ export default function ChatWindow() {
 
             {/* Message Body */}
             <div
-              className={clsx("ml-10 px-2 py-1 mt-1 border rounded  relative", {
-                "bg-custom-gray-md border-blue-500":
-                  message.author.role === "candidate",
-                "bg-custom-orange-bg border-custom-orange-border":
-                  message.author.role === "recruiter",
-              })}
+              className={clsx(
+                "ml-10 px-2 py-1 mt-1 border rounded  relative whitespace-pre-line break-words",
+                {
+                  "bg-custom-gray-md border-blue-500":
+                    message.author.role === "candidate",
+                  "bg-custom-orange-bg border-custom-orange-border":
+                    message.author.role === "recruiter",
+                }
+              )}
             >
               {message.messanger === "email" && (
                 <div className="font-semibold text-[#1E293B] text-[16px]">
@@ -445,15 +448,15 @@ export default function ChatWindow() {
                   </span>
                 </div>
               </a>*/}
-              {message.attachment_name && message.attachment_id && (
+              {message.attachment_id && (
                 <div
                   // key={idx}
                   className="mt-2 p-2 bg-gray-100 rounded flex items-center justify-between"
                 >
-                  <div className="flex">
+                  <div className="flex items-center">
                     <FileIcon className="w-4 h-4" />
-                    <span className="ml-2 text-sm">
-                      {message.attachment_name}{" "}
+                    <span className="ml-2 text-sm ">
+                      {message.attachment_name || "Без имени"}
                       {/*({(attachment.size / 1024).toFixed(1)}KB)*/}
                     </span>
                   </div>
@@ -462,6 +465,7 @@ export default function ChatWindow() {
                       message.attachment_id
                     )}`}
                     rel="noopener noreferrer"
+                    target="_blank"
                     download
                     className="ml-2 border border-custom-gray-filter-light rounded p-1 py-[2px] text-custom-text-gray hover:bg-gray-50"
                   >

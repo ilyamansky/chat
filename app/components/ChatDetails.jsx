@@ -272,16 +272,16 @@ export default function ChatDetails() {
   return (
     <div className="w-[300px] border-l pt-2 overflow-y-auto">
       <nav className="flex flex-row h-[30px] py-1 px-4 items-center border-b">
-        <p className="hover:bg-gray-50 py-1 text-sm text-custom-text-gray px-1">
+        {/*<p className="hover:bg-gray-50 py-1 text-sm text-custom-text-gray px-1">
           Вакансия
-        </p>
+        </p>*/}
         <p className="hover:bg-gray-50 text-sm text-custom-blue border-b border-custom-blue px-1 py-1">
           Кандидат
         </p>
-        <p className="text-sm py-1 px-1 hover:bg-gray-50 text-custom-text-gray">
+        {/*<p className="text-sm py-1 px-1 hover:bg-gray-50 text-custom-text-gray">
           Календарь
         </p>
-        <p className="text-sm text-custom-text-gray px-2">...</p>
+        <p className="text-sm text-custom-text-gray px-2">...</p>*/}
       </nav>
 
       <div className="flex flex-col px-4 mt-2 mb-2">
