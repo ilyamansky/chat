@@ -189,8 +189,17 @@ export default function ChatList() {
           onClick={() => dispatch(setShowAwaitingResponse(true))}
         >
           Ожидают ответа
-          {awaiting_response > 0 && (
+          {/*{awaiting_response > 0 && (
             <div className="ml-1 bg-custom-blue text-white rounded-full min-w-4 h-4 flex items-center justify-center text-xs">
+              {awaiting_response}
+            </div>
+          )}*/}
+          {awaiting_response > 0 && (
+            <div
+              className={`ml-1 bg-custom-blue text-white ${
+                awaiting_response > 99 ? "rounded-md px-2" : "rounded-full px-1"
+              } min-w-[1rem] h-4 flex items-center justify-center text-xs`}
+            >
               {awaiting_response}
             </div>
           )}
@@ -252,8 +261,19 @@ export default function ChatList() {
                     <p className="text-[13px] text-custom-text-gray truncate max-w-[220px]">
                       {user.last_message_text || "please help me find..."}
                     </p>
-                    {Number(user.unread_count) > 0 && (
+                    {/*{Number(user.unread_count) > 0 && (
                       <span className="bg-blue-500 text-white rounded-full w-4 h-4 flex items-center justify-center text-xs">
+                        {Number(user.unread_count)}
+                      </span>
+                    )}*/}
+                    {Number(user.unread_count) > 0 && (
+                      <span
+                        className={`bg-blue-500 text-white ${
+                          user.unread_count > 99
+                            ? "rounded-md px-2"
+                            : "rounded-full px-1"
+                        } min-w-[1rem] h-4 flex items-center justify-center text-xs`}
+                      >
                         {Number(user.unread_count)}
                       </span>
                     )}
