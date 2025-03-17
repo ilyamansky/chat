@@ -69,12 +69,48 @@ export default function MessagesFilter({ onClose }) {
     (state) => state.chat
   );
   const channelOptions = useSelector((state) => state.chat.knownChannels);
+  // Локальное состояние для временного хранения фильтров
+  const [localFilters, setLocalFilters] = useState({
+    channels: [],
+    authors: [],
+  });
+
+  useEffect(() => {
+    setLocalFilters({
+      channels: messageFilters.channels,
+      authors: messageFilters.authors,
+    });
+  }, [messageFilters]);
+
+  // Обработчики изменений фильтров
+  const handleChannelChange = (selectedChannels) => {
+    setLocalFilters((prev) => ({ ...prev, channels: selectedChannels }));
+  };
+
+  const handleAuthorChange = (selectedAuthors) => {
+    setLocalFilters((prev) => ({ ...prev, authors: selectedAuthors }));
+  };
+
+  // Применить фильтры
+  const handleApply = (e) => {
+    e.preventDefault();
+    dispatch(setMessageFilters(localFilters));
+    onClose();
+  };
+
+  // Сбросить фильтры
+  const handleReset = () => {
+    setLocalFilters({ channels: [], authors: [] });
+    dispatch(resetMessageFilters());
+    onClose();
+  };
 
   const handleFilterChange = (filterType) => (selectedOptions) => {
     dispatch(setFilters({ [filterType]: selectedOptions || [] })); // Use Redux action
   };
 
-  const handleApply = (e) => {
+  {
+    /*const handleApply = (e) => {
     e.preventDefault();
     onClose();
   };
@@ -90,7 +126,8 @@ export default function MessagesFilter({ onClose }) {
 
   const handleAuthorChange = (selectedAuthors) => {
     dispatch(setMessageFilters({ authors: selectedAuthors }));
-  };
+  }; */
+  }
 
   // Get unique authors from current chat's messages
   const authorOptions = useMemo(() => {
@@ -160,7 +197,8 @@ export default function MessagesFilter({ onClose }) {
             <Select
               isMulti
               options={authorOptions}
-              value={messageFilters.authors}
+              //value={messageFilters.authors}
+              value={localFilters.authors}
               //onChange={handleFilterChange("authors")}
               //onChange={(selected) =>
               //dispatch(setMessageFilters({ authors: selected }))
@@ -181,7 +219,8 @@ export default function MessagesFilter({ onClose }) {
             <Select
               isMulti
               options={channelOptions}
-              value={messageFilters.channels}
+              //value={messageFilters.channels}
+              value={localFilters.channels}
               //onChange={handleFilterChange("channels")}
               //onChange={(selected) =>
               //dispatch(setMessageFilters({ channels: selected }))
@@ -198,8 +237,8 @@ export default function MessagesFilter({ onClose }) {
           <hr className="my-4" />
           <div className="space-x-2">
             <button
-              //onClick={handleApply}
-              onClick={onClose}
+              onClick={handleApply}
+              //onClick={onClose}
               className="px-4 py-2 bg-custom-gray-filter-dark text-sm border border-custom-gray-filter-dark text-white rounded"
             >
               Применить фильтры

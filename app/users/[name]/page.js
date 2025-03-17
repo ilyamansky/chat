@@ -50,7 +50,7 @@ export default function ChatPage({ params }) {
 
   return (
     <div className="h-screen flex items-center justify-center bg-custom-bg-gray">
-      <div className="w-screen h-screen shadow-xl flex">
+      <div className="w-screen justify-center h-screen shadow-xl flex">
         <ChatList />
         <ChatWindow />
         <ChatDetails />
