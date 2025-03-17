@@ -132,7 +132,7 @@ export default function ChatList() {
   }, [dispatch]);
 
   return (
-    <div className="w-[320px] flex flex-col h-screen border-r relative overflow-hidden border-gray-200">
+    <div className="w-[320px] min-w-[320px] flex flex-col h-screen border-r relative overflow-hidden border-gray-200">
       {/* Header and Filter Section */}
       <div className="mb-2 flex flex-col px-2">
         <div className="mb-1 flex flex-row justify-between items-center relative">
