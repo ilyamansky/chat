@@ -191,6 +191,11 @@ export default function ChatWindow() {
   }, [selectedChat?.id, dispatch]);
 
   useEffect(() => {
+    // Сбрасываем ответ при смене чата
+    dispatch(setReplyingTo(null));
+  }, [selectedChat?.id, dispatch]);
+
+  useEffect(() => {
     if (replyingTo) {
       chatInputRef.current?.scrollIntoView({ behavior: "smooth" });
     } else {
@@ -478,7 +483,7 @@ export default function ChatWindow() {
             {/* Reply Button */}
             <button
               onClick={() => {
-                console.log(message.id, "attachment_name");
+                chatInputRef.current?.focus();
                 //const contactDisplayName = getContactDisplayName(
                 //message.usedContact,
                 //</div>chat.contacts
@@ -537,7 +542,7 @@ export default function ChatWindow() {
         <div ref={messagesEndRef}></div>
       </div>
       <div className="mt-auto w-full mb-0 bottom-0 bg-white chat-input-container ref={chatInputRef}">
-        <div className="mx-2">{<ChatInput />}</div>
+        <div className="mx-2">{<ChatInput ref={chatInputRef} />}</div>
       </div>
     </div>
   );

@@ -625,6 +625,7 @@ const chatSlice = createSlice({
         ? {
             ...action.payload,
             contactIdentifier: action.payload.contactIdentifier,
+            candidate_id: state.selectedChat?.id, // Добавляем ID чата
           }
         : null;
     },

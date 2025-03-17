@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, forwardRef } from "react";
 import clsx from "clsx";
 import TextareaAutosize from "react-textarea-autosize";
 import { LinearProgress } from "@mui/material";
@@ -89,7 +89,7 @@ const parseContacts = (contactsInput) => {
   }
 };
 
-const ChatInput = () => {
+const ChatInput = forwardRef((props, ref) => {
   const dispatch = useDispatch();
   const {
     chats,
@@ -216,6 +216,13 @@ const ChatInput = () => {
   }, [replyingTo, contacts, dispatch]); */
   }
   useEffect(() => {
+    if (!selectedChat?.id || !replyingTo?.contactIdentifier) return;
+
+    // Проверяем принадлежность к текущему чату
+    if (replyingTo.candidate_id !== selectedChat.id) {
+      dispatch(setReplyingTo(null));
+      return;
+    }
     if (replyingTo?.contactIdentifier) {
       const { channel, value } = replyingTo.contactIdentifier;
 
@@ -270,7 +277,7 @@ const ChatInput = () => {
 
       setSelectedTab(displayName);
     }
-  }, [replyingTo, contacts, dispatch]);
+  }, [replyingTo, contacts, dispatch, selectedChat]);
 
   {
     /*useEffect(() => {
@@ -652,6 +659,7 @@ const ChatInput = () => {
 
         <div className="mb-0 mt-0">
           <TextareaAutosize
+            ref={ref}
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             placeholder="Введите текст сообщения"
@@ -727,6 +735,6 @@ const ChatInput = () => {
       </div>
     </form>
   );
-};
+});
 
 export default ChatInput;
