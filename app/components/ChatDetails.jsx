@@ -270,7 +270,7 @@ export default function ChatDetails() {
   };
 
   return (
-    <div className="w-[300px] flex flex-col min-w-[300px] border-l pt-2 overflow-y-auto">
+    <div className="w-[300px]  min-w-[300px] border-l pt-2 overflow-y-auto">
       <nav className="flex flex-row h-[30px] py-1 px-4 items-center border-b">
         {/*<p className="hover:bg-gray-50 py-1 text-sm text-custom-text-gray px-1">
           Вакансия
@@ -367,7 +367,7 @@ export default function ChatDetails() {
       ) : (
         <button
           onClick={handleAddClick}
-          className="border mx-4 border-[#CACACA] hover:bg-gray-50 flex text-custom-gray-details mt-4 py-[2px] px-2 rounded"
+          className="border mx-4 border-[#CACACA] hover:bg-gray-50  text-custom-gray-details mt-4 py-[2px] px-2 rounded"
         >
           Добавить
         </button>

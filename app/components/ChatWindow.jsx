@@ -6,7 +6,7 @@ import {
   resetUnreadCount,
   setReplyingTo,
   fetchMessages,
-  sendHardcodedMessage,
+  resetMessageFilters,
   resetUnreadCountMessages,
 } from "../redux/chatSlice"; // Import Redux actions
 import clsx from "clsx";
@@ -180,6 +180,10 @@ export default function ChatWindow() {
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
+
+  useEffect(() => {
+    dispatch(resetMessageFilters());
+  }, [selectedChat?.id, dispatch]);
 
   useEffect(() => {
     if (selectedChat?.id) {

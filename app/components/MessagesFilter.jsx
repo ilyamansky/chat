@@ -70,17 +70,52 @@ export default function MessagesFilter({ onClose }) {
   );
   const channelOptions = useSelector((state) => state.chat.knownChannels);
   // Локальное состояние для временного хранения фильтров
-  const [localFilters, setLocalFilters] = useState({
+  /* const [localFilters, setLocalFilters] = useState({
     channels: [],
     authors: [],
-  });
+  });*/
+  // Локальное состояние для временных фильтров
+  const [localFilters, setLocalFilters] = useState(messageFilters);
 
-  useEffect(() => {
+  /* useEffect(() => {
     setLocalFilters({
       channels: messageFilters.channels,
       authors: messageFilters.authors,
     });
   }, [messageFilters]);
+
+  
+
+  
+  const handleApply = (e) => {
+    e.preventDefault();
+    dispatch(setMessageFilters(localFilters));
+    onClose();
+  };
+
+  
+  const handleReset = () => {
+    setLocalFilters({ channels: [], authors: [] });
+    dispatch(resetMessageFilters());
+    onClose();
+  };
+  */
+
+  // Синхронизируем локальное состояние при открытии фильтра
+  useEffect(() => {
+    setLocalFilters(messageFilters);
+  }, [messageFilters]);
+
+  const handleApply = (e) => {
+    e.preventDefault();
+    dispatch(setMessageFilters(localFilters));
+    onClose();
+  };
+
+  const handleReset = () => {
+    dispatch(resetMessageFilters());
+    onClose();
+  };
 
   // Обработчики изменений фильтров
   const handleChannelChange = (selectedChannels) => {
@@ -89,20 +124,6 @@ export default function MessagesFilter({ onClose }) {
 
   const handleAuthorChange = (selectedAuthors) => {
     setLocalFilters((prev) => ({ ...prev, authors: selectedAuthors }));
-  };
-
-  // Применить фильтры
-  const handleApply = (e) => {
-    e.preventDefault();
-    dispatch(setMessageFilters(localFilters));
-    onClose();
-  };
-
-  // Сбросить фильтры
-  const handleReset = () => {
-    setLocalFilters({ channels: [], authors: [] });
-    dispatch(resetMessageFilters());
-    onClose();
   };
 
   const handleFilterChange = (filterType) => (selectedOptions) => {
