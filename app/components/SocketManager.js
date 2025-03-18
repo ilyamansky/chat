@@ -40,6 +40,20 @@ export default function SocketManager() {
     const handleIncomingMessage = (data) => {
       try {
         const messageData = typeof data === "string" ? JSON.parse(data) : data;
+        {
+          /*const parsedAttachments =
+          safeJsonParse(messageData.attachments)?.attachments || [];
+        const formattedAttachments = parsedAttachments.map((att) => ({
+          name: att.name,
+          id: att.attachment_id,
+        }));*/
+        }
+        const parsedAttachments = messageData.attachments?.attachments || [];
+        const formattedAttachments = parsedAttachments.map((att) => ({
+          name: att.name,
+          // Используем правильное поле для ID
+          id: att.attachment_id || att.id,
+        }));
         const usedContact = messageData.used_contact || {};
 
         const formattedMessage = {
@@ -65,10 +79,11 @@ export default function SocketManager() {
             user_name: usedContact?.user_name,
           },
           unreadCount: messageData.unread_count,
-          attachments: messageData.attachments,
-          attachment_name: messageData.attachments?.attachments?.[0]?.name,
-          attachment_id:
-            messageData.attachments?.attachments?.[0]?.attachment_id,
+          //attachments: messageData.attachments,
+          //attachment_name: messageData.attachments?.attachments?.[0]?.name,
+          //attachment_id:
+          // messageData.attachments?.attachments?.[0]?.attachment_id,
+          attachments: formattedAttachments,
           subject: messageData.subject_tema,
           replyTo: messageData.reply_on_message,
           status: messageData.status,

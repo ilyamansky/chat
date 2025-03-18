@@ -75,9 +75,15 @@ export const fetchMessages = createAsyncThunk(
       return {
         chatId: candidateId,
         messages: messages.map((msg) => {
+          const parsedAttachments =
+            safeJsonParse(msg.attachments)?.attachments || [];
           return {
             id: msg.id,
             text: msg.text,
+            attachments: parsedAttachments.map((att) => ({
+              name: att.name,
+              id: att.attachment_id,
+            })),
             timestamp: msg.created_at
               ? new Date(msg.created_at).toISOString()
               : "Некорректная дата",
@@ -88,12 +94,11 @@ export const fetchMessages = createAsyncThunk(
               "Неизвестный мессенджер",
             usedContact: safeJsonParse(msg.used_contact),
             subject: msg.subject_tema,
-            //attachements: safeJsonParse(msg.attachments),
-            //attachment_name: msg.attachements?.attachments[0]?.name,
-            attachment_name: safeJsonParse(msg.attachments)?.attachments?.[0]
-              ?.name,
-            attachment_id: safeJsonParse(msg.attachments)?.attachments?.[0]
-              ?.attachment_id,
+
+            //attachment_name: safeJsonParse(msg.attachments)?.attachments?.[0]
+            //?.name,
+            // attachment_id: safeJsonParse(msg.attachments)?.attachments?.[0]
+            //?.attachment_id,
             author: safeJsonParse(msg.author) || {
               id: null,
               name: "Неизвестный автор",
@@ -567,7 +572,8 @@ const chatSlice = createSlice({
           senderRole:
             message.author.role === "candidate" ? "candidate" : "recruiter",
           messanger: message.messanger,
-          attachments: [],
+          //attachments: [],
+          attachments: message.attachments || [], // Добавлено для безопасности
         });
       }
     },

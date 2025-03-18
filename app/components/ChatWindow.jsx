@@ -443,30 +443,41 @@ export default function ChatWindow() {
                 </div>
               )}
               <div className="py-1">{message.text}</div>
-              {/*{message.attachment_name && <div>
-                {message.attachment_name}</div>}
-              <a
-                href={message.attachment_id}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="block" // Убираем стандартные стили тега <a>
-              >
-                <div className="p-4 border rounded cursor-pointer hover:bg-gray-100 transition">
-                  <span className="text-blue-600 hover:underline">
-                    {message.attachment_name || "Скачать файл"}
-                  </span>
+              {message.attachments?.length > 0 && (
+                <div className="space-y-2">
+                  {message.attachments.map((attachment, idx) => (
+                    <div
+                      key={`${message.id}-${idx}`}
+                      className="mt-2 p-2 bg-gray-100 rounded flex items-center justify-between"
+                    >
+                      <div className="flex items-center">
+                        <FileIcon className="w-4 h-4" />
+                        <span className="ml-2 text-sm ">
+                          {attachment.name || "Без имени"}
+                        </span>
+                      </div>
+                      <a
+                        href={`https://prokrinilik.beget.app/webhook/download_file?attachement_id=${encodeURIComponent(
+                          attachment.id
+                        )}`}
+                        rel="noopener noreferrer"
+                        target="_blank"
+                        download
+                        className="ml-2 border border-custom-gray-filter-light rounded p-1 py-[2px] text-custom-text-gray hover:bg-gray-50"
+                      >
+                        Скачать
+                      </a>
+                    </div>
+                  ))}
                 </div>
-              </a>*/}
-              {message.attachment_id && (
-                <div
-                  // key={idx}
-                  className="mt-2 p-2 bg-gray-100 rounded flex items-center justify-between"
-                >
+              )}
+
+              {/* {message.attachment_id && (
+                <div className="mt-2 p-2 bg-gray-100 rounded flex items-center justify-between">
                   <div className="flex items-center">
                     <FileIcon className="w-4 h-4" />
                     <span className="ml-2 text-sm ">
                       {message.attachment_name || "Без имени"}
-                      {/*({(attachment.size / 1024).toFixed(1)}KB)*/}
                     </span>
                   </div>
                   <a
@@ -481,7 +492,7 @@ export default function ChatWindow() {
                     Скачать
                   </a>
                 </div>
-              )}
+              )} */}
             </div>
 
             {/* Reply Button */}
