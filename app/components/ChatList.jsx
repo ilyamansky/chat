@@ -41,6 +41,7 @@ export default function ChatList() {
   const [popovers, setPopovers] = useState({});
   const [activePopoverIndex, setActivePopoverIndex] = useState(null);
   const [searchInput, setSearchInput] = useState("");
+  const [searchTimeout, setSearchTimeout] = useState(null);
 
   // Фильтрация по имени
   const filteredBySearch = (chats) => {
@@ -64,12 +65,32 @@ export default function ChatList() {
     const value = e.target.value;
     setSearchInput(value);
 
-    if (value.startsWith("https://app.friend.work/Candidate/Profile/")) {
+    {
+      /*if (value.startsWith("https://app.friend.work/Candidate/Profile/")) {
       dispatch(getCandidateByUrl(value));
     } else {
       //dispatch(clearSearchedCandidate());
+    }*/
     }
+    if (searchTimeout) clearTimeout(searchTimeout);
+
+    // Устанавливаем новый таймер
+    const newTimeout = setTimeout(() => {
+      if (value.startsWith("https://app.friend.work/Candidate/Profile/")) {
+        dispatch(getCandidateByUrl(value));
+      }
+      // Добавьте else блок если нужно обрабатывать другие случаи
+    }, 1000); // Задержка 500 мс
+
+    setSearchTimeout(newTimeout);
   };
+
+  // Очищаем таймер при размонтировании
+  useEffect(() => {
+    return () => {
+      if (searchTimeout) clearTimeout(searchTimeout);
+    };
+  }, [searchTimeout]);
 
   // Рендер кандидата из поиска
   const renderSearchedCandidate = () => {
