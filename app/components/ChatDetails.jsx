@@ -47,7 +47,7 @@ const parseContacts = (contactsInput) => {
               content = contact.phone;
               break;
             case "telegram":
-              content = contact.user_id || contact.phone;
+              content = contact.phone || contact.user_id;
               break;
             default:
               content = "";
