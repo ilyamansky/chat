@@ -47,7 +47,7 @@ const parseContacts = (contactsInput) => {
               content = contact.phone;
               break;
             case "telegram":
-              content = contact.phone || contact.user_id;
+              content = contact.tg_phone || contact.user_id;
               break;
             default:
               content = "";
@@ -102,7 +102,7 @@ export default function ChatDetails() {
           case "email":
             return { email: item.content, channel_name: type };
           case "telegram":
-            return { user_id: item.content, channel_name: type };
+            return { tg_phone: item.content, channel_name: type };
           default:
             return { [type]: item.content, channel_name: type };
         }

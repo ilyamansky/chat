@@ -37,27 +37,6 @@ const parseContacts = (contactsInput) => {
           ? contactList
           : [contactList];
 
-        {
-          /*result[normalizedType] = contactsArray
-          .map((contact) => {
-            let content;
-            switch (normalizedType) {
-              case "phone":
-              case "whatsapp":
-                content = contact.phone;
-                break;
-              case "email":
-                content = contact.email || contact.content;
-                break;
-              case "telegram":
-                content = contact.user_id || contact.user_name || "";
-                break;
-              default:
-                content = "";
-            }
-            return { content: content?.toString() || "", isPrimary: false };
-          }) */
-        }
         result[normalizedType] = contactsArray
           .map((contact) => {
             let content;
@@ -70,7 +49,7 @@ const parseContacts = (contactsInput) => {
                 content = contact.email;
                 break;
               case "telegram":
-                content = contact.user_id || contact.user_name || "";
+                content = contact.tg_phone || contact.user_id || "";
                 break;
               default:
                 content = "";
