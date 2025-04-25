@@ -40,6 +40,7 @@ const parseContacts = (contactsInput) => {
         result[normalizedType] = contactsArray
           .map((contact) => {
             let content;
+            let tg_phone_content;
             switch (normalizedType) {
               case "phone":
               case "whatsapp":
@@ -49,7 +50,8 @@ const parseContacts = (contactsInput) => {
                 content = contact.email;
                 break;
               case "telegram":
-                content = contact.tg_phone || contact.user_id || "";
+                content = contact.user_id || "";
+                tg_phone_content = contact.tg_phone || "";
                 break;
               default:
                 content = "";
@@ -112,88 +114,6 @@ const ChatInput = forwardRef((props, ref) => {
     }
   }, [contacts]);
 
-  {
-    /*useEffect(() => {
-    if (replyingTo) {
-      const originalMessenger = replyingTo.messanger;
-      if (!contacts[originalMessenger]?.length) {
-        alert("Контакт для ответа был удален!");
-        dispatch(setReplyingTo(null));
-        return;
-      }
-      setSelectedTab(
-        //originalMessenger.charAt(0).toUpperCase() + originalMessenger.slice(1)
-        originalMessenger
-      );
-      console.log("replyingTo", replyingTo);
-    }
-  }, [replyingTo, contacts, dispatch]); */
-  }
-
-  // В ChatInput.jsx замените текущий useEffect для replyingTo на:
-  {
-    /*useEffect(() => {
-    if (replyingTo?.usedContact) {
-      const channel = replyingTo.usedContact.channel_name?.toLowerCase();
-      const targetValue = {
-        telegram:
-          replyingTo.usedContact.user_id || replyingTo.usedContact.user_name,
-        email: replyingTo.usedContact.email,
-        whatsapp: replyingTo.usedContact.phone,
-        phone: replyingTo.usedContact.phone,
-      }[channel];
-
-      // 1. Проверка существования канала
-      const contactGroup = contacts[channel] || [];
-      if (contactGroup.length === 0) {
-        alert("Контакт для ответа был удален!");
-        dispatch(setReplyingTo(null));
-        return;
-      }
-
-      // 2. Поиск конкретного контакта
-      const contactIndex = contactGroup.findIndex(
-        (c) => c.content === targetValue
-      );
-
-      if (contactIndex === -1) {
-        alert("Контакт для ответа был изменен!");
-        dispatch(setReplyingTo(null));
-        return;
-      }
-
-      // 3. Установка таба
-      const displayName =
-        contactGroup.length > 1 ? `${channel} ${contactIndex + 1}` : channel;
-
-      setSelectedTab(displayName);
-    }
-  }, [replyingTo, contacts, dispatch]); */
-  }
-  {
-    /* last version useEffect(() => {
-    if (replyingTo?.contactIdentifier) {
-      const { channel, value } = replyingTo.contactIdentifier;
-      const contactGroup = contacts[channel] || [];
-
-      // Ищем контакт по значению
-      const contactExists = contactGroup.some((c) => c.content === value);
-
-      if (!contactExists) {
-        alert("Контакт для ответа был удален или изменен!");
-        dispatch(setReplyingTo(null));
-        return;
-      }
-
-      // Всегда используем актуальный индекс
-      const contactIndex = contactGroup.findIndex((c) => c.content === value);
-      const displayName =
-        contactGroup.length > 1 ? `${channel} ${contactIndex + 1}` : channel;
-
-      setSelectedTab(displayName);
-    }
-  }, [replyingTo, contacts, dispatch]); */
-  }
   useEffect(() => {
     if (!selectedChat?.id || !replyingTo?.contactIdentifier) return;
 
@@ -213,6 +133,7 @@ const ChatInput = forwardRef((props, ref) => {
       });
 
       const contactGroup = contacts[channel] || [];
+      console.log(contactGroup, "ContactGroup:");
 
       // Debug: Показываем текущие контакты
       console.log("[DEBUG] Current contacts in channel:", {
@@ -234,12 +155,14 @@ const ChatInput = forwardRef((props, ref) => {
 
       if (!contactExists) {
         // Debug: Детали ошибки
-        console.error("[ERROR] Contact mismatch!", {
+        {
+          /*console.error("[ERROR] Contact mismatch!", {
           reason: "Value not found in contacts",
           storedValue: value,
           existingValues: contactGroup.map((c) => c.content),
           contactGroupJSON: JSON.stringify(contactGroup),
-        });
+        }); */
+        }
 
         alert("Контакт для ответа был удален или изменен!");
         dispatch(setReplyingTo(null));
@@ -258,24 +181,6 @@ const ChatInput = forwardRef((props, ref) => {
     }
   }, [replyingTo, contacts, dispatch, selectedChat]);
 
-  {
-    /*useEffect(() => {
-    if (replyingTo) {
-      const originalDisplayName = replyingTo.contactDisplayName;
-      const contactType = originalDisplayName?.split(" ")[0].toLowerCase();
-
-      // Check if contact exists
-      if (!contacts[contactType]?.length) {
-        alert("Contact for reply was removed!");
-        dispatch(setReplyingTo(null));
-        return;
-      }
-
-      setSelectedTab(originalDisplayName);
-    }
-  }, [replyingTo, contacts, dispatch]); */
-  }
-
   useEffect(() => {
     if (replyingTo) {
       const originalMessage = chats
@@ -290,64 +195,6 @@ const ChatInput = forwardRef((props, ref) => {
     }
   }, [replyingTo, chats, messages]);
 
-  /*useEffect(() => {
-    if (replyingTo?.usedContact) {
-      const channel = replyingTo.usedContact.channel_name?.toLowerCase();
-      const contactsList = contacts[channel] || [];
-
-      // Ищем точное совпадение контакта
-      const contactIndex = contactsList.findIndex((c) => {
-        switch (channel) {
-          case "telegram":
-            return c.content === replyingTo.usedContact.user_id;
-          case "email":
-            return c.content === replyingTo.usedContact.email;
-          case "whatsapp":
-          case "phone":
-            return c.content === replyingTo.usedContact.phone;
-          default:
-            return false;
-        }
-      });
-
-      if (contactIndex === -1) return;
-
-      const displayName =
-        contactsList.length > 1 ? `${channel} ${contactIndex + 1}` : channel;
-
-      setSelectedTab(displayName);
-    }
-  }, [replyingTo, contacts, dispatch]); */
-
-  {
-    /*useEffect(() => {
-    if (replyingTo?.usedContact) {
-      const channel = replyingTo.usedContact.channel_name?.toLowerCase();
-      const targetValue = {
-        telegram: replyingTo.usedContact.user_id,
-        email: replyingTo.usedContact.email,
-        whatsapp: replyingTo.usedContact.phone,
-        phone: replyingTo.usedContact.phone,
-      }[channel];
-
-      const contactGroup = contacts[channel] || [];
-
-      // Находим индекс по точному совпадению
-      const contactIndex = contactGroup.findIndex(
-        (c) => c.content === targetValue
-      );
-
-      const displayName =
-        contactIndex >= 0
-          ? contactGroup.length > 1
-            ? `${channel} ${contactIndex + 1}`
-            : channel
-          : channel;
-
-      setSelectedTab(displayName);
-    }
-  }, [replyingTo, contacts]);*/
-  }
   useEffect(() => {
     if (replyingTo?.usedContact) {
       const channel = replyingTo.usedContact.channel_name?.toLowerCase();
@@ -533,44 +380,6 @@ const ChatInput = forwardRef((props, ref) => {
                     : "text-[#858B97]"
                 )}
               >
-                {/*{Object.entries(contacts)
-            .filter(([_, group]) => group.length > 0)
-            .flatMap(([contactType, contactGroup]) =>
-              contactGroup.map((contact, index) => {
-                const displayName =
-                  contactGroup.length > 1
-                    ? `${contactType} ${index + 1}`
-                    : contactType;
-
-                return {
-                  type: contactType,
-                  contact,
-                  displayName,
-                  index,
-                };
-              })
-            )
-            .map(({ type, displayName, contact, index }) => (
-              <li
-                key={`${type}-${index}`}
-                className={clsx(
-                  "py-2 px-1 text-sm rounded-md cursor-pointer",
-                  selectedTab?.replace(/\s/g, "").toLowerCase() ===
-                    displayName.replace(/\s/g, "").toLowerCase()
-                    ? "underline text-[#B67E34]"
-                    : "text-[#858B97]"
-                )}
-              >
-                {/*<li
-                key={`${type}-${index}`}
-                className={clsx(
-                  "py-2 px-1 text-sm rounded-md cursor-pointer",
-                  selectedTab === displayName
-                    ? "underline text-[#B67E34]"
-                    : "text-[#858B97]"
-                )}
-              >*/}
-
                 <Popover
                   open={openPopover === displayName}
                   handler={setOpenPopover}
@@ -607,20 +416,6 @@ const ChatInput = forwardRef((props, ref) => {
             ))}
         </ul>
 
-        {/*{selectedTab.toLowerCase() === "email" &&
-          contacts.email?.length > 0 && (
-            <div className="flex flex-row items-center">
-              <div className="pl-2 text-[15px]">Тема:</div>
-              <input
-                type="text"
-                value={subject}
-                onChange={(e) => setSubject(e.target.value)}
-                placeholder="Не задано"
-                className="w-full p-2 text-[15px] rounded-md focus:outline-none"
-                readOnly={!!replyingTo}
-              />
-            </div>
-          )} */}
         {selectedTab?.toLowerCase().startsWith("email") &&
           contacts.email?.length > 0 && (
             <div className="flex flex-row items-center">
