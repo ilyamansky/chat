@@ -23,7 +23,7 @@ export default function LoginPage() {
 
     try {
       const response = await fetch(
-        "https://prokrinilik.beget.app/webhook/login",
+        "https://dronothexisk.beget.app/webhook/login",
         {
           method: "POST",
           headers: {

@@ -19,15 +19,13 @@ import MessagesFilter from "./MessagesFilter";
 import SearchIcon from "../ui/icons/SearchIcon";
 import FilterIcon from "../ui/icons/FilterIcon";
 import InfoIcon from "../ui/icons/InfoIcon";
-import CrossIconButton from "../ui/icons/CrossIconButton";
+
 import CrossIconFilter from "../ui/icons/CrossIconFilter";
 import ChatInput from "./ChatInput";
 import FilterIcon2 from "../ui/icons/FilterIcon2";
 import InfoIcon2 from "../ui/icons/InfoIcon2";
 import FileIcon from "../ui/icons/FileIcon";
 import { formatMessageDate } from "../utils/formatDate";
-import CustomScrollbar from "../ui/CustomScrollbar";
-import TestSocket from "./TestSocket";
 
 export default function ChatWindow() {
   const dispatch = useDispatch();
@@ -97,61 +95,6 @@ export default function ChatWindow() {
     }
   };
 
-  // Helper function to get display name from usedContact
-  {
-    /*const getContactDisplayName = (usedContact, rawContacts) => {
-    if (!usedContact) return usedContact?.channel_name || "unknown";
-    const parsedContacts = parseContacts(rawContacts);
-    const channel = usedContact.channel_name;
-    const contacts = parsedContacts[channel] || [];
-
-    const contactIndex = contacts.findIndex((contact) => {
-      switch (channel) {
-        case "email":
-          return contact.content === usedContact.email;
-        case "phone":
-        case "whatsapp":
-          return contact.content === usedContact.phone;
-        case "telegram":
-          return (
-            contact.content === (usedContact.user_id || usedContact.user_name)
-          );
-        default:
-          return false;
-      }
-    });
-
-    if (contactIndex === -1) return channel;
-    return contacts.length > 1 ? `${channel} ${contactIndex + 1}` : channel;
-  };*/
-  }
-  // В ChatWindow.jsx
-  {
-    /*const getContactDisplayName = (usedContact, rawContacts) => {
-    if (!usedContact?.channel_name) return "unknown";
-
-    const parsedContacts = parseContacts(rawContacts);
-    const channel = usedContact.channel_name.toLowerCase();
-    const contacts = parsedContacts[channel] || [];
-
-    // Поиск по всем возможным полям
-    const contactIndex = contacts.findIndex((c) => {
-      switch (channel) {
-        case "email":
-          return c.content === usedContact.email;
-        //case "phone":
-        case "whatsapp":
-          return c.content === usedContact.phone;
-        case "telegram":
-          return c.content === (usedContact.user_id || usedContact.user_name);
-        default:
-          return false;
-      }
-    });
-
-    return contactIndex >= 0 ? `${channel} ${contactIndex + 1}` : channel;
-  }; */
-  }
   const getContactDisplayName = (usedContact, rawContacts) => {
     if (!usedContact?.channel_name) return "unknown";
 
@@ -457,7 +400,7 @@ export default function ChatWindow() {
                         </span>
                       </div>
                       <a
-                        href={`https://prokrinilik.beget.app/webhook/download_file?attachement_id=${encodeURIComponent(
+                        href={`https://dronothexisk.beget.app/webhook/download_file?attachement_id=${encodeURIComponent(
                           attachment.id
                         )}`}
                         rel="noopener noreferrer"
@@ -471,56 +414,14 @@ export default function ChatWindow() {
                   ))}
                 </div>
               )}
-
-              {/* {message.attachment_id && (
-                <div className="mt-2 p-2 bg-gray-100 rounded flex items-center justify-between">
-                  <div className="flex items-center">
-                    <FileIcon className="w-4 h-4" />
-                    <span className="ml-2 text-sm ">
-                      {message.attachment_name || "Без имени"}
-                    </span>
-                  </div>
-                  <a
-                    href={`https://prokrinilik.beget.app/webhook/download_file?attachement_id=${encodeURIComponent(
-                      message.attachment_id
-                    )}`}
-                    rel="noopener noreferrer"
-                    target="_blank"
-                    download
-                    className="ml-2 border border-custom-gray-filter-light rounded p-1 py-[2px] text-custom-text-gray hover:bg-gray-50"
-                  >
-                    Скачать
-                  </a>
-                </div>
-              )} */}
             </div>
 
             {/* Reply Button */}
             <button
               onClick={() => {
                 chatInputRef.current?.focus();
-                //const contactDisplayName = getContactDisplayName(
-                //message.usedContact,
-                //</div>chat.contacts
-                //);
-                dispatch(
-                  //setReplyingTo({
-                  //...message,
-                  //contactDisplayName,
-                  //usedContact: message.usedContact, // Добавляем исходные данные
-                  //...message,
-                  //usedContact: message.usedContact, // Важно передать исходные данные
-                  //contactDisplayName: getContactDisplayName(
-                  //message.usedContact,
-                  //chat.contacts
-                  //),
-                  // })
-                  //setReplyingTo({
-                  //...message,
-                  //usedContact: message.usedContact,
-                  // Remove contactDisplayName from here
-                  //})
 
+                dispatch(
                   setReplyingTo({
                     ...message,
                     usedContact: message.usedContact,

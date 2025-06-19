@@ -23,7 +23,7 @@ export const fetchChats = createAsyncThunk(
   async (_, { getState }) => {
     const token = getState().auth.token || localStorage.getItem("jwtToken");
     //const token = localStorage.getItem("jwtToken");
-    const baseUrl = "https://prokrinilik.beget.app/webhook/get_chats";
+    const baseUrl = "https://dronothexisk.beget.app/webhook/get_chats";
 
     const vacancyIds = [];
     const userIds = [];
@@ -58,7 +58,7 @@ export const fetchMessages = createAsyncThunk(
     try {
       const token = getState().auth.token || localStorage.getItem("jwtToken");
       const response = await fetch(
-        `https://prokrinilik.beget.app/webhook/get_messages?candidate_id=${candidateId}`,
+        `https://dronothexisk.beget.app/webhook/get_messages?candidate_id=${candidateId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -94,11 +94,6 @@ export const fetchMessages = createAsyncThunk(
               "Неизвестный мессенджер",
             usedContact: safeJsonParse(msg.used_contact),
             subject: msg.subject_tema,
-
-            //attachment_name: safeJsonParse(msg.attachments)?.attachments?.[0]
-            //?.name,
-            // attachment_id: safeJsonParse(msg.attachments)?.attachments?.[0]
-            //?.attachment_id,
             author: safeJsonParse(msg.author) || {
               id: null,
               name: "Неизвестный автор",
@@ -121,7 +116,7 @@ export const getCandidateByUrl = createAsyncThunk(
     try {
       const token = getState().auth.token || localStorage.getItem("jwtToken");
       const response = await fetch(
-        `https://prokrinilik.beget.app/webhook/get_candidate_by_url?candidate_url=${encodeURIComponent(
+        `https://dronothexisk.beget.app/webhook/get_candidate_by_url?candidate_url=${encodeURIComponent(
           candidateUrl
         )}`,
         {
@@ -169,7 +164,7 @@ export const addCandidate = createAsyncThunk(
   async (candidateId, { getState }) => {
     const token = getState().auth.token || localStorage.getItem("jwtToken");
     const response = await fetch(
-      `https://prokrinilik.beget.app/webhook/create_candidate`,
+      `https://dronothexisk.beget.app/webhook/create_candidate`,
       {
         method: "POST",
         headers: {
@@ -191,7 +186,7 @@ export const fetchUsers = createAsyncThunk(
   async (_, { getState }) => {
     const token = getState().auth.token;
     const response = await fetch(
-      "https://prokrinilik.beget.app/webhook/get_users",
+      "https://dronothexisk.beget.app/webhook/get_users",
       {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -211,12 +206,12 @@ export const fetchCompanies = createAsyncThunk(
     const token = getState().auth.token || localStorage.getItem("jwtToken");
 
     const response = await fetch(
-      "https://prokrinilik.beget.app/webhook/get_companies",
+      "https://dronothexisk.beget.app/webhook/get_companies",
       { headers: { Authorization: `Bearer ${token}` } }
     );
     if (!response.ok) throw new Error("Failed to fetch companies");
     const data = await response.json();
-    return data; // Assuming response is array of { customerid, name, ... }
+    return data;
   }
 );
 export const fetchVacancies = createAsyncThunk(
@@ -228,7 +223,7 @@ export const fetchVacancies = createAsyncThunk(
     customerIds.forEach((id) => params.append("customerid", id));
 
     const response = await fetch(
-      `https://prokrinilik.beget.app/webhook/get_vacancies?${params.toString()}`,
+      `https://dronothexisk.beget.app/webhook/get_vacancies?${params.toString()}`,
       { headers: { Authorization: `Bearer ${token}` } }
     );
     if (!response.ok) throw new Error("Failed to fetch vacancies");
@@ -244,7 +239,7 @@ export const resetUnreadCountMessages = createAsyncThunk(
       const token = getState().auth.token || localStorage.getItem("jwtToken");
 
       const response = await fetch(
-        `https://prokrinilik.beget.app/webhook/reset_list_of_unread`,
+        `https://dronothexisk.beget.app/webhook/reset_list_of_unread`,
         {
           method: "PATCH",
           headers: {
@@ -273,7 +268,7 @@ export const updateContactsAPI = createAsyncThunk(
       formData.append("updated_contact", JSON.stringify(contacts));
 
       const response = await fetch(
-        "https://prokrinilik.beget.app/webhook/edit_contact",
+        "https://dronothexisk.beget.app/webhook/edit_contact",
         {
           method: "POST",
           headers: {
@@ -306,7 +301,7 @@ export const fetchFilteredChats = createAsyncThunk(
     });
 
     const response = await fetch(
-      `https://prokrinilik.beget.app/webhook/get_chats?${params.toString()}`,
+      `https://dronothexisk.beget.app/webhook/get_chats?${params.toString()}`,
       { headers: { Authorization: `Bearer ${token}` } }
     );
     if (!response.ok) throw new Error("Failed to fetch filtered chats");
@@ -337,44 +332,6 @@ export const resetFilters = createAsyncThunk(
   }
 );
 
-/*export const createMessage = createAsyncThunk(
-  "chat/createMessage",
-  async (messageData, { getState, rejectWithValue }) => {
-    try {
-      const token = getState().auth.token || localStorage.getItem("jwtToken");
-      const formData = new FormData();
-
-      // Добавляем основные поля
-      Object.entries(messageData).forEach(([key, value]) => {
-        if (key === "file" && value) {
-          formData.append("attachments", value);
-        } else if (value !== null && value !== undefined) {
-          formData.append(key, value);
-        }
-      });
-
-      const response = await fetch(
-        "https://prokrinilik.beget.app/webhook/create_message",
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify(formData),
-        }
-      );
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || "Failed to send message");
-      }
-
-      //return await response.json();
-    } catch (error) {
-      return rejectWithValue(error.message);
-    }
-  }
-); */
 export const createMessage = createAsyncThunk(
   "chat/createMessage",
   async (messageData, { getState, rejectWithValue }) => {
@@ -386,17 +343,13 @@ export const createMessage = createAsyncThunk(
       Object.entries(messageData).forEach(([key, value]) => {
         if (key === "file" && value) {
           formData.append("attachments", value);
-          /*} else if (key === "text" && value !== null && value !== undefined) {
-          // Экранируем текст
-          const escapedText = JSON.stringify(value);
-          formData.append(key, escapedText);*/
         } else if (value !== null && value !== undefined) {
           formData.append(key, value);
         }
       });
 
       const response = await fetch(
-        "https://prokrinilik.beget.app/webhook/create_message",
+        "https://dronothexisk.beget.app/webhook/create_message",
         {
           method: "POST",
           headers: {
@@ -481,16 +434,6 @@ const chatSlice = createSlice({
         lastActive: timestamp,
       };
 
-      // Update awaiting_response counter
-      {
-        /*if (isCandidateMessage) {
-        if (previousUnread === 0 && newUnread > 0) {
-          state.meta.awaiting_response += 1;
-        } else if (previousUnread > 0 && newUnread === 0) {
-          state.meta.awaiting_response -= 1;
-        }
-      }*/
-      }
       if (previousUnread === 0 && newUnread > 0) {
         state.meta.awaiting_response += 1;
       } else if (previousUnread > 0 && newUnread === 0) {
@@ -504,35 +447,6 @@ const chatSlice = createSlice({
 
       state.chats = newChats;
     },
-    /*updateChatState: (state, action) => {
-      const { chatId, unreadCount, lastMessage, timestamp } = action.payload;
-
-      //console.log("[Redux] UpdateChatState payload:", action.payload);
-
-      //const chatIndex = state.chats.findIndex((c) => c.chatId === chatId);
-      const chatIndex = state.chats.findIndex((c) => {
-        //console.log("Сравниваем c.chatId:", c.id, "с chatId:", chatId);
-        return c.id == chatId;
-      });
-
-      if (chatIndex === -1) return;
-      //console.log("[Redux] UpdateChatState chatIndex:", chatIndex);
-
-      state.chats[chatIndex] = {
-        ...state.chats[chatIndex],
-        unread_count: Number(unreadCount),
-        last_message_text: lastMessage,
-        lastActive: timestamp,
-        //status:
-        //state.chats[chatIndex]?.last_message?.author?.role === "candidate"
-        //? "unanswered"
-        //: "answered",
-      };
-      // Пересчитываем общий счетчик
-      state.meta.awaiting_response = state.chats.filter(
-        (chat) => chat.unread_count > 0
-      ).length;
-    },*/
 
     setMessageFilters: (state, action) => {
       state.messageFilters = {
@@ -560,7 +474,6 @@ const chatSlice = createSlice({
 
     addMessage: (state, action) => {
       const { chatId, message } = action.payload;
-      //console.log(action.payload, "actionPayload");
 
       const messageExists = state.messages[chatId]?.some(
         (m) => m.id === message.id
@@ -572,7 +485,6 @@ const chatSlice = createSlice({
           senderRole:
             message.author.role === "candidate" ? "candidate" : "recruiter",
           messanger: message.messanger,
-          //attachments: [],
           attachments: message.attachments || [], // Добавлено для безопасности
         });
       }
@@ -611,21 +523,7 @@ const chatSlice = createSlice({
         chat.contacts[contactType].splice(contactIndex, 1);
       }
     },
-    /*setReplyingTo: (state, action) => {
-      state.replyingTo = action.payload
-        ? {
-            ...action.payload,
-            // Сохраняем все возможные поля контакта
-            usedContact: {
-              channel_name: action.payload.usedContact?.channel_name,
-              phone: action.payload.usedContact?.phone,
-              email: action.payload.usedContact?.email,
-              user_id: action.payload.usedContact?.user_id,
-              user_name: action.payload.usedContact?.user_name,
-            },
-          }
-        : null;
-    }, */
+
     setReplyingTo: (state, action) => {
       state.replyingTo = action.payload
         ? {
@@ -645,7 +543,6 @@ const chatSlice = createSlice({
         state.status = "succeeded";
         state.chats = action.payload.chats;
         state.meta.awaiting_response = action.payload.meta.awaiting_response;
-        //console.log(action.payload);
       })
       .addCase(fetchChats.rejected, (state, action) => {
         state.status = "failed";
