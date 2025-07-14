@@ -168,19 +168,6 @@ const ChatsFilter = ({ onClose }) => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [onClose]);
 
-  {
-    /*useEffect(() => {
-    //const currentCompanyIds = selectedFilters.clients.map((c) => c.value);
-    const currentCompanyIds = selectedFilters.clients[0]?.value;
-    const filteredVacancies = selectedFilters.vacancies.filter((v) =>
-      currentCompanyIds.includes(v.customerId)
-    );
-
-    if (filteredVacancies.length !== selectedFilters.vacancies.length) {
-      dispatch(setFilters({ vacancies: filteredVacancies }));
-    }
-  }, [selectedFilters.clients, dispatch]); */
-  }
   useEffect(() => {
     const selectedCompanyId = selectedFilters.clients[0]?.value;
     const filteredVacancies = selectedCompanyId

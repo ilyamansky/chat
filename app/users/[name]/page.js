@@ -5,11 +5,12 @@ import Head from "next/head";
 import ChatList from "../../components/ChatList";
 import ChatWindow from "../../components/ChatWindow";
 import ChatDetails from "../../components/ChatDetails";
+import TabSwitcher from "../../components/TabSwitcher";
 import ChatInput from "@/app/components/ChatInput";
 //import { useRouter } from "next/navigation";
 //import { useSelector } from "react-redux";
 
-import { useEffect, use } from "react";
+import { useEffect, use, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSelector } from "react-redux";
 import { jwtDecode } from "jwt-decode";
@@ -19,6 +20,7 @@ export default function ChatPage({ params }) {
   const { name } = use(params);
   const router = useRouter();
   const { token } = useSelector((state) => state.auth);
+  const [activeTab, setActiveTab] = useState("chats");
 
   useEffect(() => {
     const storedToken = localStorage.getItem("jwtToken");
@@ -50,62 +52,24 @@ export default function ChatPage({ params }) {
 
   return (
     <div className="h-screen flex items-center justify-center bg-custom-bg-gray">
-      <div className="w-screen justify-center h-screen shadow-xl flex">
-        <ChatList />
-        <ChatWindow />
-        <ChatDetails />
-      </div>
+      <TabSwitcher activeTab={activeTab} setActiveTab={setActiveTab} />
+      {activeTab === "chats" && (
+        <div className="w-screen justify-center h-screen shadow-xl flex">
+          <ChatList activeTab={activeTab} setActiveTab={setActiveTab} />
+          <ChatWindow />
+          <ChatDetails />
+        </div>
+      )}
+      {activeTab === "calculator" && (
+        <div className="w-full h-full">
+          <iframe
+            src="https://dronothexisk.beget.app/webhook/get_calculator_for_tg"
+            className="w-full h-full"
+            sandbox="allow-same-origin allow-scripts allow-forms"
+            title="Калькулятор зарплаты"
+          />
+        </div>
+      )}
     </div>
   );
-}
-
-{
-  /*"use client";
-
-import { useContext, useEffect, useState, use } from "react";
-import { ChatContext } from "../../chatState";
-import Head from "next/head";
-import ChatList from "../../components/ChatList";
-import ChatWindow from "../../components/ChatWindow";
-import ChatDetails from "../../components/ChatDetails";
-import ChatInput from "@/app/components/ChatInput";
-import { useRouter } from "next/navigation";
-import { useSelector } from "react-redux";
-
-export default function ChatPage({ params }) {
-  const { name } = use(params);
-  console.log(name, "name");
-  const router = useRouter();
-  const { token } = useSelector((state) => state.auth);
-  
-
-  useEffect(() => {
-    const storedToken = localStorage.getItem("jwtToken");
-    if (!token && !storedToken && !name) {
-      router.push("/");
-    }
-
-    
-  }, [token, name, router]);
-
-  if (!token) {
-    return null; // Loading state
-  }
-
-  return (
-    <div className="h-screen flex items-center justify-center bg-custom-bg-gray">
-      <div className="w-screen h-screen shadow-xl flex">
-      
-        <ChatList />
-    
-
-        
-        <ChatWindow />
-
-        <ChatDetails />
-      </div>
-    </div>
-  );
-}
-*/
 }

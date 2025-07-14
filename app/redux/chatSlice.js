@@ -332,6 +332,79 @@ export const resetFilters = createAsyncThunk(
   }
 );
 
+export const uploadTranscription = createAsyncThunk(
+  "chat/uploadTranscription",
+  async (
+    { candidateId, vacancyId, audioFile, currentUser },
+    { getState, rejectWithValue }
+  ) => {
+    try {
+      const token = getState().auth.token || localStorage.getItem("jwtToken");
+      const formData = new FormData();
+
+      formData.append("candidate_id", candidateId);
+      formData.append("vacancy_id", vacancyId);
+      formData.append("user_id", currentUser);
+      formData.append("file", audioFile);
+
+      const response = await fetch(
+        "https://dronothexisk.beget.app/webhook/send_file_for_transcribation",
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          body: formData,
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Ошибка транскрибации");
+      }
+
+      return await response.json();
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
+// В разделе с другими thunks
+export const fetchVacanciesWithQuestionnaires = createAsyncThunk(
+  "chat/fetchVacanciesWithQuestionnaires",
+  async (_, { getState, rejectWithValue }) => {
+    try {
+      const token = getState().auth.token || localStorage.getItem("jwtToken");
+      const response = await fetch(
+        "https://dronothexisk.beget.app/webhook/get_list_of_vacancies_with_questinaire",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to fetch vacancies");
+      }
+
+      const data = await response.json();
+      // Преобразуем данные в формат для Select
+      return data.map((vacancy) => ({
+        value: vacancy.jobId,
+        label: vacancy.name,
+        customerId: vacancy.customerId,
+        // Добавляем дополнительные поля, если нужно
+        //...vacancy,
+      }));
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
 export const createMessage = createAsyncThunk(
   "chat/createMessage",
   async (messageData, { getState, rejectWithValue }) => {
@@ -634,6 +707,9 @@ const chatSlice = createSlice({
       })
       .addCase(resetFilters.fulfilled, (state) => {
         state.appliedFilters = 0;
+      })
+      .addCase(fetchVacanciesWithQuestionnaires.fulfilled, (state, action) => {
+        state.vacanciesWithQuestionnaires = action.payload;
       })
       .addCase(fetchUsers.fulfilled, (state, action) => {
         state.users = action.payload;

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
+import TranscriptionTab from "./TranscriptionTab";
 import Image from "next/image";
 import UserImage from "../../public/contactIcons/UserImage.png";
 import TgIcon from "../../public/contactIcons/TgIcon.png";
@@ -80,6 +81,7 @@ export default function ChatDetails() {
   const contacts = parseContacts(rawContacts);
 
   const [isOpen, setIsOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState("contacts");
   const [selectedOption, setSelectedOption] = useState(null);
   const [inputValue, setInputValue] = useState("");
   if (!contacts) return null;
@@ -275,103 +277,123 @@ export default function ChatDetails() {
         {/*<p className="hover:bg-gray-50 py-1 text-sm text-custom-text-gray px-1">
           Вакансия
         </p>*/}
-        <p className="hover:bg-gray-50 text-sm text-custom-blue border-b border-custom-blue px-1 py-1">
-          Кандидат
-        </p>
-        {/*<p className="text-sm py-1 px-1 hover:bg-gray-50 text-custom-text-gray">
-          Календарь
-        </p>
-        <p className="text-sm text-custom-text-gray px-2">...</p>*/}
-      </nav>
-
-      <div className="flex flex-col px-4 mt-2 mb-2">
-        <Image
-          src={UserImage}
-          alt="аватар пользователя"
-          width={98}
-          height={98}
-        />
-        <p className="mt-2">{selectedChat.name}</p>
-      </div>
-
-      <p className="mt-2 text-sm px-4">Способы связи</p>
-
-      <div className="mt-2 px-2">
-        <ul>
-          {Object.entries(contacts).map(
-            ([contactType, contactGroup]) =>
-              Array.isArray(contactGroup) &&
-              contactGroup.map((contact, index) => (
-                <li
-                  key={`${contactType}-${index}`}
-                  className="flex justify-between items-center px-2 hover:bg-gray-50 py-2 rounded"
-                >
-                  <div className="flex flex-row gap-2">
-                    <Image
-                      src={getIconSrc(contactType)}
-                      alt={contactType}
-                      width={18}
-                      height={18}
-                    />
-                    <p className="text-sm text-custom-gray-dark">
-                      {contact.content}
-                    </p>
-                  </div>
-                  <div className="flex flex-row items-center">
-                    {contact.isPrimary && (
-                      <p className="text-[13px] text-[#B0B0B0] mr-2">
-                        (основной)
-                      </p>
-                    )}
-                    <div
-                      onClick={() => handleRemoveContact(contactType, index)}
-                    >
-                      <CrossIconContacts />
-                    </div>
-                  </div>
-                </li>
-              ))
-          )}
-        </ul>
-      </div>
-
-      {isOpen ? (
-        <div className="flex flex-row gap-2 mx-4 mt-4">
-          <div>
-            <Select
-              isSearchable={false}
-              options={optionsSelect}
-              components={{ Option }}
-              placeholder=""
-              styles={customStyles}
-              value={selectedOption}
-              onChange={setSelectedOption}
-            />
-          </div>
-          <div>
-            <input
-              type="text"
-              placeholder="Не задано"
-              className="h-[30px] w-[140px] pl-1 text-custom-gray-dark border border-[#E3E3E3] outline-none rounded"
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-            />
-          </div>
-          <button className="hover:bg-gray-50" onClick={handleAddContact}>
-            <TickIcon />
-          </button>
-          <button className="hover:bg-gray-50" onClick={handleClose}>
-            <CrossIconButton />
-          </button>
-        </div>
-      ) : (
-        <button
-          onClick={handleAddClick}
-          className="border mx-4 border-[#CACACA] hover:bg-gray-50  text-custom-gray-details mt-4 py-[2px] px-2 rounded"
+        <p
+          className={`hover:bg-gray-50 py-1 text-sm px-1 cursor-pointer ${
+            activeTab === "contacts"
+              ? "text-custom-blue border-b border-custom-blue"
+              : "text-custom-text-gray"
+          }`}
+          onClick={() => setActiveTab("contacts")}
         >
-          Добавить
-        </button>
+          Контакты
+        </p>
+        <p
+          className={`hover:bg-gray-50 py-1 text-sm px-1 cursor-pointer ${
+            activeTab === "transcription"
+              ? "text-custom-blue border-b border-custom-blue"
+              : "text-custom-text-gray"
+          }`}
+          onClick={() => setActiveTab("transcription")}
+        >
+          Транскрибация
+        </p>
+        <p className="text-sm text-custom-text-gray px-2">...</p>
+      </nav>
+      {activeTab === "contacts" && (
+        <>
+          <div className="flex flex-col px-4 mt-2 mb-2">
+            <Image
+              src={UserImage}
+              alt="аватар пользователя"
+              width={98}
+              height={98}
+            />
+            <p className="mt-2">{selectedChat.name}</p>
+          </div>
+
+          <p className="mt-2 text-sm px-4">Способы связи</p>
+
+          <div className="mt-2 px-2">
+            <ul>
+              {Object.entries(contacts).map(
+                ([contactType, contactGroup]) =>
+                  Array.isArray(contactGroup) &&
+                  contactGroup.map((contact, index) => (
+                    <li
+                      key={`${contactType}-${index}`}
+                      className="flex justify-between items-center px-2 hover:bg-gray-50 py-2 rounded"
+                    >
+                      <div className="flex flex-row gap-2">
+                        <Image
+                          src={getIconSrc(contactType)}
+                          alt={contactType}
+                          width={18}
+                          height={18}
+                        />
+                        <p className="text-sm text-custom-gray-dark">
+                          {contact.content}
+                        </p>
+                      </div>
+                      <div className="flex flex-row items-center">
+                        {contact.isPrimary && (
+                          <p className="text-[13px] text-[#B0B0B0] mr-2">
+                            (основной)
+                          </p>
+                        )}
+                        <div
+                          onClick={() =>
+                            handleRemoveContact(contactType, index)
+                          }
+                        >
+                          <CrossIconContacts />
+                        </div>
+                      </div>
+                    </li>
+                  ))
+              )}
+            </ul>
+          </div>
+
+          {isOpen ? (
+            <div className="flex flex-row gap-2 mx-4 mt-4">
+              <div>
+                <Select
+                  isSearchable={false}
+                  options={optionsSelect}
+                  components={{ Option }}
+                  placeholder=""
+                  styles={customStyles}
+                  value={selectedOption}
+                  onChange={setSelectedOption}
+                />
+              </div>
+              <div>
+                <input
+                  type="text"
+                  placeholder="Не задано"
+                  className="h-[30px] w-[140px] pl-1 text-custom-gray-dark border border-[#E3E3E3] outline-none rounded"
+                  value={inputValue}
+                  onChange={(e) => setInputValue(e.target.value)}
+                />
+              </div>
+              <button className="hover:bg-gray-50" onClick={handleAddContact}>
+                <TickIcon />
+              </button>
+              <button className="hover:bg-gray-50" onClick={handleClose}>
+                <CrossIconButton />
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={handleAddClick}
+              className="border mx-4 border-[#CACACA] hover:bg-gray-50  text-custom-gray-details mt-4 py-[2px] px-2 rounded"
+            >
+              Добавить
+            </button>
+          )}
+        </>
       )}
+      {activeTab === "transcription" && <TranscriptionTab />}
     </div>
   );
 }
