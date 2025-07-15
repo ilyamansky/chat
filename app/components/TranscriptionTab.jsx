@@ -237,8 +237,7 @@ export default function TranscriptionTab() {
                   )}
                   {!file && (
                     <span className="text-[#BCBCBC] text-[13px] mt-2">
-                      Разрешаются только файлы в формате MP3, размером не более
-                      100MB
+                      Допускаются только аудиофайлы размером не более 100MB
                     </span>
                   )}
                 </div>
