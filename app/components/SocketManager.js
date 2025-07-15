@@ -35,6 +35,7 @@ export default function SocketManager() {
       "whatsapp_received",
       "email_sent",
       "email_received",
+      "system_message_sent",
     ];
 
     const handleIncomingMessage = (data) => {

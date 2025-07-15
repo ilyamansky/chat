@@ -396,6 +396,7 @@ export const fetchVacanciesWithQuestionnaires = createAsyncThunk(
         value: vacancy.jobId,
         label: vacancy.name,
         customerId: vacancy.customerId,
+        customerName: vacancy.customerName,
         // Добавляем дополнительные поля, если нужно
         //...vacancy,
       }));

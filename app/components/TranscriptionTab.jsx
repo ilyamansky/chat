@@ -31,9 +31,15 @@ const Option = (props) => {
       })}
       {...innerProps}
     >
-      <div className="text-custom-gray-dark text-[15px] font-medium">
-        {data.label}
+      <div>
+        <div className="text-custom-gray-dark text-[15px] font-medium">
+          {data.customerName}
+        </div>
+        <div className="text-custom-gray-dark text-[12px] font-medium">
+          {data.label}
+        </div>
       </div>
+
       <div>{isSelected && <TickIconFilter />}</div>
     </div>
   );
@@ -56,6 +62,7 @@ export default function TranscriptionTab() {
   const [isAttached, setIsAttached] = useState(false);
   const [uploadStatus, setUploadStatus] = useState("");
   const [submitStatus, setSubmitStatus] = useState("");
+  const [submitStatusSuccess, setSubmitStatusSuccess] = useState("");
   const [selectedVacancy, setSelectedVacancy] = useState(null);
   const fileInputRef = useRef(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -86,23 +93,24 @@ export default function TranscriptionTab() {
 
       await dispatch(
         uploadTranscription({
-          candidateId: selectedVacancy.customerId,
+          candidateId: selectedChatState?.id,
           vacancyId: selectedVacancy.value,
           currentUser: currentUser,
           audioFile: file,
         })
       ).unwrap();
 
-      setSubmitStatus("Файл успешно отправлен! Результат появится в чате");
+      setSubmitStatusSuccess("Файл успешно загружен! ");
 
       // Сброс формы после успешной отправки
       setTimeout(() => {
         handleReset();
         setIsSubmitting(false);
-      }, 3000);
+        setSubmitStatusSuccess("");
+      }, 2000);
     } catch (error) {
       //alert("Ошибка отправки:", error.message);
-      setSubmitStatus(`Ошибка: ${error.message || "Неизвестная ошибка"}`);
+      setSubmitStatus(`Ошибка: попробуйте еще раз!`);
       setIsSubmitting(false);
     }
   };
@@ -145,10 +153,10 @@ export default function TranscriptionTab() {
   const isFormReady = selectedVacancy && file && !isAttaching;
   return (
     <div className="">
-      <p className="text-[22px] pt-2 pl-4">Транскрибация</p>
-      <p className="pl-4">{selectedChatState?.name}</p>
+      <p className="text-[22px] text-black pt-2 pl-4">Транскрибация</p>
+      <p className="pl-4 text-black">{selectedChatState?.name}</p>
       <p className="p-2 pt-1 pl-4 text-[13px] text-[#858585]">
-        Преобразовывайте общение с кандидатом в заполненные формы опроса`
+        Преобразовывайте общение с кандидатом в заполненные формы опроса
       </p>
       <div className="bg-white m-4 mb-0 mr-2 rounded">
         <p className="text-[13px] text-[#858585] p-2 pb-0 pl-4">
@@ -156,6 +164,7 @@ export default function TranscriptionTab() {
         </p>
         <div className="p-2 pl-4 pr-4 pt-2 ">
           <AsyncSelect
+            isDisabled={isSubmitting}
             options={exampleVacancies}
             isClearable={false}
             cacheOptions={true}
@@ -175,12 +184,18 @@ export default function TranscriptionTab() {
               <div className="text-[13px] text-[#858585] mt-2">
                 Файл прикреплен
               </div>
-              <div className="flex items-center justify-between rounded mt-2">
-                <div className="flex items-center">
-                  <FileIcon className="w-4 h-4" />
-                  <span className=" text-sm">
-                    {file.name} ({(file.size / 1024 / 1024).toFixed(1)} MB)
-                  </span>
+              <div className="flex items-start justify-between rounded mt-2">
+                <div className="flex items-start">
+                  <FileIcon className="w-6 h-6" />
+                  <div>
+                    <p className="ml-1 text-[14px] text-black">
+                      {file.name.slice(0, 23)}
+                      <span>...</span>
+                    </p>{" "}
+                    <p className="ml-1 text-[12px] text-black">
+                      {(file.size / 1024 / 1024).toFixed(1)} MB
+                    </p>
+                  </div>
                 </div>
                 <button
                   onClick={() => {
@@ -189,7 +204,7 @@ export default function TranscriptionTab() {
                   }}
                   className="text-[#9E6D2D]"
                 >
-                  <FileAttachmentCloseIcon />
+                  {!isSubmitting && <FileAttachmentCloseIcon />}
                 </button>
               </div>
             </div>
@@ -223,7 +238,7 @@ export default function TranscriptionTab() {
                   {!file && (
                     <span className="text-[#BCBCBC] text-[13px] mt-2">
                       Разрешаются только файлы в формате MP3, размером не более
-                      10MB
+                      100MB
                     </span>
                   )}
                 </div>
@@ -262,21 +277,10 @@ export default function TranscriptionTab() {
       </div>
 
       <div className="flex gap-2 ml-4 mt-2">
-        {/*<button
-          disabled={!isFormReady}
-          onClick={handleSubmit}
-          className={`mt-2 px-2 py-2 text-sm rounded ${
-            isFormReady
-              ? "bg-[#626782] text-white"
-              : "bg-[#94A3B8] opacity-20 text-white cursor-not-allowed"
-          }`}
-        >
-          Загрузить
-        </button>*/}
         <button
           disabled={!isFormReady || isSubmitting}
           onClick={handleSubmit}
-          className={`px-2 py-2 text-sm rounded ${
+          className={`mt-2 px-2 py-2 text-sm rounded ${
             isFormReady && !isSubmitting
               ? "bg-[#626782] text-white hover:bg-[#525672]"
               : "bg-[#94A3B8] text-white cursor-not-allowed"
@@ -285,7 +289,7 @@ export default function TranscriptionTab() {
           {isSubmitting ? "Отправка..." : "Загрузить"}
         </button>
 
-        {(selectedVacancy || file) && (
+        {(selectedVacancy || file) && !isSubmitting && (
           <button
             type="button"
             onClick={handleReset}
@@ -295,7 +299,8 @@ export default function TranscriptionTab() {
           </button>
         )}
       </div>
-      <p className="ml-4 text-red-600">{submitStatus}</p>
+      <p className="ml-4 mt-1 text-[13px] text-red-600">{submitStatus}</p>
+      <p className="ml-4 mt-1 text-[13px] text-black">{submitStatusSuccess}</p>
       <p className="text-[13px] text-[#858585] px-4 pt-2">
         Результаты распознавания добавятся в историю общения с кандидатом
       </p>

@@ -308,10 +308,10 @@ export default function ChatDetails() {
               width={98}
               height={98}
             />
-            <p className="mt-2">{selectedChat.name}</p>
+            <p className="mt-2 text-black">{selectedChat.name}</p>
           </div>
 
-          <p className="mt-2 text-sm px-4">Способы связи</p>
+          <p className="mt-2 text-sm text-black px-4">Способы связи</p>
 
           <div className="mt-2 px-2">
             <ul>

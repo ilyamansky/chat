@@ -408,7 +408,9 @@ const ChatInput = forwardRef((props, ref) => {
                         width={18}
                         height={18}
                       />
-                      <span className="text-sm">{contact.content}</span>
+                      <span className="text-sm text-black">
+                        {contact.content}
+                      </span>
                     </div>
                   </PopoverContent>
                 </Popover>
@@ -419,13 +421,13 @@ const ChatInput = forwardRef((props, ref) => {
         {selectedTab?.toLowerCase().startsWith("email") &&
           contacts.email?.length > 0 && (
             <div className="flex flex-row items-center">
-              <div className="pl-2 text-[15px]">Тема:</div>
+              <div className="pl-2 text-[15px] text-black">Тема:</div>
               <input
                 type="text"
                 value={subject}
                 onChange={(e) => setSubject(e.target.value)}
                 placeholder="Не задано"
-                className="w-full p-2 text-[15px] rounded-md focus:outline-none"
+                className="w-full p-2 text-[15px] text-black rounded-md focus:outline-none"
                 readOnly={!!replyingTo}
               />
             </div>
@@ -437,7 +439,7 @@ const ChatInput = forwardRef((props, ref) => {
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             placeholder="Введите текст сообщения"
-            className="w-full m-0 py-0 px-2 text-[15px] resize-none h-10 focus:outline-none"
+            className="w-full m-0 py-0 px-2 text-[15px] text-black resize-none h-10 focus:outline-none"
             minRows={1}
             maxRows={10}
           />
@@ -478,7 +480,7 @@ const ChatInput = forwardRef((props, ref) => {
             <div className="flex items-center justify-between p-1 pr-2 rounded">
               <div className="flex items-center">
                 <FileIcon className="w-4 h-4" />
-                <span className="ml-2 text-sm">
+                <span className="ml-2 text-black text-sm">
                   {file.name} ({(file.size / 1024).toFixed(1)} KB)
                 </span>
               </div>

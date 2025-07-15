@@ -14,6 +14,7 @@ import TgIcon from "../../public/contactIcons/TgIcon.png";
 import MailIcon from "../../public/contactIcons/MailIcon.png";
 import PhoneIcon from "../../public/contactIcons/PhoneIcon.png";
 import WhatsappIcon from "../../public/contactIcons/WhatsappIcon.png";
+import ChannelIcon from "../../public/contactIcons/ChannelIcon.png";
 import Image from "next/image";
 import MessagesFilter from "./MessagesFilter";
 import SearchIcon from "../ui/icons/SearchIcon";
@@ -230,7 +231,7 @@ export default function ChatWindow() {
                     autoFocus
                     type="text"
                     placeholder="Введите строку для поиска"
-                    className="bg-white w-full flex p-2 rounded-md focus:outline-none pr-8"
+                    className="bg-white w-full text-black flex p-2 rounded-md focus:outline-none pr-8"
                     value={localSearch}
                     onChange={(e) => setLocalSearch(e.target.value)}
                   />
@@ -333,26 +334,45 @@ export default function ChatWindow() {
                     style={{ width: 24 }}
                   />
                 )}
+                {message.messanger !== "whatsapp" &&
+                  message.messanger !== "telegram" &&
+                  message.messanger !== "phone" &&
+                  message.messanger !== "email" && (
+                    <Image
+                      src={ChannelIcon}
+                      alt="System Icon"
+                      style={{ width: 24 }}
+                    />
+                  )}
               </div>
               <div>
                 <div
                   className={clsx("font-medium text-[15px]", {
                     "text-[#4766FF]": message.author.role === "candidate",
-                    "text-[#B67E34]": message.author.role === "recruiter",
+                    "text-[#B67E34]":
+                      message.author.role === "recruiter" ||
+                      message.author.role === "system",
                   })}
                 >
                   {message?.author.name}{" "}
-                  {message.author.role === "candidate" ? (
+                  {message.author.role === "candidate" && (
                     <span className="text-[13px] text-[#4766FF]">
                       Сообщение от кандидата -{" "}
                       {formatMessageDate(message.timestamp)}
                     </span>
-                  ) : (
+                  )}
+                  {message.author.role === "recruiter" && (
                     <span className="text-[13px] text-[#B67E34]">
                       Сообщение от рекрутера -{" "}
                       {formatMessageDate(message.timestamp)}
                     </span>
-                  )}{" "}
+                  )}
+                  {message.author.role === "system" && (
+                    <span className="text-[13px] text-[#B67E34]">
+                      Транскрибация общения -{" "}
+                      {formatMessageDate(message.timestamp)}
+                    </span>
+                  )}
                 </div>
               </div>
             </div>
@@ -376,7 +396,8 @@ export default function ChatWindow() {
                   "bg-custom-gray-md border-blue-500":
                     message.author.role === "candidate",
                   "bg-custom-orange-bg border-custom-orange-border":
-                    message.author.role === "recruiter",
+                    message.author.role === "recruiter" ||
+                    message.author.role === "system",
                 }
               )}
             >
@@ -385,7 +406,7 @@ export default function ChatWindow() {
                   {message.subject || "Тема не задана"}{" "}
                 </div>
               )}
-              <div className="py-1">{message.text}</div>
+              <div className="py-1 text-black">{message.text}</div>
               {message.attachments?.length > 0 && (
                 <div className="space-y-2">
                   {message.attachments.map((attachment, idx) => (
@@ -395,7 +416,7 @@ export default function ChatWindow() {
                     >
                       <div className="flex items-center">
                         <FileIcon className="w-4 h-4" />
-                        <span className="ml-2 text-sm ">
+                        <span className="ml-2 text-black text-sm ">
                           {attachment.name || "Без имени"}
                         </span>
                       </div>
@@ -417,41 +438,43 @@ export default function ChatWindow() {
             </div>
 
             {/* Reply Button */}
-            <button
-              onClick={() => {
-                chatInputRef.current?.focus();
+            {message.author.role !== "system" && (
+              <button
+                onClick={() => {
+                  chatInputRef.current?.focus();
 
-                dispatch(
-                  setReplyingTo({
-                    ...message,
-                    usedContact: message.usedContact,
-                    // Добавляем идентификатор контакта
-                    contactIdentifier: {
-                      channel: message.usedContact.channel_name,
-                      value: {
-                        telegram: message.usedContact.user_id,
-                        email: message.usedContact.email,
-                        whatsapp: message.usedContact.phone,
-                        phone: message.usedContact.phone,
-                      }[message.usedContact.channel_name],
-                    },
-                  })
-                );
+                  dispatch(
+                    setReplyingTo({
+                      ...message,
+                      usedContact: message.usedContact,
+                      // Добавляем идентификатор контакта
+                      contactIdentifier: {
+                        channel: message.usedContact.channel_name,
+                        value: {
+                          telegram: message.usedContact.user_id,
+                          email: message.usedContact.email,
+                          whatsapp: message.usedContact.phone,
+                          phone: message.usedContact.phone,
+                        }[message.usedContact.channel_name],
+                      },
+                    })
+                  );
 
-                // Прокрутка к форме ввода
-                setTimeout(() => {
-                  document
-                    .querySelector(".chat-input-container")
-                    ?.scrollIntoView({
-                      behavior: "smooth",
-                      block: "end",
-                    });
-                }, 100);
-              }}
-              className="mt-2 ml-10 text-center hover:bg-gray-100 text-custom-gray-filter-light w-[88px] border py-1 px-2 rounded"
-            >
-              Ответить
-            </button>
+                  // Прокрутка к форме ввода
+                  setTimeout(() => {
+                    document
+                      .querySelector(".chat-input-container")
+                      ?.scrollIntoView({
+                        behavior: "smooth",
+                        block: "end",
+                      });
+                  }, 100);
+                }}
+                className="mt-2 ml-10 text-center hover:bg-gray-100 text-custom-gray-filter-light w-[88px] border py-1 px-2 rounded"
+              >
+                Ответить
+              </button>
+            )}
           </div>
         ))}
 

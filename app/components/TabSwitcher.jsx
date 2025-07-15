@@ -5,10 +5,10 @@ export default function TabSwitcher({ activeTab, setActiveTab }) {
   const [isTabDropdownOpen, setIsTabDropdownOpen] = useState(false);
 
   return (
-    <div className="absolute top-2 left-2 z-50 bg-custom-bg-gray border border-[#6E9DD033] rounded-md p-1">
+    <div className="absolute top-2 left-2 z-50 bg-custom-bg-gray  hover:bg-gray-50 border border-[#6E9DD033] rounded-md p-1">
       <div className="relative">
         <button
-          className="flex items-center text-[13px] font-medium p-[1px]"
+          className="flex items-center text-black text-[13px] font-medium p-[1px]"
           onClick={() => setIsTabDropdownOpen(!isTabDropdownOpen)}
         >
           {activeTab === "chats" ? "Чаты" : "Калькулятор"}

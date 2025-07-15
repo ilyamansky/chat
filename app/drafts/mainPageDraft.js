@@ -12,6 +12,8 @@ export default function Home() {
   const { state, dispatch } = useContext(ChatContext);
   console.log(state);
 
+  
+
   return (
     <div className="h-screen flex items-center justify-center bg-custom-bg-gray">
       <Head>

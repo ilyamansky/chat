@@ -194,7 +194,7 @@ export default function ChatList({ activeTab, setActiveTab }) {
               value={searchInput}
               onChange={handleSearchChange}
               placeholder="Поиск по контактам и сообщениям"
-              className="placeholder:text-custom-placeholder-gray text-[15px] block w-full outline-none border-[#E3E3E3] rounded"
+              className="placeholder:text-custom-placeholder-gray text-[15px] text-black block w-full outline-none border-[#E3E3E3] rounded"
             />
           </div>
 
